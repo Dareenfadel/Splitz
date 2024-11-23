@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "139376092164",
+    "project_id": "guc-splitz",
+    "storage_bucket": "guc-splitz.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139376092164:android:52a5d4e91085aa9ece8151",
+        "android_client_info": {
+          "package_name": "com.example.splitz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf4Asg3yjpnWBtZmdF8eLnENDD8xvBU7A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
