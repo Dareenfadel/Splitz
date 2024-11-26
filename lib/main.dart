@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/auth.dart';
 import 'package:splitz/ui/screens/wrapper.dart';
+import 'constants/app_colors.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +32,16 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: AppColors.primary,
+            ),
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.background,
+              backgroundColor: AppColors.textColor,
+              type:
+                  BottomNavigationBarType.fixed, // Prevents shifting animation
+            ),
           ),
           home: Wrapper()),
     );
