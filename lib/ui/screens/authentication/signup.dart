@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/services/auth.dart';
 import 'package:splitz/ui/custom_widgets/custom_button.dart';
+import 'package:email_validator/email_validator.dart'; // Import email_validator package
 
 class SignUp extends StatefulWidget {
   final Function toggleView;
@@ -13,14 +14,45 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   final AuthService _auth = AuthService();
+  final _formKey = GlobalKey<FormState>(); // GlobalKey for form validation
   String name = "";
   String email = "";
   String password = "";
 
-  // Controller for text fields
+  // Controllers for text fields
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  // Function to validate the name
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your name';
+    }
+    return null;
+  }
+
+  // Function to validate the email
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter an email address';
+    }
+    if (!EmailValidator.validate(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  // Function to validate the password
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a password';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,75 +97,86 @@ class _SignUpState extends State<SignUp> {
               ),
             ),
             const SizedBox(height: 40),
-            // Name field
-            TextField(
-              controller: _nameController,
-              onChanged: (value) {
-                setState(() {
-                  name = value;
-                });
-              },
-              decoration: InputDecoration(
-                labelText: "Name",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Email field
-            TextField(
-              controller: _emailController,
-              onChanged: (value) {
-                setState(() {
-                  email = value;
-                });
-              },
-              decoration: InputDecoration(
-                labelText: "Email Address",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Password field
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              onChanged: (value) {
-                setState(() {
-                  password = value;
-                });
-              },
-              decoration: InputDecoration(
-                labelText: "Password",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-            // Sign up button
-            SizedBox(
-              width: double.infinity,
-              child: CustomElevatedButton(
-                onPressed: () async {
-                  if (name.isNotEmpty &&
-                      email.isNotEmpty &&
-                      password.isNotEmpty) {
-                    // Call the register function for sign up
-                    final user = await _auth.register(email, password, name);
-                    if (user != null) {
-                      print("User signed up successfully: $user");
-                    } else {
-                      print("Sign up failed");
-                    }
-                  } else {
-                    print("Please fill in all fields");
-                  }
-                },
-                text: "Sign up",
+            // Form for input fields
+            Form(
+              key: _formKey, // Attach the form key here
+              child: Column(
+                children: [
+                  // Name field
+                  TextFormField(
+                    controller: _nameController,
+                    onChanged: (value) {
+                      setState(() {
+                        name = value;
+                      });
+                    },
+                    validator: _validateName, // Add validation here
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Email field
+                  TextFormField(
+                    controller: _emailController,
+                    onChanged: (value) {
+                      setState(() {
+                        email = value;
+                      });
+                    },
+                    validator: _validateEmail, // Add validation here
+                    decoration: InputDecoration(
+                      labelText: "Email Address",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Password field
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    onChanged: (value) {
+                      setState(() {
+                        password = value;
+                      });
+                    },
+                    validator: _validatePassword, // Add validation here
+                    decoration: InputDecoration(
+                      labelText: "Password",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  // Sign up button
+                  SizedBox(
+                    width: double.infinity,
+                    child: CustomElevatedButton(
+                      onPressed: () async {
+                        // Validate form
+                        if (_formKey.currentState!.validate()) {
+                          // Call the register function for sign up
+                          final user =
+                              await _auth.register(email, password, name);
+                          if (user != null) {
+                            print("User signed up successfully: $user");
+                          } else {
+                            print("Sign up failed");
+                          }
+                        } else {
+                          print("Please fill in all fields correctly");
+                        }
+                      },
+                      text: "Sign up",
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
@@ -147,20 +190,37 @@ class _SignUpState extends State<SignUp> {
                 Expanded(child: Divider(color: AppColors.background)),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 80),
             SizedBox(
               width: double.infinity,
-              child: CustomElevatedButton(
-                text: "Sign-in with Google",
+              height: 55,
+              child: ElevatedButton.icon(
                 onPressed: () async {
                   final user = await _auth.signInWithGoogle();
                   if (user != null) {
                     print(user);
-                    // Navigate to another screen or show success
                   } else {
                     print("Google Sign-In canceled or failed");
                   }
                 },
+                icon: Image.asset(
+                  'lib/assets/images/google.png',
+                  width: 24,
+                  height: 24,
+                ),
+                label: const Text(
+                  "Sign in with Google",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    side: BorderSide(color: AppColors.background),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),

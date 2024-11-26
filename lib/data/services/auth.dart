@@ -8,21 +8,24 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  UserModel? _userFromFirebaseUser(User? user, String? name) {
-    return user != null
-        ? UserModel(
-            uid: user.uid, userType: 'client', orderIds: [], restaurantId: null)
-        : null;
+  Future<UserModel?>? _userFromFirebaseUser(User? user) {
+    if (user == null) {
+      return null;
+    }
+
+    return _firestore.collection('users').doc(user.uid).get().then((userDoc) {
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        return UserModel.fromMap(userData, user.uid);
+      }
+      return null;
+    });
   }
 
   Stream<UserModel?> get user {
     return _auth.authStateChanges().asyncMap((User? user) async {
       if (user != null) {
-        // Fetch the user's name from Firestore
-        DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(user.uid).get();
-        String? userName = userDoc.exists ? userDoc['name'] : null;
-        return _userFromFirebaseUser(user, userName);
+        return await _userFromFirebaseUser(user);
       }
       return null;
     });
@@ -34,7 +37,7 @@ class AuthService {
       UserCredential result = await _auth.signInAnonymously();
       User? user = result.user;
       await _storeUserData(user!, null);
-      return _userFromFirebaseUser(user, null);
+      return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
       return null;
@@ -49,11 +52,7 @@ class AuthService {
 
       User? user = result.user;
       if (user != null) {
-        DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(user.uid).get();
-        String? userName = userDoc.exists ? userDoc['name'] : null;
-
-        return _userFromFirebaseUser(user, userName);
+        return _userFromFirebaseUser(user);
       } else
         return null;
     } catch (e) {
@@ -70,13 +69,12 @@ class AuthService {
         email: email,
         password: password,
       );
-      print(email);
-      print(password);
+
       User? user = result.user;
 
       await _storeUserData(user!, name);
 
-      return _userFromFirebaseUser(user, name);
+      return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
       return null;
@@ -110,8 +108,7 @@ class AuthService {
       if (user != null) {
         // Step 4: Store additional user info (user_type, restaurant_id, order_ids) in Firestore
         await _storeUserData(user, user.displayName);
-        return _userFromFirebaseUser(
-            user, user.displayName); // Return user with custom data
+        return _userFromFirebaseUser(user); // Return user with custom data
       }
       return null;
     } catch (e) {

@@ -113,7 +113,7 @@ class _AdminHomePageState extends State<AdminHomePage>
                 ServedOrdersScreen(),
               ],
             )
-          : _screens[_currentIndex - 1],
+          : _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
@@ -151,29 +151,3 @@ class _AdminHomePageState extends State<AdminHomePage>
     );
   }
 }
-
-// class Home extends StatelessWidget {
-//   const Home({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final AuthService _auth = AuthService();
-//     return Scaffold(
-//       backgroundColor: Colors.brown[50],
-//       appBar: AppBar(
-//         title: Text('Homee ya manager'),
-//         backgroundColor: Colors.brown[400],
-//         elevation: 0.0,
-//         actions: <Widget>[
-//           IconButton(
-//             onPressed: () async {
-//               await _auth.signOut();
-//             },
-//             icon: Icon(Icons.person),
-//             tooltip: 'log out',
-//           )
-//         ],
-//       ),
-//     );
-//   }
-// }

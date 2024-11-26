@@ -1,34 +1,36 @@
 class UserModel {
   final String uid;
-  final String userType;
-  final String? restaurantId;
-  final List<String> orderIds;
   final String? name;
+  final String userType; // 'manager' or 'client'
+  final String? restaurantId; // Used if user is a manager
+  final List<String> orderIds;
+
   UserModel({
     required this.uid,
+    this.name,
     required this.userType,
     this.restaurantId,
     required this.orderIds,
-    this.name,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> data) {
-    return UserModel(
-      uid: data['uid'],
-      userType: data['user_type'],
-      restaurantId: data['restaurant_id'],
-      orderIds: List<String>.from(data['order_ids'] ?? []),
-      name: data['name'],
-    );
-  }
-
+  // Convert UserModel to Map (Firestore store)
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid,
-      'user_type': userType,
-      'restaurant_id': restaurantId,
-      'order_ids': orderIds,
       'name': name,
+      'role': userType,
+      'restaurantId': restaurantId,
+      'orderIds': orderIds,
     };
+  }
+
+  // Factory method to create UserModel from Firestore
+  factory UserModel.fromMap(Map<String, dynamic> data, String uid) {
+    return UserModel(
+      uid: uid,
+      name: data['name'],
+      userType: data['role'],
+      restaurantId: data['restaurantId'],
+      orderIds: List<String>.from(data['orderIds'] ?? []),
+    );
   }
 }
