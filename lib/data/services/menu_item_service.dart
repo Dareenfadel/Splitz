@@ -116,6 +116,7 @@ class MenuItemService {
 
       // Convert the menu item document to a MenuItem object
       MenuItem menuItem = MenuItem.fromFirestore(
+        menuItemSnapshot.id,
           menuItemSnapshot.data() as Map<String, dynamic>);
 
       // Fetch the required options for the menu item
