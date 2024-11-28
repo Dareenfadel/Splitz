@@ -15,7 +15,9 @@ class Wrapper extends StatelessWidget {
       return Authenticate();
     else {
       if (user.userType == 'manager') {
-        return AdminHomePage();
+        return AdminHomePage(
+          restaurantId: '',
+        );
       } else {
         return ClientHome();
       }

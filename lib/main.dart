@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
               backgroundColor: AppColors.primary,
             ),
-            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               selectedItemColor: AppColors.primary,
               unselectedItemColor: AppColors.background,
               backgroundColor: AppColors.textColor,
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
                   BottomNavigationBarType.fixed, // Prevents shifting animation
             ),
           ),
-          home: Wrapper()),
+          home: const Wrapper()),
     );
   }
 }
