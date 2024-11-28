@@ -44,6 +44,7 @@ android {
     defaultConfig {
         minSdkVersion 23
     }
+    ndkVersion "25.1.8937393"
 }
 
 flutter {
