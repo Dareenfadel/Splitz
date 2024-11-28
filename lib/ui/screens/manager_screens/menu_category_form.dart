@@ -47,14 +47,6 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
       String? imageUrl = await uploadFile(_image!);
 
       if (imageUrl != null) {
-        // Add category with image URL
-        await _categoryService.addMenuCategory(
-          widget.restaurantId,
-          categoryName,
-          description,
-          imageUrl, // Use the Firebase image URL
-        );
-
         MenuCategory newCategory = MenuCategory(
           name: categoryName,
           description: description,
