@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-
-import 'package:splitz/data/services/auth.dart';
-
 import '../../../constants/app_colors.dart';
+import '../../custom_widgets/orders_list.dart';
 import 'account_screen.dart';
 import 'history_screen.dart';
-import 'in_progress_orders_screen.dart';
 import 'menu_screen.dart';
-import 'orders_screen.dart';
-import 'pending_orders_screen.dart';
-import 'serverd_orders_screen.dart';
 
 class AdminHomePage extends StatefulWidget {
+  final String restaurantId;
+  AdminHomePage({required this.restaurantId});
+
   @override
   _AdminHomePageState createState() => _AdminHomePageState();
 }
@@ -22,17 +19,18 @@ class _AdminHomePageState extends State<AdminHomePage>
   late TabController _tabController;
 
   final List<Widget> _screens = [
-    OrdersScreen(),
     HistoryScreen(),
     MenuScreen(),
     AccountScreen(),
   ];
 
+  final List<String> orderStates = ['Pending', 'In Progress', 'Served'];
+
   final List<PreferredSizeWidget> _appBars = [
     AppBar(
       title: const Text('Orders History'),
       centerTitle: true,
-      titleTextStyle: TextStyle(
+      titleTextStyle: const TextStyle(
         color: AppColors.textColor,
         fontSize: 20,
         fontWeight: FontWeight.w500,
@@ -41,7 +39,7 @@ class _AdminHomePageState extends State<AdminHomePage>
     AppBar(
       title: const Text('Menu'),
       centerTitle: true,
-      titleTextStyle: TextStyle(
+      titleTextStyle: const TextStyle(
         color: AppColors.textColor,
         fontSize: 20,
         fontWeight: FontWeight.w500,
@@ -50,7 +48,7 @@ class _AdminHomePageState extends State<AdminHomePage>
     AppBar(
       title: const Text('Account Settings'),
       centerTitle: true,
-      titleTextStyle: TextStyle(
+      titleTextStyle: const TextStyle(
         color: AppColors.textColor,
         fontSize: 20,
         fontWeight: FontWeight.w500,
@@ -73,31 +71,29 @@ class _AdminHomePageState extends State<AdminHomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: _currentIndex == 0
           ? AppBar(
               centerTitle: true,
               bottom: PreferredSize(
-                preferredSize: Size.fromHeight(0),
+                preferredSize: const Size.fromHeight(0),
                 child: TabBar(
                   controller: _tabController,
-                  tabs: [
-                    Tab(text: 'Pending'),
-                    Tab(text: 'In Progress'),
-                    Tab(text: 'Served'),
-                  ],
-                  labelStyle: TextStyle(
+                  tabs: orderStates.map((state) => Tab(text: state)).toList(),
+                  labelStyle: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textColor,
                   ),
-                  unselectedLabelStyle: TextStyle(
+                  unselectedLabelStyle: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: AppColors.textColor),
                   indicatorColor: Colors.white,
                   indicator: UnderlineTabIndicator(
-                      borderSide: BorderSide(width: 5.0, color: Colors.white),
-                      insets: EdgeInsets.symmetric(horizontal: 16.0),
+                      borderSide:
+                          const BorderSide(width: 5.0, color: Colors.white),
+                      insets: const EdgeInsets.symmetric(horizontal: 16.0),
                       borderRadius: BorderRadius.circular(5)),
                   indicatorSize: TabBarIndicatorSize.tab,
                 ),
@@ -107,11 +103,12 @@ class _AdminHomePageState extends State<AdminHomePage>
       body: _currentIndex == 0
           ? TabBarView(
               controller: _tabController,
-              children: [
-                PendingOrdersScreen(),
-                InProgressOrdersScreen(),
-                ServedOrdersScreen(),
-              ],
+              children: orderStates.map((status) {
+                return OrdersList(
+                  orderStatus: status,
+                  restaurantId: widget.restaurantId,
+                );
+              }).toList(),
             )
           : _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(

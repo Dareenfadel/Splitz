@@ -35,22 +35,22 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: AppColors.primary,
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: AppColors.primary,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.background,
+              backgroundColor: AppColors.textColor,
+              type:
+                  BottomNavigationBarType.fixed, // Prevents shifting animation
+            ),
           ),
-          bottomNavigationBarTheme: BottomNavigationBarThemeData(
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: AppColors.background,
-            backgroundColor: AppColors.textColor,
-            type: BottomNavigationBarType.fixed, // Prevents shifting animation
-          ),
-        ),
-        home: Wrapper(),
-      ),
+          home: const Wrapper()),
     );
   }
 }
