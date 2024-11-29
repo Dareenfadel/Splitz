@@ -47,5 +47,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Splitz needs access to your photo library to allow you to select photos for your posts.</string>
 </dict>
 </plist>
