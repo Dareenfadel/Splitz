@@ -5,6 +5,7 @@ import 'package:splitz/data/models/restaurant.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
 
 
 class ClientHome extends StatefulWidget {
@@ -66,14 +67,14 @@ class _ClientHomeState extends State<ClientHome> {
                 shape: const CircleBorder(), // Make it a circle
                 hoverColor: AppColors.secondary,
                 onPressed: () {
+print('QR Code Scanner Floating Action Button Pressed');
 
 
-// void _goToQRCodeScanner() {
-//   Navigator.push(
-//     context,
-//     MaterialPageRoute(builder: (context) => QRCodeScannerApp()),
-//   );
-// }
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => QrCodeScanner()),
+  );
+
                 },
                 child: const Icon(Icons.qr_code, color: AppColors.textColor), // QR icon
                 backgroundColor: AppColors.primary, // You can change the background color
@@ -436,9 +437,21 @@ Widget floatingActionButton() {
     Padding(
       padding: const EdgeInsets.only(bottom: 16.0), // Add padding for better positioning
       child: FloatingActionButton(
+        // onPressed: () async {
+        //   print('QR Code Scanner Floating Action Button Pressed');
+        //   // Navigate to the QR scan page
+        //   final result = await Navigator.push(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => QrCodeScanner()),
+        //   );
+        //   // Handle the result if needed
+        //   if (result != null) {
+        //     print('Scanned QR Code: $result');
+        //   }
+        // },
         onPressed: () {
-          // Add your QR scanning logic here
-          print("QR Code scanner pressed");
+          // Handle the floating action button press
+          print('QR Code Scanner Floating Action Button Pressed');
         },
         child: const Icon(Icons.qr_code, color: Colors.white), // QR icon
         backgroundColor: AppColors.textColor, // You can change the background color
