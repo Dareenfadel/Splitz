@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:splitz/data/models/order_item.dart';
 
 class ItemPreview extends StatelessWidget {
-  final Map<String, dynamic> itemData;
+  final OrderItem item;
 
-  ItemPreview({required this.itemData});
+  ItemPreview({required this.item});
 
   @override
   Widget build(BuildContext context) {
-    final itemName = itemData['item_name'];
-    final itemNotes = itemData['notes'];
-    final itemQuantity = itemData['quantity'];
-    final itemImage = itemData['image_url'];
+    final itemName = item.itemName;
+    final itemNotes = item.notes;
+    final itemQuantity = item.quantity;
+    final itemImage = item.imageUrl;
 
     return ListTile(
       leading: Row(
@@ -23,7 +24,7 @@ class ItemPreview extends StatelessWidget {
           const SizedBox(width: 32),
           CircleAvatar(
             backgroundColor: Colors.grey[300],
-            child: itemImage != null && itemImage.isNotEmpty
+            child: itemImage.isNotEmpty
                 ? ClipOval(
                     child: Image.network(itemImage, fit: BoxFit.cover),
                   )
@@ -38,7 +39,7 @@ class ItemPreview extends StatelessWidget {
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
       ),
       subtitle: Text(
-        itemNotes ?? 'No notes',
+        itemNotes.isNotEmpty ? itemNotes : 'No notes',
         style: const TextStyle(fontSize: 12),
       ),
     );

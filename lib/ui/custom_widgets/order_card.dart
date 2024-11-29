@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/ui/custom_widgets/item_preview.dart';
+import '../../data/models/order.dart';
 import 'order_details.dart';
 
 class OrderCard extends StatelessWidget {
-  final Map<String, dynamic> orderData;
+  final Order order;
   final String orderId;
   final Function(String) updateStatus;
+
   OrderCard(
-      {required this.orderData,
-      required this.orderId,
-      required this.updateStatus});
+      {required this.order, required this.orderId, required this.updateStatus});
 
   @override
   Widget build(BuildContext context) {
-    final tableNumber = orderData['table_number'];
-    final items = orderData['items'] as List<dynamic>;
-    final orderStatus = orderData['status'];
+    final tableNumber = order.tableNumber;
+    final items = order.items;
+    final orderStatus = order.status;
     final firstTwoItems = items.take(2).toList();
 
     String getOrderStatusText(String status) {
@@ -51,7 +51,7 @@ class OrderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                ...firstTwoItems.map((item) => ItemPreview(itemData: item)),
+                ...firstTwoItems.map((item) => ItemPreview(item: item)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -66,7 +66,7 @@ class OrderCard extends StatelessWidget {
                                     FadeTransition(
                               opacity: animation,
                               child: OrderDetailsPage(
-                                orderData: orderData,
+                                order: order,
                                 orderId: orderId,
                                 updateStatus: (newStatus) =>
                                     updateStatus(newStatus),
@@ -154,7 +154,7 @@ class OrderCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '$tableNumber',
+                        tableNumber,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black,

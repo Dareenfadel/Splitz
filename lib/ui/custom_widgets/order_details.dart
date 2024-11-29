@@ -1,50 +1,36 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:splitz/data/models/order_item.dart';
+import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/item_details.dart';
 import '../../constants/app_colors.dart';
+import '../../data/models/order.dart';
 import 'status_button.dart';
 
 class OrderDetailsPage extends StatefulWidget {
-  final Map<String, dynamic> orderData;
+  final Order order;
   final String orderId;
   final Function(String) updateStatus;
 
   OrderDetailsPage(
-      {required this.orderData,
-      required this.orderId,
-      required this.updateStatus});
+      {required this.order, required this.orderId, required this.updateStatus});
 
   @override
   _OrderDetailsPageState createState() => _OrderDetailsPageState();
 }
 
 class _OrderDetailsPageState extends State<OrderDetailsPage> {
-  late List<dynamic> items;
+  late List<OrderItem> items;
+  final OrderService _orderService = OrderService();
 
   @override
   void initState() {
     super.initState();
-    items = widget.orderData['items'];
-  }
-
-  _updateItemStatusInFirestore(String itemID) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-    DocumentReference orderRef =
-        firestore.collection('orders').doc(widget.orderId);
-
-    List<Map<String, dynamic>> updatedItems = List.from(items);
-    for (var item in updatedItems) {
-      if (item['item_id'] == itemID) {
-        item['prepared'] = true;
-      }
-    }
-    await orderRef.update({'items': updatedItems});
+    items = widget.order.items;
   }
 
   @override
   Widget build(BuildContext context) {
-    final tableNumber = widget.orderData['table_number'];
+    final tableNumber = widget.order.tableNumber;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -66,17 +52,19 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
-                return item['prepared'] == false &&
-                        widget.orderData['status'] == 'in progress'
+                return item.prepared == false &&
+                        widget.order.status == 'in progress'
                     ? Dismissible(
-                        key: Key(item['item_id']),
+                        key: Key(item.itemId),
                         direction: DismissDirection.startToEnd,
                         onDismissed: (direction) {},
                         confirmDismiss: (direction) async {
                           setState(() {
-                            _updateItemStatusInFirestore(item['item_id']);
+                            _orderService.updateItemStatus(
+                                widget.orderId, item.itemId);
+                            item.prepared = true;
                           });
-                          return true;
+                          return false;
                         },
                         background: Card(
                           color: AppColors.secondary,
@@ -99,14 +87,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               },
             ),
           ),
-          if (widget.orderData['status'] == "served")
+          if (widget.order.status == "served")
             Padding(
                 padding: const EdgeInsets.only(top: 20, bottom: 10.0),
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Text(
-                        'Total: ${widget.orderData['total_bill']} EGP',
+                        'Total: ${widget.order.totalBill} EGP',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -114,9 +102,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         ),
                       ),
                       Text(
-                        (widget.orderData['paid_amount'] == null
-                            ? 'Paid: 0 EGP'
-                            : 'Paid: ${widget.orderData['paid_amount']} EGP'),
+                        'Paid: ${widget.order.paidSoFar} EGP',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -125,7 +111,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       ),
                     ])),
           StatusButton(
-            orderStatus: widget.orderData['status'],
+            orderStatus: widget.order.status,
             updateStatus: widget.updateStatus,
           ),
         ],
