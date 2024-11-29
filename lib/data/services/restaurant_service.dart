@@ -28,13 +28,14 @@ class RestaurantService {
   }
  Future<List<Restaurant>> fetchRestaurants() async {
   try {
+    
     QuerySnapshot snapshot = await _db.collection('restaurants').get();
-
+    
     // Map Firestore documents to Restaurant objects
     List<Restaurant> restaurants = [];
     for (var doc in snapshot.docs) {
+      
       Map<String, dynamic> restaurantData = doc.data() as Map<String, dynamic>;
-
       // Fetch `menu_categories` subcollection
       QuerySnapshot menuCategoriesSnapshot =
           await _db.collection('restaurants').doc(doc.id).collection('menu_categories').get();
@@ -67,20 +68,24 @@ class RestaurantService {
     }
 
       // Add all data to the Restaurant object
+      String name = restaurantData['name'] ?? 'Unknown';
+      double overallRating = (restaurantData['overall_rating'] ?? 0).toDouble();
+      String image = restaurantData['image'] ?? '';
       restaurants.add(
         Restaurant(
-          name: restaurantData['name'] ?? 'Unknown',
-          overallRating: (restaurantData['overall_rating'] ?? 0).toDouble(),
-          image: restaurantData['image'] ?? '',
+          name: name,
+          overallRating: overallRating,
+          image: image,
           reviews: reviews,
           menuCategories: menuCategories,
           menuItems: menuItems,
         ),
       );
     }
+   
     return restaurants;
   } catch (e) {
-    print('Error fetching restaurants: $e');
+    print('Error fetching res: $e');
     return [];
   }
 }
