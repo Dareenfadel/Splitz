@@ -18,23 +18,23 @@ class Restaurant {
     required this.menuCategories,
     required this.menuItems,
   });
-
-  factory Restaurant.fromFirestore(Map<String, dynamic> firestore) {
-    return Restaurant(
-      name: firestore['name'],
-      overallRating: firestore['overall_rating'],
-      image: firestore['image'],
-      reviews: (firestore['reviews'] as List)
-          .map((e) => Review.fromFirestore(e))
-          .toList(),
-      menuCategories: (firestore['menu_categories'] as List)
-          .map((e) => MenuCategory.fromFirestore(e))
-          .toList(),
-      menuItems: (firestore['menu_items'] as List)
-          .map((e) => MenuItem.fromFirestore(e))
-          .toList(),
-    );
-  }
+// Fetching Restaurant Data only not enough need to fetch menu categories and menu items to create Restaurant object(use fetch in restaurant_service.dart)
+  // factory Restaurant.fromFirestore(Map<String, dynamic> firestore) {
+  //   return Restaurant(
+  //     name: firestore['name'],
+  //     overallRating: firestore['overall_rating'],
+  //     image: firestore['image'],
+  //     reviews: (firestore['reviews'] as List)
+  //         .map((e) => Review.fromFirestore(e))
+  //         .toList(),
+  //     menuCategories: (firestore['menu_categories'] as List)
+  //         .map((e) => MenuCategory.fromFirestore(e))
+  //         .toList(),
+  //     menuItems: (firestore['menu_items'] as List)
+  //         .map((e) => MenuItem.fromFirestore(e))
+  //         .toList(),
+  //   );
+  // }
 
   Map<String, dynamic> toMap() {
     return {

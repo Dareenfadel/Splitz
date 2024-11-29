@@ -3,6 +3,7 @@ import 'package:splitz/data/models/extra.dart';
 import 'package:splitz/data/models/required_option.dart';
 
 class MenuItem {
+  final String id;
   final String name;
   final String description;
   final String image;
@@ -15,6 +16,7 @@ class MenuItem {
   final List<RequiredOption> requiredOptions;
 
   MenuItem({
+    required this.id,
     required this.name,
     required this.description,
     required this.image,
@@ -27,8 +29,9 @@ class MenuItem {
     required this.requiredOptions,
   });
 
-  factory MenuItem.fromFirestore(Map<String, dynamic> firestore) {
+  factory MenuItem.fromFirestore(String id,Map<String, dynamic> firestore) {
     return MenuItem(
+      id: id,
       name: firestore['name'],
       description: firestore['description'],
       image: firestore['image'],
@@ -36,19 +39,20 @@ class MenuItem {
       preparationTime: firestore['preparation_time'],
       price: firestore['price'],
       overallRating: firestore['overall_rating'],
-      reviews: (firestore['reviews'] as List)
+      reviews: (firestore['reviews'] as List? ?? [])
           .map((e) => Review.fromFirestore(e))
           .toList(),
-      extras: (firestore['extras'] as List)
+      extras: (firestore['extras'] as List? ?? [])
           .map((e) => Extra.fromFirestore(e))
           .toList(),
-      requiredOptions: (firestore['required_options'] as List)
+      requiredOptions: (firestore['required_options'] as List? ?? [])
           .map((e) => RequiredOption.fromFirestore(e))
           .toList(),
     );
   }
 
   MenuItem copyWith({
+    String? id,
     String? name,
     String? description,
     String? image,
@@ -61,6 +65,7 @@ class MenuItem {
     List<Review>? reviews,
   }) {
     return MenuItem(
+      id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
       image: image ?? this.image,

@@ -1,54 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:splitz/data/models/menu_category.dart';
-import 'package:splitz/data/services/menu_category_Service.dart';
+import 'package:splitz/data/models/user.dart';
+import 'package:splitz/data/services/menu_provider.dart';
 import 'package:splitz/ui/custom_widgets/menu_grid_item.dart';
+import 'package:splitz/ui/custom_widgets/custom_floating_button.dart';
+import 'package:splitz/ui/screens/manager_screens/menu_category_form.dart';
 
 class MenuScreen extends StatelessWidget {
-  String restaurantId = "";
-
-  final CategoryService _categoryService = CategoryService();
-
   @override
   Widget build(BuildContext context) {
-    restaurantId = "ZVCMxkUQjp6zcYv6NlYH"; //hard coded need to be passed later
-    return Padding(
-      padding: const EdgeInsets.only(top: 30, right: 16, left: 16),
-      child: FutureBuilder<List<MenuCategory>>(
-        future: _categoryService.fetchMenuCategories(restaurantId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error loading categories'),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Text('No categories available'),
-            );
+    final user = Provider.of<UserModel?>(context);
+    String? restaurantId = user?.restaurantId;
+
+    return ChangeNotifierProvider(
+      create: (_) => MenuCategoryProvider(),
+      child: Consumer<MenuCategoryProvider>(
+        builder: (context, provider, child) {
+          // Fetch categories if not already loaded
+          if (provider.categories.isEmpty && !provider.isLoading) {
+            provider.fetchCategories(restaurantId!);
           }
 
-          // Fetched categories
-          List<MenuCategory> categories = snapshot.data!;
-
-          return GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 24,
-              crossAxisSpacing: 24,
-            ),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              MenuCategory category = categories[index];
-              return MenuItem(
-                imageUrl: category.image, // Use the category image URL
-                label: category.name,
-                onPressed: () {
-                  print('Clicked on ${category.name}');
-                  // Navigate to category details or perform another action
-                },
-              );
-            },
+          return Padding(
+            padding: const EdgeInsets.only(top: 30, right: 16, left: 16),
+            child: Stack(children: [
+              Column(children: [
+                // Only show the menu items if they are loaded
+                provider.isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : provider.categories.isEmpty
+                        ? Center(child: Text('No categories available'))
+                        : Expanded(
+                            child: GridView.builder(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 24,
+                                crossAxisSpacing: 24,
+                              ),
+                              itemCount: provider.categories.length,
+                              itemBuilder: (context, index) {
+                                MenuCategory category =
+                                    provider.categories[index];
+                                return MenuItem(
+                                  imageUrl: category.image,
+                                  label: category.name,
+                                  onPressed: () {
+                                    print('Clicked on ${category.name}');
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+              ]),
+              user?.userType == "manager"
+                  ? CustomFloatingButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AddCategoryDialog(
+                            restaurantId: user!.restaurantId!,
+                            onCategoryAdded: (newCategory) {
+                              provider.addCategory(newCategory, restaurantId!);
+                            },
+                          ),
+                        );
+                      },
+                    )
+                  : SizedBox.shrink(),
+            ]),
           );
         },
       ),

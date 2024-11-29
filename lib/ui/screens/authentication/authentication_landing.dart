@@ -22,6 +22,7 @@ class _LandingState extends State<Landing> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const SizedBox(height: 80),
           // Skip button
           Align(
             alignment: Alignment.topRight,
@@ -42,16 +43,16 @@ class _LandingState extends State<Landing> {
             ),
           ),
           // Spacer to position the text correctly
-          SizedBox(height: 60),
+          SizedBox(height: 40),
           // Text
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 80.0),
             child: Text(
               "Easy dining, easy bill split, easy life :)",
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -62,22 +63,41 @@ class _LandingState extends State<Landing> {
           SizedBox(
             width: 300,
             height: 300,
-            child: ClipOval(
-              child: PageView(
-                controller: _pageController,
-                children: [
-                  Image.asset('lib/assets/images/burger.jpg',
-                      fit: BoxFit.cover),
-                  Image.asset('lib/assets/images/burger2.jpg',
-                      fit: BoxFit.cover),
-                  Image.asset('lib/assets/images/burger.jpg',
-                      fit: BoxFit.cover),
-                ],
+            child: Stack(alignment: Alignment.center, children: [
+              Container(
+                width: 300, // Same as the SizedBox width
+                height: 300, // Same as the SizedBox height
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primary, // Border color
+                    width: 2, // Border width
+                  ),
+                ),
               ),
-            ),
+              SizedBox(
+                width: 250,
+                height: 250,
+                child: ClipOval(
+                  child: PageView(
+                    controller: _pageController,
+                    children: [
+                      Image.asset('lib/assets/images/burger.jpg',
+                          fit: BoxFit.cover),
+                      Image.asset('lib/assets/images/burger2.jpg',
+                          fit: BoxFit.cover),
+                      Image.asset('lib/assets/images/burger.jpg',
+                          fit: BoxFit.cover),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
           ),
           // Page Indicator
-
+          SizedBox(
+            height: 20,
+          ),
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Row(
