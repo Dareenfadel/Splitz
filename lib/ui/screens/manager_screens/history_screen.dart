@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:splitz/ui/custom_widgets/history_list.dart';
 import '../../../constants/app_colors.dart';
 
 class HistoryScreen extends StatelessWidget {
@@ -18,11 +18,8 @@ class HistoryScreen extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      body: const Center(
-        child: Text(
-          'History Screen',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
+      body: Center(
+        child: HistoryList(restaurantId: restaurantId),
       ),
     );
   }

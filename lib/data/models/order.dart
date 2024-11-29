@@ -10,6 +10,7 @@ class Order {
   final bool paid;
   final List<OrderItem> items;
   final List<String> userIds;
+  final String date;
 
   Order({
     required this.orderId,
@@ -21,6 +22,7 @@ class Order {
     required this.paid,
     required this.items,
     required this.userIds,
+    required this.date,
   });
 
   factory Order.fromFirestore(String id, Map<String, dynamic> firestore) {
@@ -36,6 +38,7 @@ class Order {
           .map((item) => OrderItem.fromFirestore(item))
           .toList(),
       userIds: List<String>.from(firestore['user_ids'] ?? []),
+      date: firestore['date'],
     );
   }
 
@@ -49,6 +52,7 @@ class Order {
       'paid': paid,
       'items': items.map((item) => item.toMap()).toList(),
       'user_ids': userIds,
+      'date': date,
     };
   }
 }
