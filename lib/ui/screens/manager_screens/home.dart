@@ -24,7 +24,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
     _screens = [
       OrdersScreen(restaurantId: widget.restaurantId),
       HistoryScreen(restaurantId: widget.restaurantId),
-      MenuScreen(restaurantId: widget.restaurantId),
+      MenuScreen(),
       AccountScreen(),
     ];
     _currentIndex = 0;
