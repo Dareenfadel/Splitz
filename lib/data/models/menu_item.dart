@@ -32,13 +32,13 @@ class MenuItem {
   factory MenuItem.fromFirestore(String id,Map<String, dynamic> firestore) {
     return MenuItem(
       id: id,
-      name: firestore['name'],
-      description: firestore['description'],
-      image: firestore['image'],
-      calories: firestore['calories'],
-      preparationTime: firestore['preparation_time'],
-      price: firestore['price'],
-      overallRating: firestore['overall_rating'],
+      name: firestore['name']??'',
+      description: firestore['description']??'',
+      image: firestore['image']??'',
+      calories: firestore['calories']??0,
+      preparationTime: firestore['preparation_time']??0,
+      price: firestore['price']??0.0,
+      overallRating: firestore['overall_rating']??0.0,
       reviews: (firestore['reviews'] as List? ?? [])
           .map((e) => Review.fromFirestore(e))
           .toList(),

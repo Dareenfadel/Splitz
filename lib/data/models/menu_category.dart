@@ -13,9 +13,9 @@ class MenuCategory {
 
   factory MenuCategory.fromFirestore(Map<String, dynamic> firestore) {
     return MenuCategory(
-      name: firestore['name'],
-      description: firestore['description'],
-      image: firestore['image'],
+      name: firestore['name']??'',
+      description: firestore['description']??'',
+      image: firestore['image']??'',
       itemIds: List<String>.from(firestore['item_ids']??[]),
     );
   }

@@ -7,7 +7,6 @@ import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
 
-
 class ClientHome extends StatefulWidget {
   const ClientHome({Key? key}) : super(key: key);
 
@@ -22,12 +21,28 @@ class _ClientHomeState extends State<ClientHome> {
 
   @override
   void initState() {
+    // print('in init state');
     super.initState();
-    _restaurantsFuture = _restaurantService.fetchRestaurants();
+    _loadRestaurants();  // Call this method to fetch restaurants
   }
 
   @override
- Widget build(BuildContext context) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // print('in did change dependencies');
+    // Optionally reload the restaurants on dependency change
+    _loadRestaurants();
+  }
+
+  void _loadRestaurants()  async {
+    // print('in load retaurants');
+    setState(() {
+      _restaurantsFuture = _restaurantService.fetchRestaurants();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<UserModel?>(
       stream: _auth.user, // Listen to the user's authentication state
       builder: (context, snapshot) {
@@ -37,7 +52,7 @@ class _ClientHomeState extends State<ClientHome> {
           );
         }
 
-        if (snapshot.data!.name!=null) {
+        if (snapshot.data?.name != null) {
           return Scaffold(
             floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
             appBar: AppBar(
@@ -50,7 +65,8 @@ class _ClientHomeState extends State<ClientHome> {
               actions: <Widget>[
                 IconButton(
                   onPressed: () async {
-                    // await _auth.signOut();
+                    await _auth.signOut();
+                    //TODO: Navigate to ACCOUNT page
                   },
                   icon: const Icon(Icons.person),
                   tooltip: 'Account',
@@ -62,100 +78,97 @@ class _ClientHomeState extends State<ClientHome> {
             floatingActionButton: Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: FloatingActionButton(
-                shape: const CircleBorder(), // Make it a circle
-                hoverColor: AppColors.secondary,
-                onPressed: () {
-print('QR Code Scanner Floating Action Button Pressed');
-
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => QrCodeScanner()),
-  );
-
-                },
-                child: const Icon(Icons.qr_code, color: AppColors.textColor), // QR icon
-                backgroundColor: AppColors.primary, // You can change the background color
-              ),
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: FloatingActionButton(
+                  shape: const CircleBorder(), // Make it a circle
+                  hoverColor: AppColors.secondary,
+                  onPressed: () {
+                    print('QR Code Scanner Floating Action Button Pressed');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => QrCodeScanner()),
+                    );
+                  },
+                  child: const Icon(Icons.qr_code, color: AppColors.textColor), // QR icon
+                  backgroundColor: AppColors.primary, // You can change the background color
+                ),
               ),
             ),
           );
-        }
-        else{
-        return Scaffold(
-          appBar: AppBar(
-            elevation: 0.0,
-            title: const Text(
-              'Home',
-              style: TextStyle(color: AppColors.textColor),
-            ),
-            centerTitle: true,
-            actions: <Widget>[
-              IconButton(
-               onPressed: () async {
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              elevation: 0.0,
+              title: const Text(
+                'Home',
+                style: TextStyle(color: AppColors.textColor),
+              ),
+              centerTitle: true,
+              actions: <Widget>[
+                IconButton(
+                  onPressed: () async {
                     await _auth.signOut();
                   },
-                icon: const Icon(Icons.login),
-                tooltip: 'Log in',
-                color: AppColors.textColor,
-              ),
-            ],
-          ),
-          body: _getBody(),
-        );
+                  icon: const Icon(Icons.login),
+                  tooltip: 'Log in',
+                  color: AppColors.textColor,
+                ),
+              ],
+            ),
+            body: _getBody(),
+          );
         }
       },
     );
   }
- Widget _getBody (){
+
+  Widget _getBody() {
     return FutureBuilder<List<Restaurant>>(
-              future: _restaurantsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No restaurants available'),
-                  );
-                }
+      future: _restaurantsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Text('No restaurants available'),
+          );
+        }
 
-                // Data is available
-                final restaurants = snapshot.data!;
-                final offers = restaurants
-                    .where((r) => r.menuCategories.any((c) => c.name.toLowerCase() == 'offers' && c.itemIds.isNotEmpty))
-                    .toList();
+        // Data is available
+        final restaurants = snapshot.data!;
+        final offers = restaurants
+            .where((r) => r.menuCategories.any((c) => c.name.toLowerCase() == 'offers' && c.itemIds.isNotEmpty))
+            .toList();
 
-                final topRatedRestaurants = restaurants
-                    .toList()
-                  ..sort((a, b) => b.overallRating.compareTo(a.overallRating));
+        final topRatedRestaurants = restaurants
+            .toList()
+          ..sort((a, b) => b.overallRating.compareTo(a.overallRating));
 
-                final moreRestaurants = _getmoreRestaurants(topRatedRestaurants, restaurants);
+        final moreRestaurants = _getmoreRestaurants(topRatedRestaurants, restaurants);
 
-                return SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildOffersSection(offers),
-                      const SizedBox(height: 20),
-                      _buildRestaurantsSection(topRatedRestaurants, '🔥Top Rated Restaurants'),
-                      const SizedBox(height: 20),
-                      _buildRestaurantsSection(moreRestaurants, 'More Restaurants'),
-                    ],
-                  ),
-                );
-              },
-            );
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildOffersSection(offers),
+              const SizedBox(height: 20),
+              _buildRestaurantsSection(topRatedRestaurants, '🔥Top Rated Restaurants'),
+              const SizedBox(height: 20),
+              _buildRestaurantsSection(moreRestaurants, 'More Restaurants'),
+            ],
+          ),
+        );
+      },
+    );
   }
 Widget _buildOffersSection(List<Restaurant> offers) {
-  print(offers);
+  // print(offers);
   // Extracting offer images and titles
   final List<Widget> offerCards = offers.map((restaurant) {
     final category = restaurant.menuCategories.firstWhere(
