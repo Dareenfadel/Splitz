@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class OrderItem extends StatelessWidget {
+class ItemPreview extends StatelessWidget {
   final Map<String, dynamic> itemData;
 
-  OrderItem({required this.itemData});
+  ItemPreview({required this.itemData});
 
   @override
   Widget build(BuildContext context) {

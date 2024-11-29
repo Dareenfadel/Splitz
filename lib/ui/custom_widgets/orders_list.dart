@@ -59,7 +59,7 @@ class _OrdersListState extends State<OrdersList> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('orders')
-          // .where('restaurant_id', isEqualTo: widget.restaurantId)
+          .where('restaurant_id', isEqualTo: widget.restaurantId)
           .where('status', isEqualTo: widget.orderStatus.toLowerCase())
           .snapshots(),
       builder: (context, snapshot) {
