@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:splitz/ui/custom_widgets/item_details.dart';
 import '../../constants/app_colors.dart';
+import 'status_button.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final Map<String, dynamic> orderData;
@@ -40,19 +42,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     await orderRef.update({'items': updatedItems});
   }
 
-  String getOrderStatusText(String status) {
-    switch (status) {
-      case "pending":
-        return "Start order";
-      case "in progress":
-        return "Mark as served";
-      case "served":
-        return "Mark as paid";
-      default:
-        return "Unknown status";
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final tableNumber = widget.orderData['table_number'];
@@ -87,7 +76,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                           setState(() {
                             _updateItemStatusInFirestore(item['item_id']);
                           });
-                          return true; // Allow dismissal
+                          return true;
                         },
                         background: Card(
                           color: AppColors.secondary,
@@ -104,150 +93,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                             ),
                           ),
                         ),
-                        child: Card(
-                          color: item['prepared']
-                              ? AppColors.secondary
-                              : Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(
-                              color: AppColors.secondary,
-                              width: 1,
-                              strokeAlign: BorderSide.strokeAlignOutside,
-                            ),
-                          ),
-                          margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.grey[300],
-                              child: item['image_url'] != null &&
-                                      item['image_url'].isNotEmpty
-                                  ? ClipOval(
-                                      child: Image.network(item['image_url'],
-                                          fit: BoxFit.cover),
-                                    )
-                                  : const Icon(Icons.image_not_supported,
-                                      color: Colors.grey, size: 30),
-                            ),
-                            title: Text(
-                              item['item_name'],
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w500),
-                            ),
-                            subtitle: DefaultTextStyle(
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Color.fromARGB(255, 73, 72, 72),
-                                fontWeight: FontWeight.normal,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (item['notes'] != null)
-                                    Text('Notes: ${item['notes']}'),
-                                  if (item['extras'] != null &&
-                                      item['extras'] is List &&
-                                      item['extras'].isNotEmpty)
-                                    Wrap(
-                                      children: [
-                                        const Text("Extras: "),
-                                        ...item['extras']
-                                            .asMap()
-                                            .entries
-                                            .map<Widget>((entry) {
-                                          int index = entry.key;
-                                          var extra = entry.value;
-                                          bool isLast = index ==
-                                              item['extras'].length - 1;
-                                          return Text(
-                                            '${extra['name']} (x${extra['quantity'] ?? 1})${isLast ? '' : ' , '}',
-                                            style:
-                                                const TextStyle(fontSize: 15),
-                                          );
-                                        }).toList(),
-                                      ],
-                                    )
-                                ],
-                              ),
-                            ),
-                            trailing: Text(
-                              'x${item['quantity']}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
+                        child: ItemDetails(item: item),
                       )
-                    : Card(
-                        color: item['prepared']
-                            ? AppColors.secondary
-                            : Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: const BorderSide(
-                            color: AppColors.secondary,
-                            width: 1,
-                            strokeAlign: BorderSide.strokeAlignOutside,
-                          ),
-                        ),
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.grey[300],
-                            child: item['image_url'] != null &&
-                                    item['image_url'].isNotEmpty
-                                ? ClipOval(
-                                    child: Image.network(item['image_url'],
-                                        fit: BoxFit.cover),
-                                  )
-                                : const Icon(Icons.image_not_supported,
-                                    color: Colors.grey, size: 30),
-                          ),
-                          title: Text(
-                            item['item_name'],
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w500),
-                          ),
-                          subtitle: DefaultTextStyle(
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Color.fromARGB(255, 73, 72, 72),
-                              fontWeight: FontWeight.normal,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (item['notes'] != null)
-                                  Text('Notes: ${item['notes']}'),
-                                if (item['extras'] != null &&
-                                    item['extras'] is List &&
-                                    item['extras'].isNotEmpty)
-                                  Wrap(
-                                    children: [
-                                      const Text("Extras: "),
-                                      ...item['extras']
-                                          .asMap()
-                                          .entries
-                                          .map<Widget>((entry) {
-                                        int index = entry.key;
-                                        var extra = entry.value;
-                                        bool isLast =
-                                            index == item['extras'].length - 1;
-                                        return Text(
-                                          '${extra['name']} (x${extra['quantity'] ?? 1})${isLast ? '' : ' , '}',
-                                          style: const TextStyle(fontSize: 15),
-                                        );
-                                      }).toList(),
-                                    ],
-                                  )
-                              ],
-                            ),
-                          ),
-                          trailing: Text(
-                            'x${item['quantity']}',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      );
+                    : ItemDetails(item: item);
               },
             ),
           ),
@@ -276,32 +124,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         ),
                       ),
                     ])),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 30.0),
-            child: Container(
-              width: 180,
-              child: FloatingActionButton(
-                onPressed: () => {
-                  widget.updateStatus(widget.orderData['status'] == "pending"
-                      ? "in progress"
-                      : widget.orderData['status'] == "in progress"
-                          ? "served"
-                          : "paid"),
-                  Navigator.pop(context)
-                },
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(30),
-                  ),
-                ),
-                backgroundColor: AppColors.primary,
-                elevation: 3,
-                child: Text(
-                  getOrderStatusText(widget.orderData['status']),
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-            ),
+          StatusButton(
+            orderStatus: widget.orderData['status'],
+            updateStatus: widget.updateStatus,
           ),
         ],
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:splitz/constants/app_colors.dart';
+import 'package:splitz/ui/custom_widgets/item_preview.dart';
 import 'order_details.dart';
-import 'order_item.dart';
 
 class OrderCard extends StatelessWidget {
   final Map<String, dynamic> orderData;
@@ -51,7 +51,7 @@ class OrderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                ...firstTwoItems.map((item) => OrderItem(itemData: item)),
+                ...firstTwoItems.map((item) => ItemPreview(itemData: item)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
