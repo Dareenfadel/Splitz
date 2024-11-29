@@ -1,67 +1,33 @@
 import 'package:flutter/material.dart';
-
-import 'package:splitz/data/services/auth.dart';
-
-import '../../../constants/app_colors.dart';
+import 'package:splitz/ui/custom_widgets/nav_bar_admin.dart';
+import 'package:splitz/ui/screens/manager_screens/orders_screen.dart';
 import 'account_screen.dart';
 import 'history_screen.dart';
-import 'in_progress_orders_screen.dart';
 import 'menu_screen.dart';
-import 'orders_screen.dart';
-import 'pending_orders_screen.dart';
-import 'serverd_orders_screen.dart';
 
 class AdminHomePage extends StatefulWidget {
+  final String restaurantId;
+
+  AdminHomePage({required this.restaurantId});
+
   @override
   _AdminHomePageState createState() => _AdminHomePageState();
 }
 
-class _AdminHomePageState extends State<AdminHomePage>
-    with SingleTickerProviderStateMixin {
-  int _currentIndex = 0;
-  late TabController _tabController;
-
-  final List<Widget> _screens = [
-    OrdersScreen(),
-    HistoryScreen(),
-    MenuScreen(),
-    AccountScreen(),
-  ];
-
-  final List<PreferredSizeWidget> _appBars = [
-    AppBar(
-      title: const Text('Orders History'),
-      centerTitle: true,
-      titleTextStyle: TextStyle(
-        color: AppColors.textColor,
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-      ),
-    ),
-    AppBar(
-      title: const Text('Menu'),
-      centerTitle: true,
-      titleTextStyle: TextStyle(
-        color: AppColors.textColor,
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-      ),
-    ),
-    AppBar(
-      title: const Text('Account Settings'),
-      centerTitle: true,
-      titleTextStyle: TextStyle(
-        color: AppColors.textColor,
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-      ),
-    ),
-  ];
+class _AdminHomePageState extends State<AdminHomePage> {
+  late int _currentIndex;
+  late List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _screens = [
+      OrdersScreen(restaurantId: widget.restaurantId),
+      HistoryScreen(restaurantId: widget.restaurantId),
+      MenuScreen(),
+      AccountScreen(),
+    ];
+    _currentIndex = 0;
   }
 
   void _onTabTapped(int index) {
@@ -73,80 +39,10 @@ class _AdminHomePageState extends State<AdminHomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex == 0
-          ? AppBar(
-              centerTitle: true,
-              bottom: PreferredSize(
-                preferredSize: Size.fromHeight(0),
-                child: TabBar(
-                  controller: _tabController,
-                  tabs: [
-                    Tab(text: 'Pending'),
-                    Tab(text: 'In Progress'),
-                    Tab(text: 'Served'),
-                  ],
-                  labelStyle: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
-                  ),
-                  unselectedLabelStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                      color: AppColors.textColor),
-                  indicatorColor: Colors.white,
-                  indicator: UnderlineTabIndicator(
-                      borderSide: BorderSide(width: 5.0, color: Colors.white),
-                      insets: EdgeInsets.symmetric(horizontal: 16.0),
-                      borderRadius: BorderRadius.circular(5)),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                ),
-              ),
-            )
-          : _appBars[_currentIndex - 1],
-      body: _currentIndex == 0
-          ? TabBarView(
-              controller: _tabController,
-              children: [
-                PendingOrdersScreen(),
-                InProgressOrdersScreen(),
-                ServedOrdersScreen(),
-              ],
-            )
-          : _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: NavBarAdmin(
         currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(
-              _currentIndex == 0
-                  ? Icons.list_alt_rounded
-                  : Icons.list_alt_outlined,
-            ),
-            label: 'Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              _currentIndex == 1 ? Icons.history : Icons.history_outlined,
-            ),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              _currentIndex == 2
-                  ? Icons.restaurant_menu
-                  : Icons.restaurant_menu_outlined,
-            ),
-            label: 'Menu',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              _currentIndex == 3 ? Icons.person : Icons.person_outline,
-            ),
-            label: 'Account',
-          ),
-        ],
+        onTabTapped: _onTabTapped,
       ),
     );
   }
