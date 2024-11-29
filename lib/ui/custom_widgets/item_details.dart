@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-
+import 'package:splitz/data/models/order_item.dart';
 import '../../constants/app_colors.dart';
 
 class ItemDetails extends StatelessWidget {
-  final item;
+  final OrderItem item;
 
   ItemDetails({required this.item});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: item['prepared'] ? AppColors.secondary : Colors.white,
+      color: item.prepared ? AppColors.secondary : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: const BorderSide(
@@ -23,15 +23,15 @@ class ItemDetails extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: Colors.grey[300],
-          child: item['image_url'] != null && item['image_url'].isNotEmpty
+          child: item.imageUrl.isNotEmpty
               ? ClipOval(
-                  child: Image.network(item['image_url'], fit: BoxFit.cover),
+                  child: Image.network(item.imageUrl, fit: BoxFit.cover),
                 )
               : const Icon(Icons.image_not_supported,
                   color: Colors.grey, size: 30),
         ),
         title: Text(
-          item['item_name'],
+          item.itemName,
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
         ),
         subtitle: DefaultTextStyle(
@@ -43,29 +43,26 @@ class ItemDetails extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (item['notes'] != null) Text('Notes: ${item['notes']}'),
-              if (item['extras'] != null &&
-                  item['extras'] is List &&
-                  item['extras'].isNotEmpty)
+              if (item.notes.isNotEmpty) Text('Notes: ${item.notes}'),
+              if (item.extras.isNotEmpty)
                 Wrap(
                   children: [
                     const Text("Extras: "),
-                    ...item['extras'].asMap().entries.map<Widget>((entry) {
-                      int index = entry.key;
-                      var extra = entry.value;
-                      bool isLast = index == item['extras'].length - 1;
+                    ...item.extras.entries.toList().map((extra) {
+                      String key = extra.key;
+                      bool isLast = key == item.extras.keys.last;
                       return Text(
-                        '${extra['name']} (x${extra['quantity'] ?? 1})${isLast ? '' : ' , '}',
+                        '${extra.key} (x${extra.value})${isLast ? '' : ' , '}',
                         style: const TextStyle(fontSize: 15),
                       );
-                    }).toList(),
+                    })
                   ],
-                )
+                ),
             ],
           ),
         ),
         trailing: Text(
-          'x${item['quantity']}',
+          'x${item.quantity}',
           style: const TextStyle(fontSize: 16),
         ),
       ),
