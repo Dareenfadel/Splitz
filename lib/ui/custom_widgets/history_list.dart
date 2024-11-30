@@ -3,7 +3,6 @@ import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/history_card.dart';
 import 'package:splitz/ui/screens/manager_screens/order_details_screen.dart';
-import '../../constants/app_colors.dart';
 
 class HistoryList extends StatefulWidget {
   final String restaurantId;
@@ -34,6 +33,8 @@ class _HistoryListState extends State<HistoryList> {
           return Center(child: Text('No orders found'));
         } else {
           final orders = snapshot.data!;
+          orders
+              .sort((a, b) => b.date.compareTo(a.date)); // Sort orders by date
           return ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {
