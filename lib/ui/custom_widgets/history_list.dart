@@ -4,26 +4,16 @@ import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/history_card.dart';
 import 'package:splitz/ui/screens/manager_screens/order_details_screen.dart';
 
-class HistoryList extends StatefulWidget {
+class HistoryList extends StatelessWidget {
   final String restaurantId;
-  HistoryList({required this.restaurantId});
-
-  @override
-  _HistoryListState createState() => _HistoryListState();
-}
-
-class _HistoryListState extends State<HistoryList> {
   final OrderService _orderService = OrderService();
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  HistoryList({required this.restaurantId});
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Order>>(
-      future: _orderService.fetchOrdersByRestaurant(widget.restaurantId),
+      future: _orderService.fetchOrdersByRestaurant(restaurantId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
