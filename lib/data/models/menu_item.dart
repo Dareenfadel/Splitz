@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:splitz/data/models/review.dart';
 import 'package:splitz/data/models/extra.dart';
 import 'package:splitz/data/models/required_option.dart';
 
-class MenuItem {
+class MenuItemModel {
   final String id;
   final String name;
   final String description;
@@ -15,7 +16,7 @@ class MenuItem {
   final List<Extra> extras;
   final List<RequiredOption> requiredOptions;
 
-  MenuItem({
+  MenuItemModel({
     required this.id,
     required this.name,
     required this.description,
@@ -29,9 +30,10 @@ class MenuItem {
     required this.requiredOptions,
   });
 
-  factory MenuItem.fromFirestore(String id,Map<String, dynamic> firestore) {
-    return MenuItem(
-      id: id,
+  factory MenuItemModel.fromFirestore(DocumentSnapshot doc) {
+    final firestore = doc.data() as Map<String, dynamic>;
+    return MenuItemModel(
+      id: doc.id,
       name: firestore['name'],
       description: firestore['description'],
       image: firestore['image'],
@@ -51,7 +53,7 @@ class MenuItem {
     );
   }
 
-  MenuItem copyWith({
+  MenuItemModel copyWith({
     String? id,
     String? name,
     String? description,
@@ -64,7 +66,7 @@ class MenuItem {
     List<Extra>? extras,
     List<Review>? reviews,
   }) {
-    return MenuItem(
+    return MenuItemModel(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,

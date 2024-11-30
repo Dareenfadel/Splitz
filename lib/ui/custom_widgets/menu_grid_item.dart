@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:splitz/constants/app_colors.dart';
 
-class MenuItem extends StatelessWidget {
+class MenuCatrgoeyItem extends StatelessWidget {
   final String label;
   final String imageUrl;
   final VoidCallback onPressed;
 
-  MenuItem({
+  MenuCatrgoeyItem({
     required this.imageUrl,
     required this.label,
     required this.onPressed,

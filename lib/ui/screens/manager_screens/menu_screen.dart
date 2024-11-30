@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitz/data/models/menu_category.dart';
+import 'package:splitz/data/models/menu_item.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/data/services/menu_item_service.dart';
 import 'package:splitz/data/services/menu_provider.dart';
 import 'package:splitz/ui/custom_widgets/menu_grid_item.dart';
 import 'package:splitz/ui/custom_widgets/custom_floating_button.dart';
 import 'package:splitz/ui/screens/manager_screens/menu_category_form.dart';
+import 'package:splitz/data/services/menu_item_service.dart';
+import 'package:splitz/ui/screens/manager_screens/menu_item_screen.dart';
 
 class MenuScreen extends StatelessWidget {
   @override
@@ -43,11 +47,25 @@ class MenuScreen extends StatelessWidget {
                               itemBuilder: (context, index) {
                                 MenuCategory category =
                                     provider.categories[index];
-                                return MenuItem(
+                                return MenuCatrgoeyItem(
                                   imageUrl: category.image,
                                   label: category.name,
-                                  onPressed: () {
-                                    print('Clicked on ${category.name}');
+                                  onPressed: () async {
+                                    MenuItemModel? menuItem =
+                                        await MenuItemService()
+                                            .fetchMenuItemWithDetails(
+                                                restaurantId!,
+                                                "ES9i6zyxji5JZidK2m96");
+                                    print("menuu");
+                                    print(menuItem);
+                                    // MenuItemService().createDummyMenuItem();
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //       builder: (context) => MenuItemScreen(
+                                    //             menuItem: menuItem!,
+                                    //           )),
+                                    // );
                                   },
                                 );
                               },
