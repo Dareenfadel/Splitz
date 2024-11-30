@@ -44,6 +44,10 @@ class HistoryCard extends StatelessWidget {
               children: [
                 SizedBox(height: 1.0),
                 Text(
+                  'Table ${order.tableNumber}',
+                  style: TextStyle(color: Colors.grey, fontSize: 16.0),
+                ),
+                Text(
                   'EGP ${order.totalBill} - ${order.items.length} Items',
                   style: TextStyle(color: Colors.grey, fontSize: 16.0),
                 ),
