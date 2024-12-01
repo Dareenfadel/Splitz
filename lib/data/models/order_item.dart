@@ -6,6 +6,7 @@ class OrderItem {
   final Map<String, int> extras;
   final String notes;
   final double paidAmount;
+  final double price;
   final Map<String, double> paidUsers;
   bool prepared;
 
@@ -19,7 +20,9 @@ class OrderItem {
     required this.paidAmount,
     required this.paidUsers,
     required this.prepared,
+    required this.price,
   });
+
 
   factory OrderItem.fromFirestore(Map<String, dynamic> firestore) {
     return OrderItem(
@@ -32,6 +35,7 @@ class OrderItem {
       paidAmount: (firestore['paid_amount'] ?? 0).toDouble(),
       paidUsers: Map<String, double>.from(firestore['paid_users'] ?? {}),
       prepared: firestore['prepared'] ?? false,
+      price: (firestore['price'] ?? 0).toDouble(),
     );
   }
 
@@ -46,6 +50,7 @@ class OrderItem {
       'paid_amount': paidAmount,
       'paid_users': paidUsers,
       'prepared': prepared,
+      'price': price,
     };
   }
 }

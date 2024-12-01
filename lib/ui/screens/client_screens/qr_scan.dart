@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:splitz/ui/screens/client_screens/orders_page.dart';
 import 'package:splitz/constants/app_colors.dart';
+import 'package:splitz/data/services/order_service.dart';
 
 class QrCodeScanner extends StatefulWidget {
   QrCodeScanner({super.key});
@@ -12,7 +13,7 @@ class QrCodeScanner extends StatefulWidget {
 
 class _QrCodeScannerState extends State<QrCodeScanner> {
   final MobileScannerController controller = MobileScannerController();
-
+  final OrderService orderService = OrderService();
   @override
   void dispose() {
     controller.dispose();
@@ -41,6 +42,29 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
               final String code = barcodeCapture.barcodes.first.rawValue ?? '---';
               debugPrint('Scanned QR Code: $code');
               controller.stop(); // Stop the camera after scanning
+               List<String> params = code!.split('&'); // Split by '&' to separate each key-value pair
+print(params);
+      String? table;
+      String? restaurantId;
+
+      // Loop through the parameters to extract values
+      for (var param in params) {
+        List<String> keyValue = param.split('='); // Split by '=' to get key and value
+        if (keyValue.length == 2) {
+          if (keyValue[0] == 'table') {
+            table = keyValue[1]; // Extract table value
+          } else if (keyValue[0] == 'restaurant_id') {
+            restaurantId = keyValue[1]; // Extract restaurant_id value
+          }
+        }
+      }
+
+      if (restaurantId != null && table != null) {
+        orderService.checkAndAddUserToOrder(restaurantId: restaurantId!, tableNumber: table!);
+      } else {
+        debugPrint('Invalid QR Code: Missing restaurant_id or table');
+      }
+      
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => OrdersPage()),
