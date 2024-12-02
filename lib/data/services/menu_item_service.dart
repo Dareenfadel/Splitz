@@ -34,6 +34,7 @@ class MenuItemService {
         'preparation_time': preparationTime,
         'price': price,
         'overall_rating': overallRating,
+        'count': 0,
       });
 
       print('Menu item added with ID: ${itemRef.id}');

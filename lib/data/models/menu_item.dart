@@ -14,7 +14,7 @@ class MenuItem {
   final List<Review> reviews;
   final List<Extra> extras;
   final List<RequiredOption> requiredOptions;
-
+  final int count;
   MenuItem({
     required this.id,
     required this.name,
@@ -27,6 +27,7 @@ class MenuItem {
     required this.reviews,
     required this.extras,
     required this.requiredOptions,
+    required this.count
   });
 
   factory MenuItem.fromFirestore(String id,Map<String, dynamic> firestore) {
@@ -48,6 +49,8 @@ class MenuItem {
       requiredOptions: (firestore['required_options'] as List? ?? [])
           .map((e) => RequiredOption.fromFirestore(e))
           .toList(),
+      count: firestore['count']??0,
+
     );
   }
 
@@ -76,6 +79,7 @@ class MenuItem {
       requiredOptions: requiredOptions ?? this.requiredOptions,
       extras: extras ?? this.extras,
       reviews: reviews ?? this.reviews,
+      count: count
     );
   }
 

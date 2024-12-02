@@ -89,6 +89,54 @@ class RestaurantService {
     return [];
   }
 }
+Future<Restaurant> fetchRestaurantById(String restaurantId) async {
+  try {
+    DocumentSnapshot doc = await _db.collection('restaurants').doc(restaurantId).get();
+    Map<String, dynamic> restaurantData = doc.data() as Map<String, dynamic>;
 
+    // Fetch `menu_categories` subcollection
+    QuerySnapshot menuCategoriesSnapshot =
+        await _db.collection('restaurants').doc(restaurantId).collection('menu_categories').get();
+    List<MenuCategory> menuCategories = menuCategoriesSnapshot.docs.map((menuDoc) {
+      return MenuCategory.fromFirestore(menuDoc.data() as Map<String, dynamic>);
+    }).toList();
 
+    // Fetch `menu_items` subcollection
+    QuerySnapshot menuItemsSnapshot =
+        await _db.collection('restaurants').doc(restaurantId).collection('menu_items').get();
+    List<MenuItem> menuItems = menuItemsSnapshot.docs.map((itemDoc) {
+      return MenuItem.fromFirestore(itemDoc.id,itemDoc.data() as Map<String, dynamic>);
+    }).toList();
+
+    // Fetch `reviews` subcollection
+    QuerySnapshot reviewsSnapshot =
+        await _db.collection('restaurants').doc(restaurantId).collection('reviews').get();
+    List<Review> reviews = reviewsSnapshot.docs.map((reviewDoc) {
+      return Review.fromFirestore(reviewDoc.data() as Map<String, dynamic>);
+    }).toList();
+
+    // Create a new Restaurant object
+    String name = restaurantData['name'] ?? 'Unknown';
+    double overallRating = (restaurantData['overall_rating'] ?? 0).toDouble();
+    String image = restaurantData['image'] ?? '';
+    return Restaurant(
+      name: name,
+      overallRating: overallRating,
+      image: image,
+      reviews: reviews,
+      menuCategories: menuCategories,
+      menuItems: menuItems,
+    );
+  } catch (e) {
+    print('Error fetching restaurant: $e');
+    return Restaurant(
+      name: 'Unknown',
+      overallRating: 0.0,
+      image: '',
+      reviews: [],
+      menuCategories: [],
+      menuItems: [],
+    );
+  }
+}
 }

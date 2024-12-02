@@ -6,8 +6,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
+import 'package:splitz/ui/screens/client_screens/scanned_home_page.dart';
 
 class ClientHome extends StatefulWidget {
+  // ignore: use_super_parameters
   const ClientHome({Key? key}) : super(key: key);
 
   @override
@@ -29,9 +31,7 @@ class _ClientHomeState extends State<ClientHome> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // print('in did change dependencies');
-    // Optionally reload the restaurants on dependency change
-    _loadRestaurants();
+        _loadRestaurants();
   }
 
   void _loadRestaurants()  async {
@@ -84,10 +84,16 @@ class _ClientHomeState extends State<ClientHome> {
                   hoverColor: AppColors.secondary,
                   onPressed: () {
                     print('QR Code Scanner Floating Action Button Pressed');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => QrCodeScanner()),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => QrCodeScanner()),
+                    // );
+                    Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => OrdersPage()), // The new page
+                (route) => false, // Remove all previous routes
+              );
                   },
                   child: const Icon(Icons.qr_code, color: AppColors.textColor), // QR icon
                   backgroundColor: AppColors.primary, // You can change the background color
@@ -444,32 +450,5 @@ return randomRestaurants;
 void _goToRestaurantDetails(Restaurant restaurant) {
   // Navigate to the restaurant details screen
   print('Navigating to ${restaurant.name}');
-}
-Widget floatingActionButton() {
-  return 
-    Padding(
-      padding: const EdgeInsets.only(bottom: 16.0), // Add padding for better positioning
-      child: FloatingActionButton(
-        // onPressed: () async {
-        //   print('QR Code Scanner Floating Action Button Pressed');
-        //   // Navigate to the QR scan page
-        //   final result = await Navigator.push(
-        //     context,
-        //     MaterialPageRoute(builder: (context) => QrCodeScanner()),
-        //   );
-        //   // Handle the result if needed
-        //   if (result != null) {
-        //     print('Scanned QR Code: $result');
-        //   }
-        // },
-        onPressed: () {
-          // Handle the floating action button press
-          print('QR Code Scanner Floating Action Button Pressed');
-        },
-        child: const Icon(Icons.qr_code, color: Colors.white), // QR icon
-        backgroundColor: AppColors.textColor, // You can change the background color
-      
-    ),
-  );
 }
 }
