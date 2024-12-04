@@ -1,17 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Choice {
-  final String id;
+  String? id;
   final String name;
   final double price;
 
   Choice({
-    required this.id,
+    this.id,
     required this.name,
     required this.price,
   });
 
-  factory Choice.fromFirestore(Map<String, dynamic> firestore) {
+  factory Choice.fromFirestore(DocumentSnapshot doc) {
+    final firestore = doc.data() as Map<String, dynamic>;
     return Choice(
-      id: firestore['id'],
+      id: doc.id,
       name: firestore['name'],
       price: firestore['price'],
     );
