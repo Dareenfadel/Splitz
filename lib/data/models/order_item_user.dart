@@ -1,7 +1,7 @@
 class OrderItemUser {
   final String userId;
   final String? requestedBy; // Nullable for the original requester
-  final String requestStatus; // Values: 'pending', 'accepted'
+  String requestStatus; // Values: 'pending', 'accepted'
 
   OrderItemUser({
     required this.userId,

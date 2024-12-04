@@ -1,7 +1,6 @@
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:splitz/ui/screens/client_screens/order/widgets/selectable_users_list/selectable_user_list__demo.dart';
 
 import 'selectable_users_list_props.dart';
 

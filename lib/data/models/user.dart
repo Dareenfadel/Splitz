@@ -5,6 +5,8 @@ class UserModel {
   final String? restaurantId; // Used if user is a manager
   final List<String> orderIds;
   String? currentOrderId;
+  final String? imageUrl;
+
   UserModel({
     required this.uid,
     this.name,
@@ -12,7 +14,7 @@ class UserModel {
     this.restaurantId,
     required this.orderIds,
     this.currentOrderId,
-
+    this.imageUrl,
   });
 
   // Convert UserModel to Map (Firestore store)
@@ -23,6 +25,7 @@ class UserModel {
       'restaurantId': restaurantId,
       'orderIds': orderIds,
       'currentOrderId': currentOrderId,
+      'imageUrl': imageUrl,
     };
   }
 
@@ -35,6 +38,7 @@ class UserModel {
       restaurantId: data['restaurantId'],
       orderIds: List<String>.from(data['orderIds'] ?? []),
       currentOrderId: data['currentOrderId'] ?? '',
+      imageUrl: data['imageUrl'],
     );
   }
 }

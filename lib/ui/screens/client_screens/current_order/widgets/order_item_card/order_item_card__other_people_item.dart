@@ -7,25 +7,26 @@ import 'order_item_card__base.dart';
 import 'order_item_card_props.dart';
 
 // ignore: camel_case_types
-class OrderItemCard_InReceipt extends StatelessWidget {
+class OrderItemCard_OtherPeopleItem extends StatelessWidget {
   final OrderItemCardProps_Item item;
+  final Function() onSharePressed;
 
-  const OrderItemCard_InReceipt({
+  const OrderItemCard_OtherPeopleItem({
     super.key,
     required this.item,
+    required this.onSharePressed,
   });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Image
         OrderItemCard_Base(item: item),
         Positioned(
           right: 0,
           bottom: 0,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: onSharePressed,
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -38,7 +39,7 @@ class OrderItemCard_InReceipt extends StatelessWidget {
               ),
             ),
             child: const Text(
-              'Manage',
+              'Share',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 14,
@@ -46,23 +47,6 @@ class OrderItemCard_InReceipt extends StatelessWidget {
             ),
           ),
         ),
-
-        if (item.sharedWith.any((user) => user.pendingApproval))
-          Positioned(
-              top: 20,
-              right: 20,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  Icons.hourglass_top_rounded,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-              )),
       ],
     );
   }

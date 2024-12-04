@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:splitz/constants/app_colors.dart';
 
 import 'order_item_card_props.dart';
 
@@ -58,7 +59,7 @@ class OrderItemCard_Base extends StatelessWidget {
                           child: CircleAvatar(
                             radius: 12,
                             backgroundColor: Colors.grey[300],
-                            backgroundImage: NetworkImage(user.imageUrl),
+                            backgroundImage: NetworkImage(user.imageUrl ?? ''),
                             child: Text(
                               user.name[0],
                               style: const TextStyle(
@@ -113,7 +114,8 @@ class OrderItemCard_Base extends StatelessWidget {
                   // Old Price
                   Text(
                     '${item.totalPrice} EGP',
-                    style: const TextStyle(fontSize: 14, color: Colors.pink),
+                    style:
+                        const TextStyle(fontSize: 14, color: AppColors.primary),
                   ),
                 ],
               ),

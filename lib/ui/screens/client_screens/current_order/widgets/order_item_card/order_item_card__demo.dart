@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:splitz/ui/screens/client_screens/order/widgets/order_item_card/order_item_card__in_receipt.dart';
-import 'package:splitz/ui/screens/client_screens/order/widgets/order_item_card/order_item_card__request.dart';
-import 'package:splitz/ui/screens/client_screens/order/widgets/order_item_card/order_item_card_props.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/order_item_card/order_item_card__in_receipt.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/order_item_card/order_item_card__request.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/order_item_card/order_item_card_props.dart';
 
 // ignore: camel_case_types
 class OrderItemCard_Demo extends StatelessWidget {
@@ -46,9 +46,12 @@ class OrderItemCard_Demo extends StatelessWidget {
                         imageUrl: 'https://picsum.hotos/300',
                         pendingApproval: false,
                       ),
-                    ]),
+                    ],
+                    id: '1'),
+                onApprovePressed: () {},
+                onRejectPressed: () {},
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               OrderItemCard_InReceipt(
                 item: OrderItemCardProps_Item(
                     title: 'Cheeseburger',
@@ -76,9 +79,11 @@ class OrderItemCard_Demo extends StatelessWidget {
                         imageUrl: 'https://picsum.hotos/300',
                         pendingApproval: false,
                       ),
-                    ]),
+                    ],
+                    id: '2'),
+                onManagePressed: () {},
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               OrderItemCard_InReceipt(
                 item: OrderItemCardProps_Item(
                     title: 'Cheeseburger',
@@ -100,9 +105,11 @@ class OrderItemCard_Demo extends StatelessWidget {
                         imageUrl: 'https://picsm.photos/100',
                         pendingApproval: false,
                       ),
-                    ]),
+                    ],
+                    id: '3'),
+                onManagePressed: () {},
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               OrderItemCard_InReceipt(
                 item: OrderItemCardProps_Item(
                     title: 'Spicy Chicken Wrap',
@@ -117,9 +124,11 @@ class OrderItemCard_Demo extends StatelessWidget {
                         imageUrl: 'https://picsum.photos/200',
                         pendingApproval: false,
                       ),
-                    ]),
+                    ],
+                    id: '4'),
+                onManagePressed: () {},
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               OrderItemCard_InReceipt(
                 item: OrderItemCardProps_Item(
                   title: 'Supreme Pizza',
@@ -127,7 +136,9 @@ class OrderItemCard_Demo extends StatelessWidget {
                   imageUrl: 'https://example.com/pizza.jpg',
                   totalPrice: 249.99,
                   sharePrice: 62.50,
+                  id: '5',
                 ),
+                onManagePressed: () {},
               ),
             ],
           ),

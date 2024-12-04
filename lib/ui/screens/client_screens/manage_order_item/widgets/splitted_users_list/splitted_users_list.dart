@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:splitz/data/models/order_item_user.dart';
+import 'package:splitz/data/models/user.dart';
 
 // ignore: camel_case_types
 class SplittedUsersListProps_User {
@@ -13,6 +15,29 @@ class SplittedUsersListProps_User {
     required this.imageUrl,
     required this.pendingApproval,
   });
+
+  factory SplittedUsersListProps_User.fromOrderItemUser({
+    required OrderItemUser user,
+    required Map<String, UserModel> orderUsersMap,
+  }) {
+    var userModel = orderUsersMap[user.userId]!;
+
+    return SplittedUsersListProps_User(
+      id: user.userId,
+      name: orderUsersMap[user.userId]!.name ?? 'Unknown',
+      imageUrl: userModel.imageUrl ?? '',
+      pendingApproval: user.requestStatus == 'pending',
+    );
+  }
+
+  static fromUserModel(UserModel user) {
+    return SplittedUsersListProps_User(
+      id: user.uid,
+      name: user.name ?? 'Unknown',
+      imageUrl: user.imageUrl ?? '',
+      pendingApproval: false,
+    );
+  }
 }
 
 class SplittedUsersList extends StatelessWidget {

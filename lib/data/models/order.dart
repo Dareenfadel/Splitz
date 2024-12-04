@@ -25,6 +25,26 @@ class Order {
     required this.date,
   });
 
+  List<OrderItem> acceptedItemsForUserId(String userId) {
+    return items
+        .where((item) => item.userList.any((user) =>
+            user.userId == userId && user.requestStatus == 'accepted'))
+        .toList();
+  }
+
+  List<OrderItem> pendingItemsForUserId(String userId) {
+    return items
+        .where((item) => item.userList.any(
+            (user) => user.userId == userId && user.requestStatus == 'pending'))
+        .toList();
+  }
+
+  double totalBillForUserId(String userId) {
+    return acceptedItemsForUserId(userId)
+        .map((item) => item.price)
+        .fold(0, (prev, price) => prev + price);
+  }
+
   factory Order.fromFirestore(String id, Map<String, dynamic> firestore) {
     return Order(
       orderId: id,
