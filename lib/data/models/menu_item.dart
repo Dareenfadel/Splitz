@@ -38,8 +38,8 @@ class MenuItem {
       image: firestore['image']??'',
       calories: firestore['calories']??0,
       preparationTime: firestore['preparation_time']??0,
-      price: firestore['price']??0.0,
-      overallRating: firestore['overall_rating']??0.0,
+      price: (firestore['price'] ?? 0.0).toDouble(),
+      overallRating: (firestore['overall_rating']??0.0).toDouble(),
       reviews: (firestore['reviews'] as List? ?? [])
           .map((e) => Review.fromFirestore(e))
           .toList(),

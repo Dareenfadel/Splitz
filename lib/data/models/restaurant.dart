@@ -3,14 +3,16 @@ import 'package:splitz/data/models/menu_item.dart';
 import 'package:splitz/data/models/review.dart';
 
 class Restaurant {
+  final String id;
   final String name;
   final double overallRating;
   final String image;
   final List<Review> reviews;
   final List<MenuCategory> menuCategories;
-  final List<MenuItem> menuItems; // Directly inside the restaurant
+  final List<MenuItem> menuItems; 
 
   Restaurant({
+    required this.id,
     required this.name,
     required this.overallRating,
     required this.image,

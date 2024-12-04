@@ -46,7 +46,7 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
                   barcodeCapture.barcodes.first.rawValue ?? '---';
               debugPrint('Scanned QR Code: $code');
               controller.stop(); // Stop the camera after scanning
-              List<String> params = code!
+              List<String> params = code
                   .split('&'); // Split by '&' to separate each key-value pair
               String? table;
               String? restaurantId;
@@ -66,7 +66,7 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
 
               if (restaurantId != null && table != null) {
                 orderService.checkAndAddUserToOrder(
-                    restaurantId: restaurantId!, tableNumber: table!);
+                    restaurantId: restaurantId, tableNumber: table);
               } else {
                 debugPrint('Invalid QR Code: Missing restaurant_id or table');
               }
@@ -74,7 +74,7 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => OrdersPage()), // The new page
+                    builder: (context) => ScannedHome()), // The new page
                 (route) => false, // Remove all previous routes
               );
             },

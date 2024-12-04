@@ -1,3 +1,4 @@
+import 'package:splitz/data/models/order_item_user.dart';
 class OrderItem {
   final String itemId;
   final String itemName;
@@ -9,6 +10,7 @@ class OrderItem {
   final double price;
   final Map<String, double> paidUsers;
   bool prepared;
+  final List<OrderItemUser> userList;
 
   OrderItem({
     required this.itemId,
@@ -21,6 +23,7 @@ class OrderItem {
     required this.paidUsers,
     required this.prepared,
     required this.price,
+    required this.userList,
   });
 
 
@@ -36,6 +39,10 @@ class OrderItem {
       paidUsers: Map<String, double>.from(firestore['paid_users'] ?? {}),
       prepared: firestore['prepared'] ?? false,
       price: (firestore['price'] ?? 0).toDouble(),
+     userList: (firestore['user_list'] as List<dynamic>?)
+              ?.map((user) => OrderItemUser.fromFirestore(user))
+              .toList() ??
+          [],
     );
   }
 

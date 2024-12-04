@@ -1,25 +1,21 @@
-import 'package:splitz/data/models/user.dart';
-import 'package:splitz/data/services/auth.dart';
-import 'package:splitz/data/models/order_item.dart'; // Make sure to import the OrderItem model
+
 import 'package:flutter/material.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/services/order_service.dart'; // Make sure to import the OrderService
 import 'package:splitz/constants/app_colors.dart';
-import 'package:flutter/material.dart';
 import 'package:splitz/ui/custom_widgets/nav_bar_client.dart';
 import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/orders.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_body.dart';
-import 'package:splitz/ui/screens/client_screens/scanned_home_page.dart';
 
-class OrdersPage extends StatefulWidget {
-  const OrdersPage({super.key});
+class ScannedHome extends StatefulWidget {
+  const ScannedHome({super.key});
 
   @override
-  _OrdersPageState createState() => _OrdersPageState();
+  _ScannedHomeState createState() => _ScannedHomeState();
 }
 
-class _OrdersPageState extends State<OrdersPage> {
+class _ScannedHomeState extends State<ScannedHome> {
   late int _currentIndex;
   void initState() {
     super.initState();
@@ -59,9 +55,12 @@ class _OrdersPageState extends State<OrdersPage> {
             (total, order) => total + _calculateTotalPrice(order),
           );
           var _screens = [
-            ScannedHomeBody(restaurantId: snapshot.data!.first.restaurantId),
+            ScannedHomeBody(restaurantId: snapshot.data!.first.restaurantId,onNavigateToMenu: () {
+              _onTabTapped(2); 
+            },),
+            OrdersScreen(),
             MenuScreen(restaurantId: snapshot.data!.first.restaurantId),
-            OrdersScreen()
+
           ];
           return Column(
             children: [
@@ -75,7 +74,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   width: MediaQuery.of(context).size.width * 0.8,
                   child: FloatingActionButton(
                     onPressed: () {
-                      // Navigator.pushNamed(context, '/qr_scan');
+                      print('View Order');
                     },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -89,8 +88,8 @@ class _OrdersPageState extends State<OrdersPage> {
                           Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Total',
-                                  style: const TextStyle(
+                              const Text('Total',
+                                  style:  TextStyle(
                                       color: AppColors.textColor)),
                               Text('${totalPrice.toStringAsFixed(2)} EGP',
                                   style: const TextStyle(
@@ -114,7 +113,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     ),
                   ),
                 ),
-              SizedBox(height: 20),
+              Container(),
             ],
           );
         },
@@ -123,6 +122,10 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   double _calculateTotalPrice(Order order) {
-    return order.totalBill;
+    //sum of prices of all items in the order
+    return order.items.fold(
+      0.0,
+      (total, item) => total + item.price,
+    );
   }
 }

@@ -73,6 +73,7 @@ class RestaurantService {
       String image = restaurantData['image'] ?? '';
       restaurants.add(
         Restaurant(
+          id:doc.id,
           name: name,
           overallRating: overallRating,
           image: image,
@@ -120,6 +121,7 @@ Future<Restaurant> fetchRestaurantById(String restaurantId) async {
     double overallRating = (restaurantData['overall_rating'] ?? 0).toDouble();
     String image = restaurantData['image'] ?? '';
     return Restaurant(
+      id:restaurantId,
       name: name,
       overallRating: overallRating,
       image: image,
@@ -130,6 +132,7 @@ Future<Restaurant> fetchRestaurantById(String restaurantId) async {
   } catch (e) {
     print('Error fetching restaurant: $e');
     return Restaurant(
+      id:restaurantId,
       name: 'Unknown',
       overallRating: 0.0,
       image: '',
