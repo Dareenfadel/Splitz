@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:splitz/data/models/user.dart';
 import 'package:splitz/ui/screens/manager_screens/menu_screens/add_menuItem_Screen.dart';
 import 'package:splitz/ui/screens/manager_screens/menu_screens/all_items_screen.dart';
 import 'package:splitz/ui/screens/manager_screens/home.dart';
@@ -7,12 +9,13 @@ import 'package:splitz/ui/screens/manager_screens/menu_screens/menuItems_of_cate
 class ManagerNavigator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserModel?>(context);
     return Navigator(
       onGenerateRoute: (settings) {
         Widget page;
         switch (settings.name) {
           case '/':
-            page = AdminHomePage();
+            page = AdminHomePage(restaurantId: user!.restaurantId!);
             break;
           case '/menuItems':
             final args = settings.arguments as Map<String, dynamic>;
@@ -43,7 +46,7 @@ class ManagerNavigator extends StatelessWidget {
               categoryId: args["categoryId"],
             );
           default:
-            page = AdminHomePage();
+            page = AdminHomePage(restaurantId: user!.restaurantId!);
         }
         return MaterialPageRoute(builder: (context) => page);
       },
