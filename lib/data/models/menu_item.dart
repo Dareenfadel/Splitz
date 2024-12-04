@@ -11,6 +11,7 @@ class MenuItemModel {
   final int calories;
   final int preparationTime;
   final double price;
+  final double? discount;
   final double overallRating;
   final List<Review> reviews;
   final List<Extra> extras;
@@ -24,6 +25,7 @@ class MenuItemModel {
     required this.calories,
     required this.preparationTime,
     required this.price,
+    this.discount,
     required this.overallRating,
     required this.reviews,
     required this.extras,
@@ -37,6 +39,7 @@ class MenuItemModel {
       name: firestore['name'],
       description: firestore['description'],
       image: firestore['image'],
+      discount: firestore['discount'],
       calories: firestore['calories'],
       preparationTime: firestore['preparation_time'],
       price: firestore['price'],
@@ -61,6 +64,7 @@ class MenuItemModel {
     int? calories,
     int? preparationTime,
     double? price,
+    double? discount,
     double? overallRating,
     List<RequiredOption>? requiredOptions,
     List<Extra>? extras,
@@ -74,6 +78,7 @@ class MenuItemModel {
       calories: calories ?? this.calories,
       preparationTime: preparationTime ?? this.preparationTime,
       price: price ?? this.price,
+      discount: discount ?? this.discount,
       overallRating: overallRating ?? this.overallRating,
       requiredOptions: requiredOptions ?? this.requiredOptions,
       extras: extras ?? this.extras,
@@ -83,12 +88,14 @@ class MenuItemModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'description': description,
       'image': image,
       'calories': calories,
       'preparation_time': preparationTime,
       'price': price,
+      'discount': discount,
       'overall_rating': overallRating,
       'reviews': reviews.map((e) => e.toMap()).toList(),
       'extras': extras.map((e) => e.toMap()).toList(),

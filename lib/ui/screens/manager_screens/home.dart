@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-
-import 'package:splitz/data/services/auth.dart';
-
 import '../../../constants/app_colors.dart';
 import 'account_screen.dart';
 import 'history_screen.dart';
 import 'in_progress_orders_screen.dart';
-import 'menu_screen.dart';
+import 'menu_screens/menu_screen.dart';
 import 'orders_screen.dart';
 import 'pending_orders_screen.dart';
 import 'serverd_orders_screen.dart';

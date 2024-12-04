@@ -13,15 +13,10 @@ class Extra {
 
   factory Extra.fromFirestore(DocumentSnapshot doc) {
     final firestore = doc.data() as Map<String, dynamic>;
-
-    final id = doc.id;
-    final name = firestore['name'] ?? 'Unnamed Extra';
-    final price = (firestore['price'] as num?)?.toDouble() ?? 0.0;
-
     return Extra(
-      id: id,
-      name: name,
-      price: price,
+      id: doc.id,
+      name: firestore['name'],
+      price: firestore['price'],
     );
   }
 

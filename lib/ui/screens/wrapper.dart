@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:provider/provider.dart';
+import 'package:splitz/routes/manager_routes.dart';
 import 'package:splitz/ui/screens/authentication/authenticate.dart';
 import 'package:splitz/ui/screens/client_screens/home.dart';
 import 'package:splitz/ui/screens/manager_screens/home.dart';
@@ -15,7 +16,7 @@ class Wrapper extends StatelessWidget {
       return Authenticate();
     else {
       if (user.userType == 'manager') {
-        return AdminHomePage();
+        return ManagerNavigator();
       } else {
         return ClientHome();
       }

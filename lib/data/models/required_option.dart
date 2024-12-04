@@ -17,9 +17,7 @@ class RequiredOption {
     return RequiredOption(
       id: doc.id,
       name: firestore['name'],
-      choices: (firestore['choices'] as List)
-          .map((e) => Choice.fromFirestore(e))
-          .toList(),
+      choices: [],
     );
   }
 
@@ -29,5 +27,13 @@ class RequiredOption {
       'name': name,
       'choices': choices.map((e) => e.toMap()).toList(),
     };
+  }
+
+  RequiredOption copyWith({List<Choice>? choices}) {
+    return RequiredOption(
+      id: this.id,
+      name: this.name,
+      choices: choices ?? this.choices,
+    );
   }
 }
