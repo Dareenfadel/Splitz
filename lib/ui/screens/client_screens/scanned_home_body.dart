@@ -83,7 +83,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
 
         // Data is available
         final restaurantData = snapshot.data!;
-        List<MenuItem> offers = restaurantData.menuCategories
+        List<MenuItemModel> offers = restaurantData.menuCategories
             .firstWhere(
               (c) => c.name.toLowerCase() == 'offers',
             )
@@ -91,8 +91,8 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
             .map((id) {
           return restaurantData.menuItems.firstWhere((item) => item.id == id);
         }).toList();
-        List<MenuItem> mostPopularItems = restaurantData.menuItems.toList()
-          ..sort((a, b) => b.count.compareTo(a.count));
+        List<MenuItemModel> mostPopularItems = restaurantData.menuItems.toList()
+          ..sort((a, b) => (b.count ?? 0).compareTo(a.count ?? 0));
         mostPopularItems.removeWhere((item) => offers.contains(item));
         final menuCategories = restaurantData.menuCategories
             .where((c) => c.name.toLowerCase() != 'offers')
@@ -114,7 +114,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
     );
   }
 
-  Widget _buildOffersSection(List<MenuItem> offers) {
+  Widget _buildOffersSection(List<MenuItemModel> offers) {
     final List<Widget> offerCards = offers.map((offerItem) {
       return GestureDetector(
         onTap: () {
@@ -181,7 +181,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
   }
 
   Widget _buildRestaurantsSection(
-      List<MenuItem> topRated, String sectionTitle) {
+      List<MenuItemModel> topRated, String sectionTitle) {
     final top5 = topRated.take(5).toList(); // Get top 5 restaurants
 
     return Column(
@@ -328,7 +328,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
                   // Card Design
                   Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: MenuItemWidget.MenuItem(
+                      child: MenuItemWidget.MenuCatrgoeyItem(
                         imageUrl: top5[index].image,
                         label: top5[index].name,
                         onPressed: () {
@@ -338,7 +338,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
                     )
                   : Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: MenuItemWidget.MenuItem(
+                      child: MenuItemWidget.MenuCatrgoeyItem(
                         imageUrl: '',
                         label: 'View All',
                         onPressed: () {

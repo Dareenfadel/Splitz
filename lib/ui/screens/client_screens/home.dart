@@ -398,7 +398,7 @@ void _goToRestaurantDetails(Restaurant restaurant) {
  Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => MenuScreen(restaurantId: restaurant.id),
+      builder: (context) => MenuScreen(restaurantId: restaurant.id!),
     ),
   );
 }
