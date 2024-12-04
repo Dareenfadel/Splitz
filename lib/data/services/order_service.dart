@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
+import 'package:splitz/data/services/auth.dart';
+import 'package:splitz/data/models/user.dart';
 
 class OrderService {
   //Private constructor
@@ -13,7 +16,7 @@ class OrderService {
   factory OrderService() => _instance;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+ 
   /// Fetch all orders for a specific restaurant
   Future<List<Order>> fetchOrdersByRestaurant(String restaurantId) async {
     try {
@@ -177,4 +180,131 @@ class OrderService {
             .map((doc) => Order.fromFirestore(doc.id, doc.data()))
             .toList());
   }
+
+  Future<void> checkAndAddUserToOrder({
+    required String restaurantId,
+    required String tableNumber,
+  }) async {
+    try {
+       final FirebaseAuth _auth = FirebaseAuth.instance;
+
+      User? user = _auth.currentUser;
+
+      if (user != null) {
+        String userId = user.uid;
+        // Generate order ID (you can use Firestore auto-generated ID or create your own)
+        String orderId = _firestore.collection('orders').doc().id;
+      // Query to find orders that match the restaurant and table number
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('orders')
+          .where('restaurant_id', isEqualTo: restaurantId)
+          .where('table_number', isEqualTo: tableNumber)
+          .where ('status', isEqualTo: 'not paid')
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Order exists, now check if the user is already in the user list
+        DocumentSnapshot orderDoc = querySnapshot.docs.first;
+        Order order = Order.fromFirestore(orderDoc.id, orderDoc.data() as Map<String, dynamic>);
+
+        if (!order.userIds.contains(userId)) {
+          // Add the user to the list if not already present
+          order.userIds.add(userId);
+          
+          // Update the order with the new user list
+          await orderDoc.reference.update({
+            'user_ids': order.userIds,
+          });
+           await _updateUserOrderIds(userId, orderDoc.id);
+          print('User added to the existing order');
+        } else {
+          print('User already exists in the order');
+        }
+      } else {
+        // No existing order, create a new one
+        String orderId = _firestore.collection('orders').doc().id; // Generate new order ID
+
+        Order newOrder = Order(
+          orderId: orderId,
+          restaurantId: restaurantId,
+          status: 'not paid',  // Assuming new orders are 'pending'
+          tableNumber: tableNumber,
+          totalBill: 0.0,
+          paidSoFar: 0.0,
+          paid: false,
+          items: [],
+          userIds: [userId], // Add the user to the list
+        );
+        
+        // Create the new order in Firestore
+        await _firestore.collection('orders').doc(orderId).set({
+          'restaurant_id': restaurantId,
+          'order_id': orderId,
+          'status': 'not paid',
+          'table_number': tableNumber,
+          'total_bill': 0.0,
+          'paid_so_far': 0.0,
+          'paid': false,
+          'items': [],
+          'user_ids': [userId],
+      });
+       await _updateUserOrderIds(userId, orderId);
+        print('New order created and user added');
+      }
+      } else {
+        print('User not signed in');
+      }
+    } catch (e) {
+      print('Error in checking or adding user to order: $e');
+    }
+  }
+ // Listen to real-time updates for orders that contain the current user in user_ids
+Stream<List<Order>> listenToOrdersByUserId() {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? user = _auth.currentUser;
+
+  if (user != null) {
+    String userId = user.uid;
+      
+    return _firestore
+        .collection('orders')
+        .where('user_ids', arrayContains: userId) 
+        .where('status', isEqualTo: 'not paid') // Only listen to unpaid orders
+        .snapshots() // Listen for real-time updates
+        .map((querySnapshot) {
+          return querySnapshot.docs.map((doc) {
+            return Order.fromFirestore(doc.id, doc.data() as Map<String, dynamic>);
+          }).toList();
+        });
+  } else {
+    // Return an empty list if no user is signed in
+    return Stream.value([]);
+  }
+}
+Future<void> _updateUserOrderIds(String userId, String orderId) async {
+  try {
+    DocumentReference userRef = _firestore.collection('users').doc(userId);
+    DocumentSnapshot userDoc = await userRef.get();
+
+    if (userDoc.exists) {
+      UserModel user = UserModel.fromMap(userDoc.data() as Map<String, dynamic>, userId);
+
+      if (!user.orderIds.contains(orderId)) {
+        user.orderIds.add(orderId);
+
+        // Update Firestore with the new list
+        await userRef.update({
+          'orderIds': user.orderIds,
+        });
+        print('Order ID added to user document');
+      } else {
+        print('Order ID already exists in user document');
+      }
+    } else {
+      print('User document not found');
+    }
+  } catch (e) {
+    print('Error updating user orderIds: $e');
+  }
+}
 }

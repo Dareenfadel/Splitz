@@ -5,6 +5,7 @@ class MenuCatrgoeyItem extends StatelessWidget {
   final String label;
   final String imageUrl;
   final VoidCallback onPressed;
+  final IconData? icon=Icons.arrow_forward;
 
   MenuCatrgoeyItem({
     required this.imageUrl,
@@ -41,12 +42,16 @@ class MenuCatrgoeyItem extends StatelessWidget {
                 SizedBox(height: 30),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(50),
-                  child: Image.network(
+                  child:imageUrl!=''?
+                   Image.network(
                     imageUrl,
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,
-                  ),
+                  ):SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(icon)),
                 ),
                 SizedBox(height: 5),
                 Text(

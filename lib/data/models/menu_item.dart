@@ -16,6 +16,7 @@ class MenuItemModel {
   final List<Review> reviews;
   final List<Extra> extras;
   final List<RequiredOption> requiredOptions;
+  final int? count;
 
   MenuItemModel({
     required this.id,
@@ -30,6 +31,7 @@ class MenuItemModel {
     required this.reviews,
     required this.extras,
     required this.requiredOptions,
+    this.count
   });
 
   factory MenuItemModel.fromFirestore(DocumentSnapshot doc) {
@@ -42,8 +44,8 @@ class MenuItemModel {
       discount: firestore['discount'],
       calories: firestore['calories'],
       preparationTime: firestore['preparation_time'],
-      price: firestore['price'],
-      overallRating: firestore['overall_rating'],
+      price: (firestore['price'] ?? 0.0).toDouble(),
+      overallRating: (firestore['overall_rating']??0.0).toDouble(),
       reviews: (firestore['reviews'] as List? ?? [])
           .map((e) => Review.fromFirestore(e))
           .toList(),
@@ -53,6 +55,8 @@ class MenuItemModel {
       requiredOptions: (firestore['required_options'] as List? ?? [])
           .map((e) => RequiredOption.fromFirestore(e))
           .toList(),
+      count: firestore['count']??0,
+
     );
   }
 
