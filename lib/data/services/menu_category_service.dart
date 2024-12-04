@@ -12,7 +12,7 @@ class CategoryService {
           .collection('menu_categories')
           .get();
       return snapshot.docs.map((doc) {
-        return MenuCategory.fromFirestore(doc.data() as Map<String, dynamic>);
+        return MenuCategory.fromFirestore(doc);
       }).toList();
     } catch (e) {
       print('Error fetching menu categories: $e');

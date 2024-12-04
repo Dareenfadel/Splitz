@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:splitz/data/models/review.dart';
 import 'package:splitz/data/models/extra.dart';
 import 'package:splitz/data/models/required_option.dart';
 
-class MenuItem {
+class MenuItemModel {
   final String id;
   final String name;
   final String description;
@@ -10,12 +11,13 @@ class MenuItem {
   final int calories;
   final int preparationTime;
   final double price;
+  final double? discount;
   final double overallRating;
   final List<Review> reviews;
   final List<Extra> extras;
   final List<RequiredOption> requiredOptions;
 
-  MenuItem({
+  MenuItemModel({
     required this.id,
     required this.name,
     required this.description,
@@ -23,22 +25,25 @@ class MenuItem {
     required this.calories,
     required this.preparationTime,
     required this.price,
+    this.discount,
     required this.overallRating,
     required this.reviews,
     required this.extras,
     required this.requiredOptions,
   });
 
-  factory MenuItem.fromFirestore(String id,Map<String, dynamic> firestore) {
-    return MenuItem(
-      id: id,
-      name: firestore['name']??'',
-      description: firestore['description']??'',
-      image: firestore['image']??'',
-      calories: firestore['calories']??0,
-      preparationTime: firestore['preparation_time']??0,
-      price: firestore['price']??0.0,
-      overallRating: firestore['overall_rating']??0.0,
+  factory MenuItemModel.fromFirestore(DocumentSnapshot doc) {
+    final firestore = doc.data() as Map<String, dynamic>;
+    return MenuItemModel(
+      id: doc.id,
+      name: firestore['name'],
+      description: firestore['description'],
+      image: firestore['image'],
+      discount: firestore['discount'],
+      calories: firestore['calories'],
+      preparationTime: firestore['preparation_time'],
+      price: firestore['price'],
+      overallRating: firestore['overall_rating'],
       reviews: (firestore['reviews'] as List? ?? [])
           .map((e) => Review.fromFirestore(e))
           .toList(),
@@ -51,7 +56,7 @@ class MenuItem {
     );
   }
 
-  MenuItem copyWith({
+  MenuItemModel copyWith({
     String? id,
     String? name,
     String? description,
@@ -59,12 +64,13 @@ class MenuItem {
     int? calories,
     int? preparationTime,
     double? price,
+    double? discount,
     double? overallRating,
     List<RequiredOption>? requiredOptions,
     List<Extra>? extras,
     List<Review>? reviews,
   }) {
-    return MenuItem(
+    return MenuItemModel(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
@@ -72,6 +78,7 @@ class MenuItem {
       calories: calories ?? this.calories,
       preparationTime: preparationTime ?? this.preparationTime,
       price: price ?? this.price,
+      discount: discount ?? this.discount,
       overallRating: overallRating ?? this.overallRating,
       requiredOptions: requiredOptions ?? this.requiredOptions,
       extras: extras ?? this.extras,
@@ -81,12 +88,14 @@ class MenuItem {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'description': description,
       'image': image,
       'calories': calories,
       'preparation_time': preparationTime,
       'price': price,
+      'discount': discount,
       'overall_rating': overallRating,
       'reviews': reviews.map((e) => e.toMap()).toList(),
       'extras': extras.map((e) => e.toMap()).toList(),

@@ -9,7 +9,7 @@ Future<String?> uploadFile(File file) async {
   Storage storage = Storage(client);
   try {
     final result = await storage.createFile(
-      bucketId: '67483a6d0025091173ab',
+      bucketId: '674fa5a2001133726af4',
       fileId: ID.unique(),
       file: InputFile.fromPath(path: file.path),
     );
@@ -33,7 +33,7 @@ Future<String?> getImageUrl(String fileId) async {
   try {
     // Generate the preview URL
     final String previewUrl = client.endPoint +
-        '/storage/buckets/67483a6d0025091173ab/files/$fileId/view?project=674839a900288fa7bb3e&project=674839a900288fa7bb3e&mode=admin';
+        '/storage/buckets/674fa5a2001133726af4/files/$fileId/view?project=674839a900288fa7bb3e&project=674839a900288fa7bb3e&mode=admin';
 
     print('Preview URL: $previewUrl');
     return previewUrl; // Return the URL

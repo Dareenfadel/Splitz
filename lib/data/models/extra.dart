@@ -1,17 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Extra {
-  final String id;
+  String? id;
   final String name;
   final double price;
 
   Extra({
-    required this.id,
+    this.id,
     required this.name,
     required this.price,
   });
 
-  factory Extra.fromFirestore(Map<String, dynamic> firestore) {
+  factory Extra.fromFirestore(DocumentSnapshot doc) {
+    final firestore = doc.data() as Map<String, dynamic>;
     return Extra(
-      id: firestore['id'],
+      id: doc.id,
       name: firestore['name'],
       price: firestore['price'],
     );
