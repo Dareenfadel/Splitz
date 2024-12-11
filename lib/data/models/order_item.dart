@@ -11,6 +11,8 @@ class OrderItem {
   final Map<String, double> paidUsers;
   bool prepared;
   final List<OrderItemUser> userList;
+  final String status;
+  final Map<String,String> options;
 
   OrderItem({
     required this.itemId,
@@ -24,6 +26,10 @@ class OrderItem {
     required this.prepared,
     required this.price,
     required this.userList,
+    required this.status,
+    required this.options,
+
+
   });
 
 
@@ -43,6 +49,8 @@ class OrderItem {
               ?.map((user) => OrderItemUser.fromFirestore(user))
               .toList() ??
           [],
+          status: firestore['status']??'oredering',
+          options: Map<String,String>.from(firestore['options']??{}),
     );
   }
 
@@ -58,6 +66,9 @@ class OrderItem {
       'paid_users': paidUsers,
       'prepared': prepared,
       'price': price,
+      'user_list': userList.map((user) => user.toMap()).toList(),
+      'status': status,
+      'options': options,
     };
   }
 }

@@ -6,6 +6,9 @@ import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_category_Service.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:toastification/toastification.dart';
+import 'package:splitz/ui/screens/client_screens/add_to_cart.dart';
+
+import 'package:splitz/ui/screens/manager_screens/menu_screens/menuItems_of_category_screen.dart';
 class MenuScreen extends StatefulWidget {
   final String restaurantId;
 
@@ -50,7 +53,7 @@ class _MenuScreenState extends State<MenuScreen> {
   void _showErrorSnackBar(String message) {
     toastification.show(
       context: context,
-      title: Text('Error'),
+      title:const  Text('Error'),
       type: ToastificationType.error,
       style: ToastificationStyle.fillColored,
       autoCloseDuration: const Duration(seconds: 3),
@@ -88,7 +91,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 isLoading
                     ? Center(child: CircularProgressIndicator())
                     : categories.isEmpty
-                        ? Center(child: Text('No categories available'))
+                        ? Center(child:const  Text('No categories available'))
                         : Expanded(
                             child: GridView.builder(
                               gridDelegate:
@@ -106,23 +109,29 @@ class _MenuScreenState extends State<MenuScreen> {
                                   imageUrl: category.image,
                                   label: category.name,
                                   onPressed: () async {
-                                    final result =
-                                        await Navigator.of(context).pushNamed(
-                                      '/menuItems',
-                                      arguments: {
-                                        'restaurantId': restaurantId!,
-                                        'categoryId': category.id,
-                                        'categoryName': category.name,
-                                        'categoryDescription':
-                                            category.description,
-                                        'categoryImageUrl': category.image,
-                                      },
-                                    );
-                                    if (result == true) {
-                                      _fetchCategories();
-                                    }
-                                  },
+                                 Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => CategoryItemsPage(
+                                    categoryId: category.id??"",
+                                    restaurantId: restaurantId!,
+                                    categoryName: category.name,
+                                    categoryDescription: category.description,
+                                    categoryImageUrl: category.image,
+                                  )),
                                 );
+                                //testtt
+                                //  Navigator.push(
+                                //       context,
+                                //       MaterialPageRoute(
+                                //         builder: (context) => AddToCartScreen(
+                                //           restaurantId: widget.restaurantId,
+                                //          orderId: "56hhmqwCruicNwKGnw1H",
+                                //          orderItemInd: 6,
+                                //         ),
+                                //       ),
+                                //     );
+                                  },
+                                );                            
                               },
                             ),
                           ),
