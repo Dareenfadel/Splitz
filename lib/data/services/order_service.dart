@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/services/auth.dart';
@@ -260,26 +261,32 @@ class OrderService {
   }
  // Listen to real-time updates for orders that contain the current user in user_ids
 Stream<List<Order>> listenToOrdersByUserId() {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  User? user = _auth.currentUser;
-
-  if (user != null) {
-    String userId = user.uid;
-      
-    return _firestore
-        .collection('orders')
-        .where('user_ids', arrayContains: userId) 
-        .where('status', isEqualTo: 'not paid') // Only listen to unpaid orders
-        .snapshots() // Listen for real-time updates
-        .map((querySnapshot) {
-          return querySnapshot.docs.map((doc) {
-            return Order.fromFirestore(doc.id, doc.data() as Map<String, dynamic>);
-          }).toList();
-        });
-  } else {
-    // Return an empty list if no user is signed in
+  
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  User? user = auth.currentUser;
+print("user id is ${user!.uid}");
+  if (user == null) {
     return Stream.value([]);
   }
+  return _firestore
+      .collection('users')
+      .doc(user.uid)
+      .snapshots()
+      .switchMap((userDoc) {
+    if (!userDoc.exists) return Stream.value([]);
+    print(userDoc.data());
+    String? currentOrderId = userDoc.get('currentOrderId') as String?;
+    print("current order id is $currentOrderId");
+    if (currentOrderId == null) return Stream.value([]);
+
+    return _firestore
+        .collection('orders')
+        .where('order_id', isEqualTo: currentOrderId)
+        .snapshots()
+        .map((querySnapshot) => querySnapshot.docs
+            .map((doc) => Order.fromFirestore(doc.id, doc.data()))
+            .toList());
+  });
 }
 Future<void> _updateUserOrderIds(String userId, String orderId) async {
   try {
@@ -289,17 +296,20 @@ Future<void> _updateUserOrderIds(String userId, String orderId) async {
     if (userDoc.exists) {
       UserModel user = UserModel.fromMap(userDoc.data() as Map<String, dynamic>, userId);
 
+
+      if (user.currentOrderId != orderId) {
+        user.currentOrderId = orderId;
+      }
+
       if (!user.orderIds.contains(orderId)) {
         user.orderIds.add(orderId);
-
-        // Update Firestore with the new list
+      }
         await userRef.update({
+          'currentOrderId': user.currentOrderId,
           'orderIds': user.orderIds,
         });
-        print('Order ID added to user document');
-      } else {
-        print('Order ID already exists in user document');
-      }
+        print('User document updated with new order ID');
+      
     } else {
       print('User document not found');
     }
@@ -307,4 +317,67 @@ Future<void> _updateUserOrderIds(String userId, String orderId) async {
     print('Error updating user orderIds: $e');
   }
 }
+Future<void> addItemToOrder(String userId, OrderItem item) async {
+    try {
+
+      // Get the user's current order ID
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
+      String? orderId = userDoc.get('currentOrderId') as String?;
+
+      DocumentReference orderRef = _firestore.collection('orders').doc(orderId);
+      
+      // Get current items array
+      DocumentSnapshot orderDoc = await orderRef.get();
+      List<dynamic> currentItems = orderDoc.get('items') ?? [];
+      
+      // Add new item
+      currentItems.add(item.toMap());
+
+      // Update order document
+      await orderRef.update({
+        'items': currentItems,
+      });
+    } catch (e) {
+      throw Exception('Failed to add item to order: $e');
+    }
+  }
+  Future<void> updateItemInOrder(String orderId, OrderItem updatedItem, int orderItemInd) async {
+    try {
+      DocumentReference orderRef = _firestore.collection('orders').doc(orderId);
+      DocumentSnapshot orderDoc = await orderRef.get();
+
+      if (!orderDoc.exists) {
+        throw Exception('Order not found');
+      }
+
+      List<dynamic> items = orderDoc.get('items') ?? [];
+      int itemIndex = orderItemInd;
+
+      if (itemIndex != -1) {
+        items[itemIndex] = updatedItem.toMap();
+        await orderRef.update({'items': items});
+      } else {
+        throw Exception('Item not found in order');
+      }
+    } catch (e) {
+      throw Exception('Failed to update item in order: $e');
+    }
+  }
+  Future <OrderItem> getOrderItemDetails(String orderId, int orderItemInd) async{
+    try {
+      DocumentSnapshot orderDoc = await _firestore.collection('orders').doc(orderId).get();
+      if (!orderDoc.exists) {
+        throw Exception('Order not found');
+      }
+
+      List<dynamic> items = orderDoc.get('items') ?? [];
+      if (orderItemInd < 0 || orderItemInd >= items.length) {
+        throw Exception('Invalid item index');
+      }
+
+      return OrderItem.fromFirestore(items[orderItemInd]);
+    } catch (e) {
+      throw Exception('Failed to get order item details: $e');
+    }
+  }
 }

@@ -7,7 +7,7 @@ import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_page.dart';
 import 'package:splitz/ui/screens/client_screens/menu.dart';
-
+import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
 class ClientHome extends StatefulWidget {
   // ignore: use_super_parameters
   const ClientHome({Key? key}) : super(key: key);
@@ -23,7 +23,6 @@ class _ClientHomeState extends State<ClientHome> {
 
   @override
   void initState() {
-    print('in init state');
     super.initState();
     _loadRestaurants();  // Call this method to fetch restaurants
   }
@@ -83,16 +82,16 @@ class _ClientHomeState extends State<ClientHome> {
                   hoverColor: AppColors.secondary,
                   onPressed: () {
                     print('QR Code Scanner Floating Action Button Pressed');
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) => QrCodeScanner()),
-                    // );
-                    Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ScannedHome()), // The new page
-                (route) => false, // Remove all previous routes
-              );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => QrCodeScanner()),
+                    );
+              //       Navigator.pushAndRemoveUntil(
+              //   context,
+              //   MaterialPageRoute(
+              //       builder: (context) => ScannedHome()), // The new page
+              //   (route) => false, // Remove all previous routes
+              // );
                   },
                   child: const Icon(Icons.qr_code, color: AppColors.textColor), // QR icon
                   backgroundColor: AppColors.primary, // You can change the background color
@@ -147,17 +146,17 @@ class _ClientHomeState extends State<ClientHome> {
 
         // Data is available
         final restaurants = snapshot.data!;
-        print('Restaurants: $restaurants');
+        // print('Restaurants: $restaurants');
         final offers = restaurants
             .where((r) => r.menuCategories.any((c) => c.name.toLowerCase() == 'offers' && c.itemIds.isNotEmpty))
             .toList();
-        print('Offers: $offers');
+        // print('Offers: $offers');
         final topRatedRestaurants = restaurants
             .toList()
           ..sort((a, b) => b.overallRating.compareTo(a.overallRating));
-        print('Top Rated Restaurants: $topRatedRestaurants');
+        // print('Top Rated Restaurants: $topRatedRestaurants');
         final moreRestaurants = _getmoreRestaurants(topRatedRestaurants, restaurants);
-        print('More Restaurants: $moreRestaurants');
+        // print('More Restaurants: $moreRestaurants');
         return SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,8 +179,7 @@ Widget _buildOffersSection(List<Restaurant> offers) {
       (c) => c.name.toLowerCase() == 'offers',
     );
     final offerItemId=category.itemIds.last;
-    print(restaurant.name);
-    print(offerItemId);
+   
     final offerItem=restaurant.menuItems.firstWhere((item) => item.id == offerItemId);
     return GestureDetector(
               onTap: () {

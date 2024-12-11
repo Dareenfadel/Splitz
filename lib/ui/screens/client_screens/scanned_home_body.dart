@@ -6,13 +6,15 @@ import 'package:splitz/data/models/menu_item.dart';
 import 'package:splitz/data/models/menu_category.dart';
 import '../../../constants/app_colors.dart';
 import 'package:splitz/ui/custom_widgets/menu_grid_item.dart' as MenuItemWidget;
-
-
+import 'package:splitz/ui/screens/client_screens/add_to_cart.dart';
+import 'package:splitz/ui/screens/manager_screens/menu_screens/menuItems_of_category_screen.dart';
 //TODO:View all restaurannts guest
 //TODO VIEW MENU ITEMS
-//TODO  VIEW MY CART ORDERS (AD,DEL,EDIT)
+//TODO  Change fetchOrderById
+//TOO ADD Current order id in user
 //REDIRECT TO SCANNED HOMEPAGE IF ALREADY SCANNED
-//HOME PAGE REIRECT TO REST MENU/OFFER
+//HOME PAGE REDIRECT TO REST MENU/OFFER
+
 
 class ScannedHomeBody extends StatefulWidget {
   final String restaurantId;
@@ -83,6 +85,10 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
 
         // Data is available
         final restaurantData = snapshot.data!;
+        final offerCat=restaurantData.menuCategories
+            .firstWhere(
+              (c) => c.name.toLowerCase() == 'offers',
+            );
         List<MenuItemModel> offers = restaurantData.menuCategories
             .firstWhere(
               (c) => c.name.toLowerCase() == 'offers',
@@ -102,7 +108,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildOffersSection(offers),
+              _buildOffersSection(offers,offerCat),
               const SizedBox(height: 20),
               _buildRestaurantsSection(mostPopularItems, '🔥Top Dishes'),
               const SizedBox(height: 20),
@@ -114,11 +120,21 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
     );
   }
 
-  Widget _buildOffersSection(List<MenuItemModel> offers) {
+  Widget _buildOffersSection(List<MenuItemModel> offers, MenuCategory category) {
     final List<Widget> offerCards = offers.map((offerItem) {
       return GestureDetector(
         onTap: () {
-          //   _goToRestaurantDetails(restaurant);
+
+          Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => CategoryItemsPage(
+                                    categoryId: category.id??"",
+                                    restaurantId: widget.restaurantId,
+                                    categoryName: category.name,
+                                    categoryDescription: category.description,
+                                    categoryImageUrl: category.image,
+                                  )),
+                                );
         },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 5.0),
@@ -216,7 +232,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
         ),
         // Horizontal Scrolling List
         SizedBox(
-          height: 210, // Adjusted height to reduce white space
+          height: 200, // Adjusted height to reduce white space
           child: ListView.builder(
             scrollDirection: Axis.horizontal, // Enable horizontal scrolling
             itemCount: top5.length,
@@ -226,7 +242,15 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
               // Card Design
               return GestureDetector(
                 onTap: () {
-                  //  _goToRestaurantDetails(restaurant); // Call the function when the card is tapped
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddToCartScreen(
+                        restaurantId: widget.restaurantId,
+                        menuItemId: menuItem.id,
+                      ),
+                    ),
+                  );
                 },
                 child: Container(
                   width: 200, // Adjust width for each card
@@ -280,12 +304,12 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
                               maxLines: 1, // Prevent text overflow
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(
-                                height:
-                                    4.0), // Reduced space between name and rating
-                            Text(
-                              menuItem.description,
-                            )
+                            // const SizedBox(
+                            //     height:
+                            //         4.0), // Reduced space between name and rating
+                            // Text(
+                            //   menuItem.description,
+                            // )
                           ],
                         ),
                       ),
@@ -307,11 +331,11 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section Title
-        Padding(
-          padding: const EdgeInsets.all(8.0),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
           child: Text(
             'Menu Options',
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 20, fontWeight: FontWeight.bold), // Larger font
           ),
         ),
@@ -332,7 +356,17 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
                         imageUrl: top5[index].image,
                         label: top5[index].name,
                         onPressed: () {
-                          print('Clicked on ${top5[index].name}');
+                          final category = top5[index];
+                           Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => CategoryItemsPage(
+                                    categoryId: category.id??"",
+                                    restaurantId: widget.restaurantId,
+                                    categoryName: category.name,
+                                    categoryDescription: category.description,
+                                    categoryImageUrl: category.image,
+                                  )),
+                                );
                         },
                       ),
                     )

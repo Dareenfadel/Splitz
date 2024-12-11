@@ -504,4 +504,18 @@ class MenuItemService {
       print('Error deleting category ${e}');
     }
   }
+  Future <void>incrementCount(String restaurantId, String menuItemId) async {
+    try {
+      await _db
+          .collection('restaurants')
+          .doc(restaurantId)
+          .collection('menu_items')
+          .doc(menuItemId)
+          .update({
+        'count': FieldValue.increment(1)
+      });
+    } catch (e) {
+      print('Error incrementing count ${e}');
+    }
+  }
 }

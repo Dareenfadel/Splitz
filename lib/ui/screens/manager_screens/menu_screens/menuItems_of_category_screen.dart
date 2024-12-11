@@ -7,6 +7,7 @@ import 'package:splitz/data/services/menu_item_service.dart';
 import 'package:splitz/ui/custom_widgets/custom_button.dart';
 import 'package:splitz/ui/custom_widgets/custom_floating_button.dart';
 import 'package:toastification/toastification.dart';
+import 'package:splitz/ui/screens/client_screens/add_to_cart.dart';
 
 class CategoryItemsPage extends StatefulWidget {
   final String restaurantId;
@@ -73,6 +74,18 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
     if (result == true) {
       setState(() {});
     }
+  }
+  void onMenuItemTapClient(String? itemId) async {
+   print('Client Method');
+   Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => AddToCartScreen(
+        restaurantId: widget.restaurantId,
+        menuItemId: itemId!,
+      ),
+    ),
+  );
   }
 
   void handleDeletion(String id) async {
@@ -327,7 +340,11 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
                         itemBuilder: (context, index) {
                           final item = items[index];
                           return GestureDetector(
-                            onTap: () => onMenuItemTap(item['id']),
+                            onTap: () => {
+                              if ( Provider.of<UserModel?>(context, listen: false)?.userType == "manager")
+                              onMenuItemTap(item['id'])
+                              else 
+                              onMenuItemTapClient( item['id'])},
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8.0, vertical: 4.0),

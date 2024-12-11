@@ -4,13 +4,15 @@ class UserModel {
   final String userType; // 'manager' or 'client'
   final String? restaurantId; // Used if user is a manager
   final List<String> orderIds;
-
+  String? currentOrderId;
   UserModel({
     required this.uid,
     this.name,
     required this.userType,
     this.restaurantId,
     required this.orderIds,
+    this.currentOrderId,
+
   });
 
   // Convert UserModel to Map (Firestore store)
@@ -20,6 +22,7 @@ class UserModel {
       'role': userType,
       'restaurantId': restaurantId,
       'orderIds': orderIds,
+      'currentOrderId': currentOrderId,
     };
   }
 
@@ -31,6 +34,7 @@ class UserModel {
       userType: data['role'],
       restaurantId: data['restaurantId'],
       orderIds: List<String>.from(data['orderIds'] ?? []),
+      currentOrderId: data['currentOrderId'] ?? '',
     );
   }
 }
