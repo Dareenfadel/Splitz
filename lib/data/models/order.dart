@@ -47,7 +47,7 @@ class Order {
 
   bool userHasItems(String userId) {
     return items
-        .any((item) => item.usersList.any((user) => user.userId == userId));
+        .any((item) => item.userList.any((user) => user.userId == userId));
   }
 
   bool userPaid(String userId) {

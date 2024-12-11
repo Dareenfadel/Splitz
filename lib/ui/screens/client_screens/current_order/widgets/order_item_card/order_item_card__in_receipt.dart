@@ -30,7 +30,7 @@ class OrderItemCard_InReceipt extends StatelessWidget {
         
         _buildManageButton(context),
 
-        if (item.usersList.any((user) => user.requestStatus == "pending"))
+        if (item.userList.any((user) => user.requestStatus == "pending"))
           _buildPendingRequestIndicator(),
       ],
     );

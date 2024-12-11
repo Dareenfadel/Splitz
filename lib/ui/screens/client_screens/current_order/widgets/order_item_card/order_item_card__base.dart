@@ -146,7 +146,7 @@ class OrderItemCard_Base extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       SplittedUsersList(
-                        users: item.usersList,
+                        users: item.userList,
                         orderUsersMap: orderUsersMap,
                       ),
                     ],
@@ -160,10 +160,10 @@ class OrderItemCard_Base extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ...item.usersList
+          ...item.userList
               .take(2)
               .map((user) => _buildOtherUserListItem(user)),
-          if (item.usersList.length > 2)
+          if (item.userList.length > 2)
             CircleAvatar(
               radius: 12,
               backgroundColor: Colors.grey[300],
