@@ -5,9 +5,11 @@ import 'package:splitz/data/models/restaurant.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/ui/screens/client_screens/scanned_home_page.dart';
+import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
-
 class ClientHome extends StatefulWidget {
+  // ignore: use_super_parameters
   const ClientHome({Key? key}) : super(key: key);
 
   @override
@@ -21,7 +23,6 @@ class _ClientHomeState extends State<ClientHome> {
 
   @override
   void initState() {
-    // print('in init state');
     super.initState();
     _loadRestaurants();  // Call this method to fetch restaurants
   }
@@ -29,13 +30,10 @@ class _ClientHomeState extends State<ClientHome> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // print('in did change dependencies');
-    // Optionally reload the restaurants on dependency change
-    _loadRestaurants();
+        _loadRestaurants();
   }
 
   void _loadRestaurants()  async {
-    // print('in load retaurants');
     setState(() {
       _restaurantsFuture = _restaurantService.fetchRestaurants();
     });
@@ -88,6 +86,12 @@ class _ClientHomeState extends State<ClientHome> {
                       context,
                       MaterialPageRoute(builder: (context) => QrCodeScanner()),
                     );
+              //       Navigator.pushAndRemoveUntil(
+              //   context,
+              //   MaterialPageRoute(
+              //       builder: (context) => ScannedHome()), // The new page
+              //   (route) => false, // Remove all previous routes
+              // );
                   },
                   child: const Icon(Icons.qr_code, color: AppColors.textColor), // QR icon
                   backgroundColor: AppColors.primary, // You can change the background color
@@ -142,16 +146,17 @@ class _ClientHomeState extends State<ClientHome> {
 
         // Data is available
         final restaurants = snapshot.data!;
+        // print('Restaurants: $restaurants');
         final offers = restaurants
             .where((r) => r.menuCategories.any((c) => c.name.toLowerCase() == 'offers' && c.itemIds.isNotEmpty))
             .toList();
-
+        // print('Offers: $offers');
         final topRatedRestaurants = restaurants
             .toList()
           ..sort((a, b) => b.overallRating.compareTo(a.overallRating));
-
+        // print('Top Rated Restaurants: $topRatedRestaurants');
         final moreRestaurants = _getmoreRestaurants(topRatedRestaurants, restaurants);
-
+        // print('More Restaurants: $moreRestaurants');
         return SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,13 +173,13 @@ class _ClientHomeState extends State<ClientHome> {
     );
   }
 Widget _buildOffersSection(List<Restaurant> offers) {
-  // print(offers);
-  // Extracting offer images and titles
+
   final List<Widget> offerCards = offers.map((restaurant) {
     final category = restaurant.menuCategories.firstWhere(
       (c) => c.name.toLowerCase() == 'offers',
     );
     final offerItemId=category.itemIds.last;
+   
     final offerItem=restaurant.menuItems.firstWhere((item) => item.id == offerItemId);
     return GestureDetector(
               onTap: () {
@@ -262,62 +267,7 @@ Widget _buildOffersSection(List<Restaurant> offers) {
     ],
   );
 }
-  
-  // Widget _buildTopRatedSection(List<Restaurant> topRated) {
-  //   final top5 = topRated.take(5).toList(); // Get top 5 restaurants
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       const Padding(
-  //         padding: EdgeInsets.all(8.0),
-  //         child: Text(
-  //           'Top Rated Restaurants',
-  //           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-  //         ),
-  //       ),
-  //       SizedBox(
-  //         height: 160, // Adjust based on your layout
-  //         child: ListView.builder(
-  //           scrollDirection: Axis.horizontal,
-  //           itemCount: top5.length,
-  //           itemBuilder: (context, index) {
-  //             final restaurant = top5[index];
-  //             return Padding(
-  //               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-  //               child: GestureDetector(
-  //                 onTap: () {
-  //                   // Handle restaurant tap
-  //                 },
-  //                 child: Column(
-  //                   children: [
-  //                     ClipRRect(
-  //                       borderRadius: BorderRadius.circular(12),
-  //                       child: Image.network(
-  //                         restaurant.image,
-  //                         width: 120,
-  //                         height: 100,
-  //                         fit: BoxFit.cover,
-  //                       ),
-  //                     ),
-  //                     const SizedBox(height: 8),
-  //                     Text(
-  //                       restaurant.name,
-  //                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-  //                     ),
-  //                     Text(
-  //                       'Rating: ${restaurant.overallRating.toStringAsFixed(1)}',
-  //                       style: const TextStyle(fontSize: 12),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
+
 Widget _buildRestaurantsSection(List<Restaurant> topRated, String sectionTitle) {
   final top5 = topRated.take(5).toList(); // Get top 5 restaurants
 
@@ -443,32 +393,10 @@ return randomRestaurants;
 }
 void _goToRestaurantDetails(Restaurant restaurant) {
   // Navigate to the restaurant details screen
-  print('Navigating to ${restaurant.name}');
-}
-Widget floatingActionButton() {
-  return 
-    Padding(
-      padding: const EdgeInsets.only(bottom: 16.0), // Add padding for better positioning
-      child: FloatingActionButton(
-        // onPressed: () async {
-        //   print('QR Code Scanner Floating Action Button Pressed');
-        //   // Navigate to the QR scan page
-        //   final result = await Navigator.push(
-        //     context,
-        //     MaterialPageRoute(builder: (context) => QrCodeScanner()),
-        //   );
-        //   // Handle the result if needed
-        //   if (result != null) {
-        //     print('Scanned QR Code: $result');
-        //   }
-        // },
-        onPressed: () {
-          // Handle the floating action button press
-          print('QR Code Scanner Floating Action Button Pressed');
-        },
-        child: const Icon(Icons.qr_code, color: Colors.white), // QR icon
-        backgroundColor: AppColors.textColor, // You can change the background color
-      
+ Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => MenuScreen(restaurantId: restaurant.id!),
     ),
   );
 }

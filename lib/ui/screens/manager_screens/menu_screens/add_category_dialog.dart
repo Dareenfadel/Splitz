@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:splitz/constants/app_colors.dart';
@@ -8,6 +6,7 @@ import 'package:splitz/data/models/menu_category.dart';
 import 'package:splitz/data/services/image_service.dart';
 import 'package:splitz/data/services/menu_category_service.dart';
 import 'package:splitz/ui/custom_widgets/custom_button.dart';
+import 'package:toastification/toastification.dart';
 
 class AddCategoryDialog extends StatefulWidget {
   final String restaurantId;
@@ -55,33 +54,35 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
         );
 
         widget.onCategoryAdded(newCategory);
-
-        // Show success dialog
-        AwesomeDialog(
+        Navigator.pop(context);
+        toastification.show(
           context: context,
-          dialogType: DialogType.success,
-          title: 'Category Added',
-          desc: 'Do you want to add items to this category?',
-          btnOkText: "Yes",
-          btnCancelText: "No",
-          btnOkOnPress: () {
-            // You can add additional logic when 'Yes' is pressed
-          },
-          btnCancelOnPress: () {
-            Navigator.pop(context); // Close the dialog
-          },
-        ).show();
-      } else {
-        // Show a message if no image is selected
-        AwesomeDialog(
-          context: context,
-          dialogType: DialogType.error,
-          title: 'Error',
-          desc: 'Please select an image for the category.',
-          btnOkText: "OK",
-          btnOkOnPress: () {},
-        ).show();
+          title: Text('Menu Category Is Added Successfuly!'),
+          type: ToastificationType.success,
+          style: ToastificationStyle.fillColored,
+          autoCloseDuration: const Duration(seconds: 3),
+          alignment: Alignment.topRight,
+          direction: TextDirection.ltr,
+          animationDuration: const Duration(milliseconds: 300),
+          icon: const Icon(Icons.check),
+          showIcon: true, // show or hide the icon
+          primaryColor: Colors.green,
+        );
       }
+    } else {
+      toastification.show(
+        context: context,
+        title: Text('ERROr please add an image!'),
+        type: ToastificationType.error,
+        style: ToastificationStyle.fillColored,
+        autoCloseDuration: const Duration(seconds: 3),
+        alignment: Alignment.topRight,
+        direction: TextDirection.ltr,
+        animationDuration: const Duration(milliseconds: 300),
+        icon: const Icon(Icons.error),
+        showIcon: true,
+        primaryColor: Colors.red,
+      );
     }
   }
 
