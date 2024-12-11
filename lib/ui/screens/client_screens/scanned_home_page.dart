@@ -1,11 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/services/order_service.dart'; // Make sure to import the OrderService
 import 'package:splitz/constants/app_colors.dart';
+import 'package:splitz/ui/custom_widgets/app_layout.dart';
 import 'package:splitz/ui/custom_widgets/nav_bar_client.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/current_order_screen.dart';
 import 'package:splitz/ui/screens/client_screens/menu.dart';
-import 'package:splitz/ui/screens/client_screens/orders.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_body.dart';
 import 'package:splitz/ui/screens/client_screens/view_cart.dart';
 
@@ -17,11 +17,15 @@ class ScannedHome extends StatefulWidget {
 }
 
 class _ScannedHomeState extends State<ScannedHome> {
+  // Navigator Key
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  
+  
   late int _currentIndex;
   void initState() {
     super.initState();
 
-    _currentIndex = 0;
+    _currentIndex = 1;
   }
 
   void _onTabTapped(int index) {
@@ -69,7 +73,9 @@ class _ScannedHomeState extends State<ScannedHome> {
                 _onTabTapped(2);
               },
             ),
-            OrdersScreen(),
+            CurrentOrderScreen(
+              orderId: snapshot.data!.first.orderId,
+            ),
             MenuScreen(restaurantId: snapshot.data!.first.restaurantId),
           ];
 

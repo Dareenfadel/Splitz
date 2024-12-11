@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/user.dart';
 
-import 'current_order_page__all_items_tab.dart';
-import 'current_order_page__my_items_tab.dart';
-import 'current_order_page__requests_tab.dart';
+import 'current_order_layout__all_items_tab.dart';
+import 'current_order_layout__my_items_tab.dart';
+import 'current_order_layout__requests_tab.dart';
 
-class CurrentOrderPage extends StatefulWidget {
+class CurrentOrderLayout extends StatefulWidget {
   final Order order;
   final Map<String, UserModel> orderUsersMap;
 
@@ -17,7 +16,7 @@ class CurrentOrderPage extends StatefulWidget {
   final Function(int itemIndex) onSharePressed;
   final Function() onProceedToPaymentPressed;
 
-  const CurrentOrderPage({
+  const CurrentOrderLayout({
     super.key,
     required this.order,
     required this.orderUsersMap,
@@ -29,17 +28,21 @@ class CurrentOrderPage extends StatefulWidget {
   });
 
   @override
-  State<CurrentOrderPage> createState() => _CurrentOrderPageState();
+  State<CurrentOrderLayout> createState() => _CurrentOrderLayoutState();
 }
 
-class _CurrentOrderPageState extends State<CurrentOrderPage>
+class _CurrentOrderLayoutState extends State<CurrentOrderLayout>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: 1,
+    );
   }
 
   @override
@@ -61,7 +64,7 @@ class _CurrentOrderPageState extends State<CurrentOrderPage>
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Container(
-        color: AppColors.primary,
+        color: Theme.of(context).colorScheme.primary,
         child: SafeArea(
           child: Column(
             children: <Widget>[
@@ -99,19 +102,19 @@ class _CurrentOrderPageState extends State<CurrentOrderPage>
     return TabBarView(
       controller: _tabController,
       children: [
-        CurrentOrderPage_RequestsTab(
+        CurrentOrderLayout_RequestsTab(
           order: widget.order,
           orderUsersMap: widget.orderUsersMap,
           onApprovePressed: widget.onApprovePressed,
           onRejectPressed: widget.onRejectPressed,
         ),
-        CurrentOrderPage_MyItemsTab(
+        CurrentOrderLayout_MyItemsTab(
           order: widget.order,
           orderUsersMap: widget.orderUsersMap,
           onManagePressed: widget.onManagePressed,
           onProceedToPaymentPressed: widget.onProceedToPaymentPressed,
         ),
-        CurrentOrderPage_AllItemsTab(
+        CurrentOrderLayout_AllItemsTab(
           order: widget.order,
           ordersUsersMap: widget.orderUsersMap,
           onManagePressed: widget.onManagePressed,

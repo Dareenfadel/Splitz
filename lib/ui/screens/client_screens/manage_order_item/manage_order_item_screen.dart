@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:provider/provider.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_item_service.dart';
 import 'package:splitz/ui/custom_widgets/default_stream_builder.dart';
 
-import 'widgets/manage_order_item_page/manage_order_item_page.dart';
+import 'widgets/manage_order_item_layout/manage_order_item_layout.dart';
 
 class ManageOrderItemScreen extends StatefulWidget {
   final String orderId;
@@ -23,33 +26,43 @@ class ManageOrderItemScreen extends StatefulWidget {
 
 class _ManageOrderItemScreenState extends State<ManageOrderItemScreen> {
   final OrderItemService _orderItemService = OrderItemService();
-  late final Stream<(OrderItem, Map<String, UserModel>)> _stream;
+
   late final UserModel _currentUser;
+  late final Stream<(OrderItem, Map<String, UserModel>)> _stream;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
-    _stream = _orderItemService.listenToOrderItemAndItsUsers(
+    _currentUser = context.read<UserModel>();
+    _stream = _orderItemService
+        .listenToOrderItemAndItsUsers(
       orderId: widget.orderId,
       itemIndex: widget.itemIndex,
-    );
-    _currentUser = context.read<UserModel>();
+    )
+        .map((data) {
+      if (mounted) context.loaderOverlay.hide();
+      return data;
+    });
   }
 
-  _onLeavePressed() {
-    _orderItemService.removeUserFromOrderItem(
+  _onLeavePressed() async {
+    context.loaderOverlay.show();
+    await _orderItemService.removeUserFromOrderItem(
       orderId: widget.orderId,
       itemIndex: widget.itemIndex,
       userId: _currentUser.uid,
     );
+    if (mounted) Navigator.pop(context);
   }
 
-  _onRequestPressed(List<String> selectedUsersIds) {
+  _onRequestPressed(List<String> selectedUsersIds) async {
+    context.loaderOverlay.show();
     for (var userId in selectedUsersIds) {
-      _orderItemService.addUserToOrderItem(
+      await _orderItemService.sendRequestToOrderItem(
         orderId: widget.orderId,
         itemIndex: widget.itemIndex,
-        userId: userId,
+        requestedByUserId: _currentUser.uid,
+        requestedToUserId: userId,
       );
     }
   }
@@ -60,7 +73,8 @@ class _ManageOrderItemScreenState extends State<ManageOrderItemScreen> {
       stream: _stream,
       builder: (data) {
         var (orderItem, orderUsersMap) = data;
-        return ManageOrderItemPage(
+
+        return ManageOrderItemLayout(
           orderItem: orderItem,
           orderUsersMap: orderUsersMap,
           onRequestPressed: _onRequestPressed,

@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
+import 'package:splitz/data/models/order_item_user.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/data/services/menu_item_service.dart';
 import 'package:splitz/data/services/users_service.dart';
 
 class OrderService {
@@ -71,7 +73,6 @@ class OrderService {
         );
 
         _validateOrder(order);
-
         return order;
       }).asyncMap((order) async {
         var orderUsersMap =
@@ -429,4 +430,61 @@ class OrderService {
       throw Exception('Failed to get order item details: $e');
     }
   }
+
+  // addItemToOrder({
+  //   required String restaurantId,
+  //   required String orderId,
+  //   required String menuItemId,
+  //   required String originalUserId,
+  // }) async {
+  //   var menuItem = await MenuItemService().fetchMenuItemWithDetails(
+  //     restaurantId,
+  //     menuItemId,
+  //   );
+
+  //   if (menuItem == null) {
+  //     throw Exception('Menu item not found');
+  //   }
+
+  //   var orderItem = OrderItem(
+  //     itemId: menuItemId,
+  //     itemName: menuItem.name,
+  //     imageUrl: menuItem.image,
+  //     quantity: 1,
+  //     extras: {},
+  //     notes: '',
+  //     paidAmount: 0,
+  //     paidUsers: {},
+  //     prepared: false,
+  //     price: menuItem.price,
+  //     usersList: [
+  //       OrderItemUser(
+  //         userId: originalUserId,
+  //         requestStatus: 'accepted',
+  //       ),
+  //     ],
+  //   );
+
+  //   var orderRef = _firestore.collection('orders').doc(orderId);
+  //   var orderSnapshot = await orderRef.get();
+
+  //   if (!orderSnapshot.exists) {
+  //     throw Exception('Order not found');
+  //   }
+
+  //   Order order = Order.fromFirestore(
+  //     orderSnapshot.id,
+  //     orderSnapshot.data() as Map<String, dynamic>,
+  //   );
+
+  //   order.items.add(orderItem);
+  //   order.totalBill += menuItem.price;
+
+  //   var newOrder = order.toMap();
+
+  //   await orderRef.update({
+  //     'items': newOrder['items'],
+  //     'total_bill': newOrder['total_bill'],
+  //   });
+  // }
 }

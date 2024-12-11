@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:provider/provider.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_item_service.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/default_stream_builder.dart';
-import 'widgets/current_order_page/current_order_page.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/already_paid_message.dart';
+import 'package:splitz/ui/screens/client_screens/payment/choose_payment_method_screen.dart';
+import 'widgets/current_order_layout/current_order_layout.dart';
 import '../manage_order_item/manage_order_item_screen.dart';
 
 class CurrentOrderScreen extends StatefulWidget {
@@ -30,40 +33,56 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
   @override
   void initState() {
     super.initState();
-    _stream = _orderService.listenToOrderAndItsUsersByOrderId(widget.orderId);
+    _stream = _orderService
+        .listenToOrderAndItsUsersByOrderId(widget.orderId)
+        .map((data) {
+      if (mounted) context.loaderOverlay.hide();
+      return data;
+    });
+
     _currentUser = context.read<UserModel>();
   }
 
-  onProceedToPaymentPressed() {}
-
-  onSharePressed(int itemIndex) {
-    _orderItemService.addUserToOrderItem(
-      orderId: widget.orderId,
-      itemIndex: itemIndex,
-      userId: _currentUser.uid,
-    );
-  }
-
-  onRejectPressed(int itemIndex) {
-    _orderItemService.rejectOrderItemByUserId(
-      orderId: widget.orderId,
-      itemIndex: itemIndex,
-      userId: _currentUser.uid,
-    );
-  }
-
-  onApprovePressed(int itemIndex) {
-    _orderItemService.acceptOrderItemByUserId(
-      orderId: widget.orderId,
-      itemIndex: itemIndex,
-      userId: _currentUser.uid,
-    );
-  }
-
-  onManagePressed(int itemIndex) {
+  _onProceedToPaymentPressed(Order order) {
     Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => ChoosePaymentMethodScreen(
+              order: order,
+            )));
+  }
+
+  _onSharePressed(int itemIndex) async {
+    context.loaderOverlay.show();
+    await _orderItemService.addUserToOrderItem(
+      orderId: widget.orderId,
+      itemIndex: itemIndex,
+      userId: _currentUser.uid,
+    );
+  }
+
+  _onRejectPressed(int itemIndex) async {
+    context.loaderOverlay.show();
+    await _orderItemService.rejectOrderItemByUserId(
+      orderId: widget.orderId,
+      itemIndex: itemIndex,
+      userId: _currentUser.uid,
+    );
+  }
+
+  _onApprovePressed(int itemIndex) async {
+    context.loaderOverlay.show();
+    await _orderItemService.acceptOrderItemByUserId(
+      orderId: widget.orderId,
+      itemIndex: itemIndex,
+      userId: _currentUser.uid,
+    );
+  }
+
+  _onManagePressed(int itemIndex) async {
+    await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => ManageOrderItemScreen(
-            itemIndex: itemIndex, orderId: widget.orderId)));
+              itemIndex: itemIndex,
+              orderId: widget.orderId,
+            )));
   }
 
   @override
@@ -73,14 +92,21 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
       builder: (data) {
         var (order, orderUsersMap) = data;
 
-        return CurrentOrderPage(
+        if (order.userPaid(_currentUser.uid)) {
+          return AlreadyPaidMessage(
+            order: order,
+            orderUsersMap: orderUsersMap,
+          );
+        }
+
+        return CurrentOrderLayout(
           order: order,
           orderUsersMap: orderUsersMap,
-          onApprovePressed: onApprovePressed,
-          onRejectPressed: onRejectPressed,
-          onManagePressed: onManagePressed,
-          onSharePressed: onSharePressed,
-          onProceedToPaymentPressed: onProceedToPaymentPressed,
+          onApprovePressed: _onApprovePressed,
+          onRejectPressed: _onRejectPressed,
+          onManagePressed: _onManagePressed,
+          onSharePressed: _onSharePressed,
+          onProceedToPaymentPressed: () => _onProceedToPaymentPressed(order),
         );
       },
     );

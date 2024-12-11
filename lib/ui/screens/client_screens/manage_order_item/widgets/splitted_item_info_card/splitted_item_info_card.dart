@@ -62,10 +62,10 @@ class SplittedItemInfoCard extends StatelessWidget {
                 ),
                 Text(
                   '${splitPrice.toStringAsFixed(2)} EGP',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],

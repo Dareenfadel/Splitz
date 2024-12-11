@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:splitz/data/models/menu_category.dart';
 import 'package:splitz/ui/custom_widgets/menu_grid_item.dart';
-import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_category_Service.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:toastification/toastification.dart';
-import 'package:splitz/ui/screens/client_screens/add_to_cart.dart';
 
 import 'package:splitz/ui/screens/manager_screens/menu_screens/menuItems_of_category_screen.dart';
+
 class MenuScreen extends StatefulWidget {
   final String restaurantId;
 
@@ -30,7 +28,6 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Future<void> _fetchCategories() async {
-  
     restaurantId = widget.restaurantId;
     try {
       List<MenuCategory> fetchedCategories =
@@ -47,13 +44,11 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-
-   
   // Method to show error SnackBar
   void _showErrorSnackBar(String message) {
     toastification.show(
       context: context,
-      title:const  Text('Error'),
+      title: const Text('Error'),
       type: ToastificationType.error,
       style: ToastificationStyle.fillColored,
       autoCloseDuration: const Duration(seconds: 3),
@@ -69,7 +64,6 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
         title: const Text('Menu'),
         centerTitle: true,
@@ -91,7 +85,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 isLoading
                     ? Center(child: CircularProgressIndicator())
                     : categories.isEmpty
-                        ? Center(child:const  Text('No categories available'))
+                        ? Center(child: const Text('No categories available'))
                         : Expanded(
                             child: GridView.builder(
                               gridDelegate:
@@ -109,35 +103,38 @@ class _MenuScreenState extends State<MenuScreen> {
                                   imageUrl: category.image,
                                   label: category.name,
                                   onPressed: () async {
-                                 Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => CategoryItemsPage(
-                                    categoryId: category.id??"",
-                                    restaurantId: restaurantId!,
-                                    categoryName: category.name,
-                                    categoryDescription: category.description,
-                                    categoryImageUrl: category.image,
-                                  )),
-                                );
-                                //testtt
-                                //  Navigator.push(
-                                //       context,
-                                //       MaterialPageRoute(
-                                //         builder: (context) => AddToCartScreen(
-                                //           restaurantId: widget.restaurantId,
-                                //          orderId: "56hhmqwCruicNwKGnw1H",
-                                //          orderItemInd: 6,
-                                //         ),
-                                //       ),
-                                //     );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CategoryItemsPage(
+                                                categoryId: category.id ?? "",
+                                                restaurantId: restaurantId!,
+                                                categoryName: category.name,
+                                                categoryDescription:
+                                                    category.description,
+                                                categoryImageUrl:
+                                                    category.image,
+                                              )),
+                                    );
+                                    //testtt
+                                    //  Navigator.push(
+                                    //       context,
+                                    //       MaterialPageRoute(
+                                    //         builder: (context) => AddToCartScreen(
+                                    //           restaurantId: widget.restaurantId,
+                                    //          orderId: "56hhmqwCruicNwKGnw1H",
+                                    //          orderItemInd: 6,
+                                    //         ),
+                                    //       ),
+                                    //     );
                                   },
-                                );                            
+                                );
                               },
                             ),
                           ),
               ],
             ),
-           
           ],
         ),
       ),

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:splitz/routes/manager_routes.dart';
 import 'package:splitz/ui/screens/authentication/authenticate.dart';
 import 'package:splitz/ui/screens/client_screens/home.dart';
-import 'package:splitz/ui/screens/manager_screens/home.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_page.dart';
 
 class Wrapper extends StatelessWidget {
@@ -13,23 +12,21 @@ class Wrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
-    if (user == null){
+    if (user == null) {
       return Authenticate();
-    }
-    else {
+    } else {
       print(user.userType);
-      print(user.currentOrderId); 
+      print(user.currentOrderId);
       print(user.currentOrderId != null && user.currentOrderId!.length > 0);
       if (user.userType == 'manager') {
         return ManagerNavigator();
       } else {
-        if(user.currentOrderId != null && user.currentOrderId!.length > 0){
+        if (user.currentOrderId != null && user.currentOrderId!.length > 0) {
           print('Scanned Home');
           return ScannedHome();
-        }
-        else{
+        } else {
           print('Client Home');
-        return ClientHome();
+          return ClientHome();
         }
       }
     }

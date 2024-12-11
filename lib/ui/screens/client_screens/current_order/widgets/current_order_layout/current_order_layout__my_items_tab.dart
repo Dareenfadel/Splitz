@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
 
 import '../order_item_card/order_item_card__in_receipt.dart';
-import '../order_item_card/order_item_card_props.dart';
 
 // ignore: camel_case_types
-class CurrentOrderPage_MyItemsTab extends StatefulWidget {
+class CurrentOrderLayout_MyItemsTab extends StatefulWidget {
   final Order order;
   final Map<String, UserModel> orderUsersMap;
   final Function(int itemIndex) onManagePressed;
   final Function() onProceedToPaymentPressed;
 
-  const CurrentOrderPage_MyItemsTab({
+  const CurrentOrderLayout_MyItemsTab({
     super.key,
     required this.onManagePressed,
     required this.onProceedToPaymentPressed,
@@ -24,25 +22,22 @@ class CurrentOrderPage_MyItemsTab extends StatefulWidget {
   });
 
   @override
-  State<CurrentOrderPage_MyItemsTab> createState() =>
-      _CurrentOrderPage_MyItemsTabState();
+  State<CurrentOrderLayout_MyItemsTab> createState() =>
+      _CurrentOrderLayout_MyItemsTabState();
 }
 
 // ignore: camel_case_types
-class _CurrentOrderPage_MyItemsTabState
-    extends State<CurrentOrderPage_MyItemsTab> {
-  late List<OrderItem> items;
-
-  @override
-  void initState() {
-    super.initState();
-    var currentUser = context.read<UserModel>();
-    items = widget.order.acceptedItemsForUserId(currentUser.uid);
-  }
+class _CurrentOrderLayout_MyItemsTabState
+    extends State<CurrentOrderLayout_MyItemsTab> {
+  late UserModel currentUser;
+  late List<OrderItem> myItems;
 
   @override
   Widget build(BuildContext context) {
-    return (items.isEmpty ? _buildNoItems() : _buildItemsList());
+    currentUser = context.watch<UserModel>();
+    myItems = widget.order.acceptedItemsForUserId(currentUser.uid);
+
+    return (myItems.isEmpty ? _buildNoItems() : _buildItemsList());
   }
 
   Widget _buildItemsList() {
@@ -53,8 +48,8 @@ class _CurrentOrderPage_MyItemsTabState
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
             shrinkWrap: true,
-            itemCount: items.length,
-            itemBuilder: (context, index) => _buildItem(index),
+            itemCount: myItems.length,
+            itemBuilder: (context, index) => _buildItem(myItems[index]),
           ),
         ),
         _buildTotalPriceContainer()
@@ -63,8 +58,6 @@ class _CurrentOrderPage_MyItemsTabState
   }
 
   Container _buildTotalPriceContainer() {
-    var currentUser = context.watch<UserModel>();
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
       decoration: BoxDecoration(
@@ -84,26 +77,26 @@ class _CurrentOrderPage_MyItemsTabState
             padding:
                 const EdgeInsets.symmetric(vertical: 30.0, horizontal: 24.0),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Total',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 Text(
-                  '${widget.order.totalBillForUserId(currentUser.uid)} EGP',
-                  style: const TextStyle(
+                  '${widget.order.totalBillForUserId(currentUser.uid).toStringAsFixed(2)} EGP',
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],
@@ -117,7 +110,7 @@ class _CurrentOrderPage_MyItemsTabState
                 widget.onProceedToPaymentPressed();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -131,15 +124,13 @@ class _CurrentOrderPage_MyItemsTabState
     );
   }
 
-  Widget _buildItem(int itemIndex) {
-    var item = items[itemIndex];
+  Widget _buildItem(OrderItem item) {
+    var itemIndex = widget.order.items.indexOf(item);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: OrderItemCard_InReceipt(
-        item: OrderItemCardProps_Item.fromOrderItem(
-          item: item,
-          usersMap: widget.orderUsersMap,
-        ),
+        item: item,
+        ordersUsersMap: widget.orderUsersMap,
         onManagePressed: () => widget.onManagePressed(itemIndex),
       ),
     );
@@ -153,22 +144,22 @@ class _CurrentOrderPage_MyItemsTabState
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.shopping_cart,
               size: 80,
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'No Items Added Yet!',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 12),

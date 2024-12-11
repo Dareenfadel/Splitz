@@ -173,7 +173,6 @@ class _ClientHomeState extends State<ClientHome> {
     );
   }
 Widget _buildOffersSection(List<Restaurant> offers) {
-
   final List<Widget> offerCards = offers.map((restaurant) {
     final category = restaurant.menuCategories.firstWhere(
       (c) => c.name.toLowerCase() == 'offers',

@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/order_item_type.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/order_item_card/order_item_card__base.dart';
 import 'package:splitz/ui/screens/client_screens/current_order/widgets/order_item_card/order_item_card__request.dart';
 
 import '../order_item_card/order_item_card__in_receipt.dart';
 import '../order_item_card/order_item_card__other_people_item.dart';
-import '../order_item_card/order_item_card_props.dart';
 
 // ignore: camel_case_types
-class CurrentOrderPage_AllItemsTab extends StatefulWidget {
+class CurrentOrderLayout_AllItemsTab extends StatefulWidget {
   final Order order;
   final Map<String, UserModel> ordersUsersMap;
   final Function(int itemIndex) onManagePressed;
@@ -20,7 +19,7 @@ class CurrentOrderPage_AllItemsTab extends StatefulWidget {
   final Function(int itemIndex) onAcceptPressed;
   final Function(int itemIndex) onRejectPressed;
 
-  const CurrentOrderPage_AllItemsTab({
+  const CurrentOrderLayout_AllItemsTab({
     super.key,
     required this.onManagePressed,
     required this.onSharePressed,
@@ -31,17 +30,18 @@ class CurrentOrderPage_AllItemsTab extends StatefulWidget {
   });
 
   @override
-  State<CurrentOrderPage_AllItemsTab> createState() =>
-      _CurrentOrderPage_AllItemsTabState();
+  State<CurrentOrderLayout_AllItemsTab> createState() =>
+      _CurrentOrderLayout_AllItemsTabState();
 }
 
 // ignore: camel_case_types
-class _CurrentOrderPage_AllItemsTabState
-    extends State<CurrentOrderPage_AllItemsTab> {
+class _CurrentOrderLayout_AllItemsTabState
+    extends State<CurrentOrderLayout_AllItemsTab> {
   late UserModel currentUser;
 
   @override
   Widget build(BuildContext context) {
+    currentUser = context.watch<UserModel>();
     return (widget.order.items.isEmpty ? _buildNoItems() : _buildItemsList());
   }
 
@@ -56,56 +56,56 @@ class _CurrentOrderPage_AllItemsTabState
 
   Widget _buildItem(int itemIndex) {
     var item = widget.order.items[itemIndex];
-    var currentUser = context.watch<UserModel>();
     var itemType = item.itemTypeForUserId(currentUser.uid);
-    var widgetMap = {
-      OrderItemType.request: _buildRequestItem(itemIndex),
-      OrderItemType.otherPeopleItem: _buildOtherPeopleItem(itemIndex),
-      OrderItemType.myItem: _buildMyItem(itemIndex),
-    };
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: widgetMap[itemType],
+      child: switch (itemType) {
+        OrderItemType.fullyPaid => _buildFullyPaidItem(item),
+        OrderItemType.request => _buildRequestItem(item),
+        OrderItemType.otherPeopleItem => _buildOtherPeopleItem(item),
+        OrderItemType.myItem => _buildMyItem(item),
+      },
     );
   }
 
-  OrderItemCard_Request _buildRequestItem(int itemIndex) {
-    var currentUser = context.watch<UserModel>();
-    var item = widget.order.items[itemIndex];
+  _buildFullyPaidItem(OrderItem item) {
+    return OrderItemCard_Base(
+      item: item,
+      orderUsersMap: widget.ordersUsersMap,
+    );
+  }
+
+  OrderItemCard_Request _buildRequestItem(OrderItem item) {
+    var itemIndex = widget.order.items.indexOf(item);
 
     return OrderItemCard_Request(
-      item: OrderItemCardProps_Item.fromOrderItem(
-        item: item,
-        usersMap: widget.ordersUsersMap,
+      item: item,
+      request: item.usersList.firstWhere(
+        (element) => element.userId == currentUser.uid,
       ),
-      requestor: OrderItemCardProps_User.fromUserModel(
-        widget.ordersUsersMap[item.getRequestingUserIdFor(currentUser.uid)]!,
-      ),
+      orderUsersMap: widget.ordersUsersMap,
       onApprovePressed: () => widget.onAcceptPressed(itemIndex),
       onRejectPressed: () => widget.onRejectPressed(itemIndex),
     );
   }
 
-  OrderItemCard_OtherPeopleItem _buildOtherPeopleItem(int itemIndex) {
-    var item = widget.order.items[itemIndex];
+  OrderItemCard_OtherPeopleItem _buildOtherPeopleItem(OrderItem item) {
+    var itemIndex = widget.order.items.indexOf(item);
+
     return OrderItemCard_OtherPeopleItem(
-      item: OrderItemCardProps_Item.fromOrderItem(
-        item: item,
-        usersMap: widget.ordersUsersMap,
-      ),
+      item: item,
+      orderUsersMap: widget.ordersUsersMap,
       onSharePressed: () => widget.onSharePressed(itemIndex),
     );
   }
 
-  OrderItemCard_InReceipt _buildMyItem(int itemIndex) {
-    var item = widget.order.items[itemIndex];
+  Widget _buildMyItem(OrderItem item) {
+    var itemIndex = widget.order.items.indexOf(item);
 
     return OrderItemCard_InReceipt(
-      item: OrderItemCardProps_Item.fromOrderItem(
-        item: item,
-        usersMap: widget.ordersUsersMap,
-      ),
+      item: item,
+      ordersUsersMap: widget.ordersUsersMap,
       onManagePressed: () => widget.onManagePressed(itemIndex),
     );
   }
@@ -118,22 +118,22 @@ class _CurrentOrderPage_AllItemsTabState
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.restaurant_menu,
               size: 80,
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'No Orders Yet!',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 12),
@@ -155,7 +155,7 @@ class _CurrentOrderPage_AllItemsTabState
           //   icon: const Icon(Icons.add_circle_outline),
           //   label: const Text('Add First Item'),
           //   style: ElevatedButton.styleFrom(
-          //     backgroundColor: AppColors.primary,
+          //     backgroundColor: Theme.of(context).colorScheme.primary,
           //     foregroundColor: Colors.white,
           //     padding: const EdgeInsets.symmetric(
           //         horizontal: 24, vertical: 12),

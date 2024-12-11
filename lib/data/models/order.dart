@@ -5,8 +5,8 @@ class Order {
   final String restaurantId;
   final String status;
   final String tableNumber;
-  final double totalBill;
-  final double paidSoFar;
+  double totalBill;
+  double paidSoFar;
   final bool paid;
   final List<OrderItem> items;
   final List<String> userIds;
@@ -41,8 +41,19 @@ class Order {
 
   double totalBillForUserId(String userId) {
     return acceptedItemsForUserId(userId)
-        .map((item) => item.price)
+        .map((item) => item.sharePrice)
         .fold(0, (prev, price) => prev + price);
+  }
+
+  bool userHasItems(String userId) {
+    return items
+        .any((item) => item.usersList.any((user) => user.userId == userId));
+  }
+
+  bool userPaid(String userId) {
+    return userHasItems(userId) &&
+        acceptedItemsForUserId(userId).every((item) => item.userPaid(userId));
+        
   }
 
   factory Order.fromFirestore(String id, Map<String, dynamic> firestore) {

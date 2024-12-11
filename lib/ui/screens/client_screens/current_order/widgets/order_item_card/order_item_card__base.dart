@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:splitz/constants/app_colors.dart';
-
-import 'order_item_card_props.dart';
+import 'package:splitz/data/models/order_item.dart';
+import 'package:splitz/data/models/order_item_user.dart';
+import 'package:splitz/data/models/user.dart';
+import 'package:splitz/ui/screens/client_screens/manage_order_item/widgets/splitted_users_list/splitted_users_list.dart';
 
 // ignore: camel_case_types
 class OrderItemCard_Base extends StatelessWidget {
-  final OrderItemCardProps_Item item;
+  final OrderItem item;
+  final Map<String, UserModel> orderUsersMap;
 
   const OrderItemCard_Base({
     super.key,
     required this.item,
+    required this.orderUsersMap,
   });
 
   @override
@@ -51,38 +54,7 @@ class OrderItemCard_Base extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ...item.sharedWith.take(2).map((user) => Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: CircleAvatar(
-                            radius: 12,
-                            backgroundColor: Colors.grey[300],
-                            backgroundImage: NetworkImage(user.imageUrl ?? ''),
-                            child: Text(
-                              user.name[0],
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        )),
-                    if (item.sharedWith.length > 2)
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundColor: Colors.grey[300],
-                        child: const Center(
-                            child: Icon(
-                          Icons.more_horiz,
-                          size: 12,
-                          color: Colors.grey,
-                        )),
-                      ),
-                  ],
-                )
+                _buildOtherUsersList(context)
               ],
             ),
             const SizedBox(width: 16),
@@ -93,7 +65,7 @@ class OrderItemCard_Base extends StatelessWidget {
                 children: [
                   // Burger Title
                   Text(
-                    item.title,
+                    item.itemName,
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -111,22 +83,118 @@ class OrderItemCard_Base extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  // Old Price
                   Text(
-                    '${item.totalPrice} EGP',
-                    style:
-                        const TextStyle(fontSize: 14, color: AppColors.primary),
+                    '${item.price.toStringAsFixed(2)} EGP',
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.primary),
                   ),
                 ],
               ),
             ),
-            Text(
-              '${item.sharePrice} EGP',
-              style: const TextStyle(
-                fontSize: 18,
+            if (!item.isFullyPaid)
+              Text(
+                '${item.sharePrice.toStringAsFixed(2)} EGP',
+                style: const TextStyle(
+                  fontSize: 18,
+                ),
+              )
+            else
+              const Row(
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    color: Colors.green,
+                    size: 24,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Paid',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
               ),
-            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  GestureDetector _buildOtherUsersList(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return Dialog(
+              child: Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Shared With',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SplittedUsersList(
+                        users: item.usersList,
+                        orderUsersMap: orderUsersMap,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ...item.usersList
+              .take(2)
+              .map((user) => _buildOtherUserListItem(user)),
+          if (item.usersList.length > 2)
+            CircleAvatar(
+              radius: 12,
+              backgroundColor: Colors.grey[300],
+              child: const Center(
+                  child: Icon(
+                Icons.more_horiz,
+                size: 12,
+                color: Colors.grey,
+              )),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Padding _buildOtherUserListItem(OrderItemUser user) {
+    var userModel = orderUsersMap[user.userId]!;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 4),
+      child: CircleAvatar(
+        radius: 12,
+        backgroundColor: Colors.grey[300],
+        backgroundImage: NetworkImage(userModel.imageUrl ?? ''),
+        child: Text(
+          (userModel.name ?? "Unknown")[0],
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

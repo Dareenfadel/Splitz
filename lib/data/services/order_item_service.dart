@@ -38,12 +38,12 @@ class OrderItemService {
     });
   }
 
-  _updateOrderItem({
+  Future<void> updateOrderItem({
     required String orderId,
     required int itemIndex,
     required Function(OrderItem) updateFunction,
-  }) {
-    _firestore.runTransaction((transaction) async {
+  }) async {
+    return _firestore.runTransaction((transaction) async {
       var orderRef = _firestore.collection('orders').doc(orderId);
       var orderSnapshot = await transaction.get(orderRef);
 
@@ -60,9 +60,7 @@ class OrderItemService {
         throw Exception('Invalid item index');
       }
 
-      var item = order.items[itemIndex];
-
-      updateFunction(item);
+      updateFunction(order.items[itemIndex]);
 
       var orderMap = order.toMap();
       transaction.update(orderRef, {
@@ -71,12 +69,12 @@ class OrderItemService {
     });
   }
 
-  acceptOrderItemByUserId({
+  Future<void> acceptOrderItemByUserId({
     required String orderId,
     required int itemIndex,
     required String userId,
-  }) {
-    _updateOrderItem(
+  }) async {
+    await updateOrderItem(
       orderId: orderId,
       itemIndex: itemIndex,
       updateFunction: (item) {
@@ -100,12 +98,12 @@ class OrderItemService {
     );
   }
 
-  rejectOrderItemByUserId({
+  Future<void> rejectOrderItemByUserId({
     required String orderId,
     required int itemIndex,
     required String userId,
-  }) {
-    _updateOrderItem(
+  }) async {
+    await updateOrderItem(
       orderId: orderId,
       itemIndex: itemIndex,
       updateFunction: (item) {
@@ -125,23 +123,23 @@ class OrderItemService {
     );
   }
 
-  sendRequestToOrderItem({
+  Future<void> sendRequestToOrderItem({
     required String orderId,
     required int itemIndex,
-    required String requestedUserId,
+    required String requestedToUserId,
     required String requestedByUserId,
-  }) {
-    _updateOrderItem(
+  }) async {
+    await updateOrderItem(
       orderId: orderId,
       itemIndex: itemIndex,
       updateFunction: (item) {
-        if (item.userList.any((u) => u.userId == requestedUserId)) {
+        if (item.userList.any((u) => u.userId == requestedToUserId)) {
           throw Exception('User already exists in item');
         }
 
         item.userList.add(
           OrderItemUser(
-            userId: requestedUserId,
+            userId: requestedToUserId,
             requestStatus: 'pending',
             requestedBy: requestedByUserId,
           ),
@@ -150,12 +148,12 @@ class OrderItemService {
     );
   }
 
-  addUserToOrderItem({
+  Future<void> addUserToOrderItem({
     required String orderId,
     required int itemIndex,
     required String userId,
-  }) {
-    _updateOrderItem(
+  }) async {
+    await updateOrderItem(
       orderId: orderId,
       itemIndex: itemIndex,
       updateFunction: (item) {
@@ -174,12 +172,12 @@ class OrderItemService {
     );
   }
 
-  removeUserFromOrderItem({
+  Future<void> removeUserFromOrderItem({
     required String orderId,
     required int itemIndex,
     required String userId,
-  }) {
-    _updateOrderItem(
+  }) async {
+    await updateOrderItem(
       orderId: orderId,
       itemIndex: itemIndex,
       updateFunction: (item) {

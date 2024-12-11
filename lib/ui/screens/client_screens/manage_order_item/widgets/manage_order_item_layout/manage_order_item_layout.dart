@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
-import 'package:splitz/ui/screens/client_screens/manage_order_item/widgets/selectable_users_list/selectable_users_list_props.dart';
 
 import '../splitted_item_info_card/splitted_item_info_card.dart';
 import '../splitted_users_list/splitted_users_list.dart';
 import '../selectable_users_list/selectable_users_list.dart';
 
 // ignore: camel_case_types
-class ManageOrderItemPage extends StatefulWidget {
+class ManageOrderItemLayout extends StatefulWidget {
   final OrderItem orderItem;
   final Map<String, UserModel> orderUsersMap;
   final Function(List<String> selectedUsers) onRequestPressed;
   final Function() onLeavePressed;
 
-  const ManageOrderItemPage({
+  const ManageOrderItemLayout({
     super.key,
     required this.orderItem,
     required this.onLeavePressed,
@@ -24,11 +22,11 @@ class ManageOrderItemPage extends StatefulWidget {
   });
 
   @override
-  State<ManageOrderItemPage> createState() => _ManageOrderItemPageState();
+  State<ManageOrderItemLayout> createState() => _ManageOrderItemLayoutState();
 }
 
 // ignore: camel_case_types
-class _ManageOrderItemPageState extends State<ManageOrderItemPage> {
+class _ManageOrderItemLayoutState extends State<ManageOrderItemLayout> {
   final Set<String> _selectedUsers = {};
 
   List<UserModel> get notSplittedWithUsers {
@@ -40,6 +38,26 @@ class _ManageOrderItemPageState extends State<ManageOrderItemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.only(
           top: 48,
@@ -82,28 +100,23 @@ class _ManageOrderItemPageState extends State<ManageOrderItemPage> {
 
   SplittedUsersList _buildSplittedWithUsersList() {
     return SplittedUsersList(
-        users: widget.orderItem.userList
-            .map((user) => SplittedUsersListProps_User.fromOrderItemUser(
-                  user: user,
-                  orderUsersMap: widget.orderUsersMap,
-                ))
-            .toList());
+      users: widget.orderItem.userList,
+      orderUsersMap: widget.orderUsersMap,
+    );
   }
 
   SelectableUserList _buildRequestUsersList() {
     return SelectableUserList(
-        users: notSplittedWithUsers
-            .map((user) => SelectableUsersListProps_User.fromUserModel(user))
-            .toList(),
+        users: notSplittedWithUsers,
         selectedUsersIds: _selectedUsers,
         onUserSelected: (user) {
           setState(() {
-            _selectedUsers.add(user.id);
+            _selectedUsers.add(user.uid);
           });
         },
         onUserDeselected: (user) {
           setState(() {
-            _selectedUsers.remove(user.id);
+            _selectedUsers.remove(user.uid);
           });
         });
   }
@@ -114,14 +127,18 @@ class _ManageOrderItemPageState extends State<ManageOrderItemPage> {
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: widget.onLeavePressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: AppColors.primary,
+              foregroundColor: Theme.of(context).colorScheme.primary,
               elevation: 0,
-              side: const BorderSide(color: AppColors.primary, width: 2),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
+                borderRadius: BorderRadius.circular(20),
+              ),
               padding: const EdgeInsets.symmetric(vertical: 16.0),
             ),
             child: const Text(
@@ -140,7 +157,7 @@ class _ManageOrderItemPageState extends State<ManageOrderItemPage> {
               widget.onRequestPressed(_selectedUsers.toList());
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
               padding: const EdgeInsets.symmetric(vertical: 16.0),
