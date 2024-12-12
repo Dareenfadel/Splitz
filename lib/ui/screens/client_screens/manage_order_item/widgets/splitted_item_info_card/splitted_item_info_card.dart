@@ -32,14 +32,14 @@ class SplittedItemInfoCard extends StatelessWidget {
                 Text(
                   'Total Price',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: MediaQuery.of(context).size.width * 0.03,
                     color: Colors.grey[600],
                   ),
                 ),
                 Text(
                   '${totalPrice.toStringAsFixed(2)} EGP',
-                  style: const TextStyle(
-                    fontSize: 24,
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.05,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -56,14 +56,14 @@ class SplittedItemInfoCard extends StatelessWidget {
                 Text(
                   'Your Share',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: MediaQuery.of(context).size.width * 0.03,
                     color: Colors.grey[600],
                   ),
                 ),
                 Text(
                   '${splitPrice.toStringAsFixed(2)} EGP',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: MediaQuery.of(context).size.width * 0.05,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),

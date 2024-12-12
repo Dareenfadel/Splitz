@@ -6,7 +6,7 @@ import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_item_service.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/default_stream_builder.dart';
-import 'package:splitz/ui/screens/client_screens/current_order/widgets/already_paid_message.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/split_equally_screen.dart';
 import 'package:splitz/ui/screens/client_screens/payment/choose_payment_method_screen.dart';
 import 'widgets/current_order_layout/current_order_layout.dart';
 import '../manage_order_item/manage_order_item_screen.dart';
@@ -85,6 +85,16 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
             )));
   }
 
+  _onSplitEquallyPressed(Order order) async {
+    var requestorUserId = _currentUser.uid;
+    context.loaderOverlay.show();
+    await _orderService.sendSplitAllEquallyRequest(
+      orderId: order.orderId,
+      requestorUserId: requestorUserId,
+    );
+    if (mounted) context.loaderOverlay.hide();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultStreamBuilder(
@@ -92,8 +102,8 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
       builder: (data) {
         var (order, orderUsersMap) = data;
 
-        if (order.userPaid(_currentUser.uid)) {
-          return AlreadyPaidMessage(
+        if (order.splitEquallyPendingUserIds.isNotEmpty) {
+          return SplitEquallyConfirmationScreen(
             order: order,
             orderUsersMap: orderUsersMap,
           );
@@ -107,6 +117,7 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
           onManagePressed: _onManagePressed,
           onSharePressed: _onSharePressed,
           onProceedToPaymentPressed: () => _onProceedToPaymentPressed(order),
+          onSplitEquallyPressed: () => _onSplitEquallyPressed(order),
         );
       },
     );

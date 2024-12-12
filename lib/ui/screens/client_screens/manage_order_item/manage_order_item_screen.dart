@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:provider/provider.dart';
+import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_item_service.dart';
+import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/default_stream_builder.dart';
+import 'package:toastification/toastification.dart';
 
 import 'widgets/manage_order_item_layout/manage_order_item_layout.dart';
 
@@ -25,20 +28,18 @@ class ManageOrderItemScreen extends StatefulWidget {
 }
 
 class _ManageOrderItemScreenState extends State<ManageOrderItemScreen> {
+  final OrderService _orderService = OrderService();
   final OrderItemService _orderItemService = OrderItemService();
 
   late final UserModel _currentUser;
-  late final Stream<(OrderItem, Map<String, UserModel>)> _stream;
+  late final Stream<(Order, Map<String, UserModel>)> _stream;
 
   @override
   void initState() {
     super.initState();
     _currentUser = context.read<UserModel>();
-    _stream = _orderItemService
-        .listenToOrderItemAndItsUsers(
-      orderId: widget.orderId,
-      itemIndex: widget.itemIndex,
-    )
+    _stream = _orderService
+        .listenToOrderAndItsUsersByOrderId(widget.orderId)
         .map((data) {
       if (mounted) context.loaderOverlay.hide();
       return data;
@@ -56,15 +57,19 @@ class _ManageOrderItemScreenState extends State<ManageOrderItemScreen> {
   }
 
   _onRequestPressed(List<String> selectedUsersIds) async {
-    context.loaderOverlay.show();
+    if (selectedUsersIds.isNotEmpty) {
+      context.loaderOverlay.show();
+    }
+
     for (var userId in selectedUsersIds) {
-      await _orderItemService.sendRequestToOrderItem(
+      _orderItemService.sendRequestToOrderItem(
         orderId: widget.orderId,
         itemIndex: widget.itemIndex,
         requestedByUserId: _currentUser.uid,
         requestedToUserId: userId,
       );
     }
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -72,9 +77,11 @@ class _ManageOrderItemScreenState extends State<ManageOrderItemScreen> {
     return DefaultStreamBuilder(
       stream: _stream,
       builder: (data) {
-        var (orderItem, orderUsersMap) = data;
+        var (order, orderUsersMap) = data;
+        var orderItem = order.items[widget.itemIndex];
 
         return ManageOrderItemLayout(
+          order: order,
           orderItem: orderItem,
           orderUsersMap: orderUsersMap,
           onRequestPressed: _onRequestPressed,

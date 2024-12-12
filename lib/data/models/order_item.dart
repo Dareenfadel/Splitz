@@ -52,7 +52,9 @@ class OrderItem {
   }
 
   OrderItemType itemTypeForUserId(String userId) {
-    if (isFullyPaid) {
+    if (status == 'ordering') {
+      return OrderItemType.ordering;
+    } else if (isFullyPaid) {
       return OrderItemType.fullyPaid;
     } else if (isAcceptedForUser(userId)) {
       return OrderItemType.myItem;
@@ -71,7 +73,7 @@ class OrderItem {
     return paidUsers.containsKey(userId);
   }
 
-  Set<String> get nonPaidUsers {
+  Set<String> get acceptedNonPaidUsers {
     return userList
         .where((user) =>
             user.requestStatus == 'accepted' &&
@@ -80,11 +82,23 @@ class OrderItem {
         .toSet();
   }
 
+  Set<String> get nonPaidUsers {
+    return userList
+        .where((user) => !paidUsers.containsKey(user.userId))
+        .map((user) => user.userId)
+        .toSet();
+  }
+
   double get remainingAmount => price - paidAmount;
 
-  double get sharePrice => remainingAmount / nonPaidUsers.length;
+  double get sharePrice => remainingAmount / acceptedNonPaidUsers.length;
+
+  double get sharePriceIncludePending => remainingAmount / nonPaidUsers.length;
 
   bool get isFullyPaid => remainingAmount == 0;
+
+  bool get hasMultipleAcceptedUsers =>
+      userList.where((user) => user.requestStatus == 'accepted').length > 1;
 
   factory OrderItem.fromFirestore(Map<String, dynamic> firestore) {
     return OrderItem(

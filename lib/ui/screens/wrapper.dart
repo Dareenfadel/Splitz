@@ -11,24 +11,26 @@ class Wrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserModel?>(context);
+    final user = context.watch<UserModel?>();
+    
     if (user == null) {
       return Authenticate();
-    } else {
-      print(user.userType);
-      print(user.currentOrderId);
-      print(user.currentOrderId != null && user.currentOrderId!.length > 0);
-      if (user.userType == 'manager') {
-        return ManagerNavigator();
-      } else {
-        if (user.currentOrderId != null && user.currentOrderId!.length > 0) {
-          print('Scanned Home');
-          return ScannedHome();
-        } else {
-          print('Client Home');
-          return ClientHome();
-        }
-      }
     }
+
+    print(user.userType);
+    print(user.currentOrderId);
+    print(user.currentOrderId != null && user.currentOrderId!.length > 0);
+
+    if (user.userType == 'manager') {
+      return ManagerNavigator();
+    }
+
+    if (user.currentOrderId != null && user.currentOrderId!.length > 0) {
+      print('Scanned Home');
+      return ScannedHome();
+    }
+
+    print('Client Home');
+    return ClientHome();
   }
 }

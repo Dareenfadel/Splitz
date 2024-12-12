@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
+import 'package:splitz/data/models/order_item_user.dart';
 import 'package:splitz/data/models/user.dart';
 
 import '../splitted_item_info_card/splitted_item_info_card.dart';
@@ -8,6 +10,7 @@ import '../selectable_users_list/selectable_users_list.dart';
 
 // ignore: camel_case_types
 class ManageOrderItemLayout extends StatefulWidget {
+  final Order order;
   final OrderItem orderItem;
   final Map<String, UserModel> orderUsersMap;
   final Function(List<String> selectedUsers) onRequestPressed;
@@ -15,6 +18,7 @@ class ManageOrderItemLayout extends StatefulWidget {
 
   const ManageOrderItemLayout({
     super.key,
+    required this.order,
     required this.orderItem,
     required this.onLeavePressed,
     required this.onRequestPressed,
@@ -29,9 +33,16 @@ class ManageOrderItemLayout extends StatefulWidget {
 class _ManageOrderItemLayoutState extends State<ManageOrderItemLayout> {
   final Set<String> _selectedUsers = {};
 
+  List<OrderItemUser> get splittedWithUsers {
+    return widget.orderItem.userList
+        .where((u) => !widget.order.userPaid(u.userId))
+        .toList();
+  }
+
   List<UserModel> get notSplittedWithUsers {
     return widget.orderUsersMap.values
         .where((user) => !widget.orderItem.isSharedWithUser(user.uid))
+        .where((u) => !widget.order.userPaid(u.uid))
         .toList();
   }
 
@@ -77,7 +88,7 @@ class _ManageOrderItemLayoutState extends State<ManageOrderItemLayout> {
     );
   }
 
-  SplittedItemInfoCard _buildPriceInfoCard() {
+  Widget _buildPriceInfoCard() {
     var totalPrice = widget.orderItem.price;
     var currentUsersCount = widget.orderItem.userList.length;
     var allUsersCount = currentUsersCount + _selectedUsers.length;
@@ -100,7 +111,7 @@ class _ManageOrderItemLayoutState extends State<ManageOrderItemLayout> {
 
   SplittedUsersList _buildSplittedWithUsersList() {
     return SplittedUsersList(
-      users: widget.orderItem.userList,
+      users: splittedWithUsers,
       orderUsersMap: widget.orderUsersMap,
     );
   }
@@ -127,7 +138,9 @@ class _ManageOrderItemLayoutState extends State<ManageOrderItemLayout> {
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: widget.onLeavePressed,
+            onPressed: widget.orderItem.hasMultipleAcceptedUsers
+                ? widget.onLeavePressed
+                : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Theme.of(context).colorScheme.primary,

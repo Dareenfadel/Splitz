@@ -8,6 +8,7 @@ class DefaultStreamBuilder<T> extends StatelessWidget {
   final Widget? loadingWidget;
   final Widget Function(Object error)? errorBuilder;
   final T? initialData;
+  final String? errorMessage;
 
   const DefaultStreamBuilder({
     super.key,
@@ -15,6 +16,7 @@ class DefaultStreamBuilder<T> extends StatelessWidget {
     required this.builder,
     this.loadingWidget,
     this.errorBuilder,
+    this.errorMessage,
     this.initialData,
   });
 
@@ -27,7 +29,8 @@ class DefaultStreamBuilder<T> extends StatelessWidget {
         if (snapshot.hasError) {
           return errorBuilder?.call(snapshot.error!) ??
               GenericErrorScreen(
-                message: 'An error occurred while loading the data',
+                message:
+                    errorMessage ?? 'An error occurred while loading the data',
                 details: snapshot.error.toString(),
               );
         }

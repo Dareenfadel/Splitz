@@ -6,6 +6,7 @@ import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/payment_service.dart';
 import 'package:splitz/ui/screens/client_screens/payment/cash_payment_screen.dart';
+import 'package:splitz/ui/screens/wrapper.dart';
 
 const String defaultGooglePay = '''{
   "provider": "google_pay",
@@ -66,20 +67,17 @@ class _ChoosePaymentMethodScreenState extends State<ChoosePaymentMethodScreen> {
 
   _onPaymentResult(Map<String, dynamic> response) async {
     var currentUser = context.read<UserModel>();
-    
+
     context.loaderOverlay.show();
     await _paymentService.markUserAsPaid(
       orderId: widget.order.orderId,
       userId: currentUser.uid,
     );
     if (mounted) context.loaderOverlay.hide();
-    
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Payment successful'),
-        duration: const Duration(seconds: 2),
-      ),
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => Wrapper()),
+      (route) => false,
     );
   }
 

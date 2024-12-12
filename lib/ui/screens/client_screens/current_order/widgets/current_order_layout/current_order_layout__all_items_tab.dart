@@ -18,6 +18,7 @@ class CurrentOrderLayout_AllItemsTab extends StatefulWidget {
   final Function(int itemIndex) onSharePressed;
   final Function(int itemIndex) onAcceptPressed;
   final Function(int itemIndex) onRejectPressed;
+  final Function() onSplitEquallyPressed;
 
   const CurrentOrderLayout_AllItemsTab({
     super.key,
@@ -27,6 +28,7 @@ class CurrentOrderLayout_AllItemsTab extends StatefulWidget {
     required this.ordersUsersMap,
     required this.onAcceptPressed,
     required this.onRejectPressed,
+    required this.onSplitEquallyPressed,
   });
 
   @override
@@ -46,11 +48,48 @@ class _CurrentOrderLayout_AllItemsTabState
   }
 
   Widget _buildItemsList() {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      shrinkWrap: true,
-      itemCount: widget.order.items.length,
-      itemBuilder: (context, index) => _buildItem(index),
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: widget.order.items.length,
+            itemBuilder: (context, index) => _buildItem(index),
+          ),
+        ),
+        Container(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, -3),
+                ),
+              ],
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: widget.order.nonOrderingItems.length > 0
+                    ? widget.onSplitEquallyPressed
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                ),
+                icon: const Icon(Icons.currency_exchange, color: Colors.white),
+                label: const Text(
+                  'Split Equally',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            )),
+      ],
     );
   }
 
@@ -61,7 +100,8 @@ class _CurrentOrderLayout_AllItemsTabState
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: switch (itemType) {
-        OrderItemType.fullyPaid => _buildFullyPaidItem(item),
+        OrderItemType.ordering => _buildBaseItem(item),
+        OrderItemType.fullyPaid => _buildBaseItem(item),
         OrderItemType.request => _buildRequestItem(item),
         OrderItemType.otherPeopleItem => _buildOtherPeopleItem(item),
         OrderItemType.myItem => _buildMyItem(item),
@@ -69,7 +109,7 @@ class _CurrentOrderLayout_AllItemsTabState
     );
   }
 
-  _buildFullyPaidItem(OrderItem item) {
+  _buildBaseItem(OrderItem item) {
     return OrderItemCard_Base(
       item: item,
       orderUsersMap: widget.ordersUsersMap,

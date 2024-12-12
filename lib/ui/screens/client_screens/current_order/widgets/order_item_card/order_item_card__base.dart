@@ -8,12 +8,13 @@ import 'package:splitz/ui/screens/client_screens/manage_order_item/widgets/split
 class OrderItemCard_Base extends StatelessWidget {
   final OrderItem item;
   final Map<String, UserModel> orderUsersMap;
+  final double? splitPrice;
 
-  const OrderItemCard_Base({
-    super.key,
-    required this.item,
-    required this.orderUsersMap,
-  });
+  const OrderItemCard_Base(
+      {super.key,
+      required this.item,
+      required this.orderUsersMap,
+      this.splitPrice});
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +37,13 @@ class OrderItemCard_Base extends StatelessWidget {
                   borderRadius: BorderRadius.circular(35),
                   child: Image.network(
                     item.imageUrl,
-                    width: 100,
-                    height: 100,
+                    width: MediaQuery.of(context).size.width * 0.2,
+                    height: MediaQuery.of(context).size.width * 0.2,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        width: 100,
-                        height: 100,
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        height: MediaQuery.of(context).size.width * 0.2,
                         color: Colors.grey[300],
                         child: const Icon(
                           Icons.restaurant,
@@ -68,8 +69,8 @@ class OrderItemCard_Base extends StatelessWidget {
                     item.itemName,
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -78,7 +79,7 @@ class OrderItemCard_Base extends StatelessWidget {
                   Text(
                     item.notes,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: MediaQuery.of(context).size.width * 0.03,
                       color: Colors.grey[700],
                     ),
                   ),
@@ -86,35 +87,56 @@ class OrderItemCard_Base extends StatelessWidget {
                   Text(
                     '${item.price.toStringAsFixed(2)} EGP',
                     style: TextStyle(
-                        fontSize: 14,
+                        fontSize: MediaQuery.of(context).size.width * 0.03,
                         color: Theme.of(context).colorScheme.primary),
                   ),
                 ],
               ),
             ),
-            if (!item.isFullyPaid)
+            if (item.status == "ordering")
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    color: Colors.orange,
+                    size: 24,
+                  ),
+                  if (MediaQuery.of(context).size.width > 400) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      'Ordering',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.orange,
+                          ),
+                    ),
+                  ],
+                ],
+              )
+            else if (!item.isFullyPaid)
               Text(
-                '${item.sharePrice.toStringAsFixed(2)} EGP',
+                '${(splitPrice ?? item.sharePrice).toStringAsFixed(2)} EGP',
                 style: const TextStyle(
                   fontSize: 18,
                 ),
               )
             else
-              const Row(
+              Row(
                 children: [
                   Icon(
                     Icons.check_circle,
                     color: Colors.green,
                     size: 24,
                   ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Paid',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.green,
+                  if (MediaQuery.of(context).size.width > 400) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      'Paid',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.green,
+                      ),
                     ),
-                  ),
+                  ]
                 ],
               ),
           ],
@@ -160,9 +182,7 @@ class OrderItemCard_Base extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ...item.userList
-              .take(2)
-              .map((user) => _buildOtherUserListItem(user)),
+          ...item.userList.take(2).map((user) => _buildOtherUserListItem(user)),
           if (item.userList.length > 2)
             CircleAvatar(
               radius: 12,

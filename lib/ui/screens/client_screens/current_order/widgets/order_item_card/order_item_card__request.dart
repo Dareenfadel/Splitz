@@ -34,6 +34,7 @@ class OrderItemCard_Request extends StatelessWidget {
           child: OrderItemCard_Base(
             item: item,
             orderUsersMap: orderUsersMap,
+            splitPrice: item.sharePriceIncludePending,
           ),
         ),
         _buildAcceptRejectButtons(),

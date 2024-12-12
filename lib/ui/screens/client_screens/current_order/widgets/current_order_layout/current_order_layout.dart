@@ -15,6 +15,7 @@ class CurrentOrderLayout extends StatefulWidget {
   final Function(int itemIndex) onManagePressed;
   final Function(int itemIndex) onSharePressed;
   final Function() onProceedToPaymentPressed;
+  final Function() onSplitEquallyPressed;
 
   const CurrentOrderLayout({
     super.key,
@@ -25,6 +26,7 @@ class CurrentOrderLayout extends StatefulWidget {
     required this.onManagePressed,
     required this.onSharePressed,
     required this.onProceedToPaymentPressed,
+    required this.onSplitEquallyPressed,
   });
 
   @override
@@ -121,6 +123,7 @@ class _CurrentOrderLayoutState extends State<CurrentOrderLayout>
           onSharePressed: widget.onSharePressed,
           onAcceptPressed: widget.onApprovePressed,
           onRejectPressed: widget.onRejectPressed,
+          onSplitEquallyPressed: widget.onSplitEquallyPressed,
         ),
       ],
     );

@@ -80,7 +80,8 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary).copyWith(
+            colorScheme:
+                ColorScheme.fromSeed(seedColor: AppColors.primary).copyWith(
               primary: AppColors.primary,
               secondary: AppColors.secondary,
               onPrimary: Colors.white,
@@ -100,7 +101,13 @@ class MyApp extends StatelessWidget {
             ),
           ),
           home: LoaderOverlay(
-            child: Wrapper(),
+            child: Navigator(
+              onGenerateRoute: (settings) {
+                return MaterialPageRoute(
+                  builder: (context) => Wrapper(),
+                );
+              },
+            ),
           ), // Wrapper is likely checking authentication
         ),
       ),

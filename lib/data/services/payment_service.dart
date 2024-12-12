@@ -35,15 +35,19 @@ class PaymentService {
         item.paidAmount += sharePrice;
       });
 
-      order.paidSoFar =
-          order.items.fold(0, (prev, item) => prev + item.paidAmount);
+      order.pendingItemsForUserId(userId).forEach((item) {
+        item.userList.removeWhere((u) => u.userId == userId);
+      });
+
+      order.paidSoFar = order.calculatedPaidSoFar;
+
+      if (order.isFullyPaid) {
+        order.status = 'paid';
+      }
 
       var newOrder = order.toMap();
-      
-      transaction.update(orderRef, {
-        'items': newOrder['items'],
-        'paid_so_far': newOrder['paid_so_far'],
-      });
+
+      transaction.update(orderRef, newOrder);
     });
   }
 }
