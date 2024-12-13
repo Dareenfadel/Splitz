@@ -7,6 +7,7 @@ import 'package:splitz/ui/custom_widgets/nav_bar_client.dart';
 import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/orders.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_body.dart';
+import 'package:splitz/ui/screens/client_screens/view_cart.dart';
 
 class ScannedHome extends StatefulWidget {
   const ScannedHome({super.key});
@@ -81,9 +82,28 @@ class _ScannedHomeState extends State<ScannedHome> {
                   left: 16,
                   right: 16,
                   child: FloatingActionButton.extended(
-                    onPressed: () {
-                      print('View Order');
-                    },
+                   
+                      
+onPressed: () {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => DraggableScrollableSheet(
+      initialChildSize: 0.98, // Opens to 90% of screen height
+      minChildSize: 0.98, // Minimum height (50% of screen)
+      maxChildSize: 0.98, // Maximum height (90% of screen)
+      builder: (_, controller) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: const ViewCartScreen(),
+      ),
+    ),
+  );
+},
+                    
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
