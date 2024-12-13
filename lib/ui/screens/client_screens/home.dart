@@ -10,7 +10,6 @@ import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
 class ClientHome extends StatefulWidget {
   // ignore: use_super_parameters
-  const ClientHome({Key? key}) : super(key: key);
 
   @override
   _ClientHomeState createState() => _ClientHomeState();
@@ -173,7 +172,6 @@ class _ClientHomeState extends State<ClientHome> {
     );
   }
 Widget _buildOffersSection(List<Restaurant> offers) {
-
   final List<Widget> offerCards = offers.map((restaurant) {
     final category = restaurant.menuCategories.firstWhere(
       (c) => c.name.toLowerCase() == 'offers',
@@ -284,7 +282,7 @@ Widget _buildRestaurantsSection(List<Restaurant> topRated, String sectionTitle) 
       ),
       // Horizontal Scrolling List
       SizedBox(
-        height: 210, // Adjusted height to reduce white space
+        height: 220, // Adjusted height to reduce white space
         child: ListView.builder(
           scrollDirection: Axis.horizontal, // Enable horizontal scrolling
           itemCount: top5.length,

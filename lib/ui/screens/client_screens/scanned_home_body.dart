@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:splitz/data/services/auth.dart';
 import 'package:splitz/data/services/restaurant_service.dart';
 import 'package:splitz/data/models/restaurant.dart';
 import 'package:splitz/data/models/menu_item.dart';
@@ -15,18 +16,18 @@ import 'package:splitz/ui/screens/manager_screens/menu_screens/menuItems_of_cate
 //REDIRECT TO SCANNED HOMEPAGE IF ALREADY SCANNED
 //HOME PAGE REDIRECT TO REST MENU/OFFER
 
-
 class ScannedHomeBody extends StatefulWidget {
   final String restaurantId;
   final VoidCallback onNavigateToMenu;
 
-   ScannedHomeBody({required this.restaurantId, required this.onNavigateToMenu});
+  ScannedHomeBody({required this.restaurantId, required this.onNavigateToMenu});
 
   @override
   State<ScannedHomeBody> createState() => _ScannedHomeBodyState();
 }
 
 class _ScannedHomeBodyState extends State<ScannedHomeBody> {
+  final AuthService _authService = AuthService();
   final RestaurantService _restaurantService = RestaurantService();
   late Future _restaurantDataFuture;
 
@@ -60,6 +61,16 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
           fontSize: 20,
           fontWeight: FontWeight.w500,
         ),
+        actions: [
+          // Logout Button
+          IconButton(
+            onPressed: () async {
+              await _authService.signOut();
+            },
+            icon: const Icon(Icons.logout),
+            color: Colors.white,
+          ),
+        ],
       ),
       body: _getBody(),
     );
@@ -85,10 +96,9 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
 
         // Data is available
         final restaurantData = snapshot.data!;
-        final offerCat=restaurantData.menuCategories
-            .firstWhere(
-              (c) => c.name.toLowerCase() == 'offers',
-            );
+        final offerCat = restaurantData.menuCategories.firstWhere(
+          (c) => c.name.toLowerCase() == 'offers',
+        );
         List<MenuItemModel> offers = restaurantData.menuCategories
             .firstWhere(
               (c) => c.name.toLowerCase() == 'offers',
@@ -108,7 +118,7 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildOffersSection(offers,offerCat),
+              _buildOffersSection(offers, offerCat),
               const SizedBox(height: 20),
               _buildRestaurantsSection(mostPopularItems, '🔥Top Dishes'),
               const SizedBox(height: 20),
@@ -120,21 +130,22 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
     );
   }
 
-  Widget _buildOffersSection(List<MenuItemModel> offers, MenuCategory category) {
+  Widget _buildOffersSection(
+      List<MenuItemModel> offers, MenuCategory category) {
     final List<Widget> offerCards = offers.map((offerItem) {
       return GestureDetector(
         onTap: () {
-
           Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => CategoryItemsPage(
-                                    categoryId: category.id??"",
-                                    restaurantId: widget.restaurantId,
-                                    categoryName: category.name,
-                                    categoryDescription: category.description,
-                                    categoryImageUrl: category.image,
-                                  )),
-                                );
+            context,
+            MaterialPageRoute(
+                builder: (context) => CategoryItemsPage(
+                      categoryId: category.id ?? "",
+                      restaurantId: widget.restaurantId,
+                      categoryName: category.name,
+                      categoryDescription: category.description,
+                      categoryImageUrl: category.image,
+                    )),
+          );
         },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 5.0),
@@ -357,16 +368,17 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
                         label: top5[index].name,
                         onPressed: () {
                           final category = top5[index];
-                           Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => CategoryItemsPage(
-                                    categoryId: category.id??"",
-                                    restaurantId: widget.restaurantId,
-                                    categoryName: category.name,
-                                    categoryDescription: category.description,
-                                    categoryImageUrl: category.image,
-                                  )),
-                                );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CategoryItemsPage(
+                                      categoryId: category.id ?? "",
+                                      restaurantId: widget.restaurantId,
+                                      categoryName: category.name,
+                                      categoryDescription: category.description,
+                                      categoryImageUrl: category.image,
+                                    )),
+                          );
                         },
                       ),
                     )
@@ -386,6 +398,4 @@ class _ScannedHomeBodyState extends State<ScannedHomeBody> {
       ],
     );
   }
-
-
 }

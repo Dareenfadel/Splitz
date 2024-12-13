@@ -270,7 +270,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                               ),
                           ),
                             Text(
-                            'EGP ${menuItem!.price.toStringAsFixed(2)}',
+                            '${menuItem!.price.toStringAsFixed(2)} EGP',
                             style: Theme.of(context)
                               .textTheme
                               .titleLarge
@@ -385,11 +385,11 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                                               ),
                                             ),
                                             Container(
-                                              width:
-                                                  90, // Fixed width for price container
+                                              // width:
+                                              //     90, // Fixed width for price container
                                               alignment: Alignment.centerLeft,
                                               child: Text(
-                                                'EGP ${choice.price.toStringAsFixed(2)}',
+                                                '${choice.price.toStringAsFixed(2)} EGP',
                                                 style: TextStyle(
                                                   color: AppColors.primary,
                                                   fontWeight: FontWeight.bold,
@@ -452,7 +452,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                                                     .titleMedium,
                                               ),
                                               Text(
-                                                'EGP ${extra.price.toStringAsFixed(2)}',
+                                                '${extra.price.toStringAsFixed(2)} EGP',
                                                 style: TextStyle(
                                                   color: AppColors.primary,
                                                   fontWeight: FontWeight.bold,
@@ -598,7 +598,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     Text(
-                      'EGP ${totalPrice.toStringAsFixed(2)}',
+                      '${totalPrice.toStringAsFixed(2)} EGP',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,

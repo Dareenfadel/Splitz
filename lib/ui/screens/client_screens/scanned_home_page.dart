@@ -1,12 +1,19 @@
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:splitz/data/models/order.dart';
+import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_service.dart'; // Make sure to import the OrderService
 import 'package:splitz/constants/app_colors.dart';
+import 'package:splitz/ui/custom_widgets/app_layout.dart';
+import 'package:splitz/ui/custom_widgets/default_stream_builder.dart';
+import 'package:splitz/ui/custom_widgets/generic_error_screen.dart';
 import 'package:splitz/ui/custom_widgets/nav_bar_client.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/current_order_screen.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/already_paid_message.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/current_order_layout/current_order_layout.dart';
 import 'package:splitz/ui/screens/client_screens/menu.dart';
-import 'package:splitz/ui/screens/client_screens/orders.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_body.dart';
+import 'package:splitz/ui/screens/client_screens/view_cart.dart';
 
 class ScannedHome extends StatefulWidget {
   const ScannedHome({super.key});
@@ -15,12 +22,19 @@ class ScannedHome extends StatefulWidget {
   _ScannedHomeState createState() => _ScannedHomeState();
 }
 
-class _ScannedHomeState extends State<ScannedHome> {
+class _ScannedHomeState extends State<ScannedHome>
+    with SingleTickerProviderStateMixin {
+  late TabController _currentOrderTabController;
   late int _currentIndex;
+
   void initState() {
     super.initState();
-
     _currentIndex = 0;
+    _currentOrderTabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: CurrentOrderLayoutTab.cart,
+    );
   }
 
   void _onTabTapped(int index) {
@@ -31,58 +45,70 @@ class _ScannedHomeState extends State<ScannedHome> {
 
   double _calculateTotalPrice(Order order) {
     //sum of prices of all items in the order
-    
-      return order.items.fold(
-      0.0,
-      (total, item) => item.status == 'ordering' ? total + item.price : total,
-    );
+    var currentUser = context.watch<UserModel>();
+    return order.cartTotalForUserId(currentUser.uid);
   }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      bottomNavigationBar: NavBarClient(
-        currentIndex: _currentIndex,
-        onTabTapped: _onTabTapped,
-      ),
-      body: StreamBuilder<List<Order>>(
-        stream: OrderService().listenToOrdersByUserId(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No orders found.'));
-          }
+    var currentUser = context.watch<UserModel>();
 
-          double totalPrice = snapshot.data!.fold(
-            0.0,
-            (total, order) => total + _calculateTotalPrice(order),
+    return DefaultStreamBuilder<List<Order>>(
+      stream: OrderService().listenToOrdersByUserId(),
+      errorMessage: 'Failed to load orders',
+      builder: (List<Order> orders) {
+        if (orders.isEmpty) {
+          return GenericErrorScreen(
+            message: 'No orders found',
           );
-         
-          var _screens = [
-            ScannedHomeBody(
-              restaurantId: snapshot.data!.first.restaurantId,
-              onNavigateToMenu: () {
-                _onTabTapped(2);
-              },
-            ),
-            OrdersScreen(),
-            MenuScreen(restaurantId: snapshot.data!.first.restaurantId),
-          ];
+        }
 
-          return Stack(
+        var order = orders.first;
+
+        if (order.userPaid(currentUser.uid)) {
+          return AlreadyPaidMessage(
+            orderId: order.orderId,
+          );
+        }
+
+        double totalPrice = orders.fold(
+          0.0,
+          (total, order) => total + _calculateTotalPrice(order),
+        );
+
+        var _screens = [
+          ScannedHomeBody(
+            restaurantId: orders.first.restaurantId,
+            onNavigateToMenu: () {
+              _onTabTapped(2);
+            },
+          ),
+          CurrentOrderScreen(
+            orderId: orders.first.orderId,
+            tabController: _currentOrderTabController,
+          ),
+          MenuScreen(restaurantId: orders.first.restaurantId),
+        ];
+
+        return Scaffold(
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+          bottomNavigationBar: NavBarClient(
+            currentIndex: _currentIndex,
+            onTabTapped: _onTabTapped,
+          ),
+          body: Stack(
             children: [
               _screens[_currentIndex],
-              if (totalPrice > 0)
+              if (totalPrice > 0 && _currentIndex != 1)
                 Positioned(
                   bottom: 16,
                   left: 16,
                   right: 16,
                   child: FloatingActionButton.extended(
                     onPressed: () {
-                      print('View Order');
+                      _onTabTapped(1);
+                      _currentOrderTabController.animateTo(CurrentOrderLayoutTab.cart);
                     },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -94,7 +120,8 @@ class _ScannedHomeState extends State<ScannedHome> {
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('Total', style: TextStyle(color: AppColors.textColor)),
+                            const Text('Total',
+                                style: TextStyle(color: AppColors.textColor)),
                             Text('${totalPrice.toStringAsFixed(2)} EGP',
                                 style: const TextStyle(
                                     fontSize: 20,
@@ -106,8 +133,10 @@ class _ScannedHomeState extends State<ScannedHome> {
                         const Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.shopping_basket, color: AppColors.textColor),
-                            Text('View Order', style: TextStyle(color: AppColors.textColor)),
+                            Icon(Icons.shopping_basket,
+                                color: AppColors.textColor),
+                            Text('View Order',
+                                style: TextStyle(color: AppColors.textColor)),
                           ],
                         ),
                       ],
@@ -115,10 +144,9 @@ class _ScannedHomeState extends State<ScannedHome> {
                   ),
                 ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
-
   }
 }

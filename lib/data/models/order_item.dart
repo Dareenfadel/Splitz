@@ -1,4 +1,6 @@
 import 'package:splitz/data/models/order_item_user.dart';
+import 'package:splitz/data/models/order_item_type.dart';
+
 class OrderItem {
   final String itemId;
   final String itemName;
@@ -6,13 +8,13 @@ class OrderItem {
   final int quantity;
   final Map<String, int> extras;
   final String notes;
-  final double paidAmount;
+  double paidAmount;
   final double price;
   final Map<String, double> paidUsers;
-  bool prepared;
   final List<OrderItemUser> userList;
-  final String status;
-  final Map<String,String> options;
+  bool prepared;
+  String status;
+  final Map<String, String> options;
 
   OrderItem({
     required this.itemId,
@@ -28,10 +30,75 @@ class OrderItem {
     required this.userList,
     required this.status,
     required this.options,
-
-
   });
 
+  bool isSharedWithUser(String userId) {
+    return userList.any((user) => user.userId == userId);
+  }
+
+  bool isPendingForUser(String userId) {
+    return userList.any(
+        (user) => user.userId == userId && user.requestStatus == 'pending');
+  }
+
+  bool isAcceptedForUser(String userId) {
+    return userList.any(
+        (user) => user.userId == userId && user.requestStatus == 'accepted');
+  }
+
+  // Get the user id of the user who requested this item from the user with the given id
+  String? getRequestingUserIdFor(String userId) {
+    return userList.firstWhere((user) => user.userId == userId).requestedBy;
+  }
+
+  OrderItemType itemTypeForUserId(String userId) {
+    if (status == 'ordering') {
+      return OrderItemType.ordering;
+    } else if (isFullyPaid) {
+      return OrderItemType.fullyPaid;
+    } else if (isAcceptedForUser(userId)) {
+      return OrderItemType.myItem;
+    } else if (isPendingForUser(userId)) {
+      return OrderItemType.request;
+    } else {
+      return OrderItemType.otherPeopleItem;
+    }
+  }
+
+  OrderItemUser getRequestFor(String userId) {
+    return userList.firstWhere((user) => user.userId == userId);
+  }
+
+  bool userPaid(String userId) {
+    return paidUsers.containsKey(userId);
+  }
+
+  Set<String> get acceptedNonPaidUsers {
+    return userList
+        .where((user) =>
+            user.requestStatus == 'accepted' &&
+            !paidUsers.containsKey(user.userId))
+        .map((user) => user.userId)
+        .toSet();
+  }
+
+  Set<String> get nonPaidUsers {
+    return userList
+        .where((user) => !paidUsers.containsKey(user.userId))
+        .map((user) => user.userId)
+        .toSet();
+  }
+
+  double get remainingAmount => price - paidAmount;
+
+  double get sharePrice => remainingAmount / acceptedNonPaidUsers.length;
+
+  double get sharePriceIncludePending => remainingAmount / nonPaidUsers.length;
+
+  bool get isFullyPaid => remainingAmount == 0;
+
+  bool get hasMultipleAcceptedUsers =>
+      userList.where((user) => user.requestStatus == 'accepted').length > 1;
 
   factory OrderItem.fromFirestore(Map<String, dynamic> firestore) {
     return OrderItem(
@@ -45,12 +112,12 @@ class OrderItem {
       paidUsers: Map<String, double>.from(firestore['paid_users'] ?? {}),
       prepared: firestore['prepared'] ?? false,
       price: (firestore['price'] ?? 0).toDouble(),
-     userList: (firestore['user_list'] as List<dynamic>?)
+      userList: (firestore['user_list'] as List<dynamic>?)
               ?.map((user) => OrderItemUser.fromFirestore(user))
               .toList() ??
           [],
-          status: firestore['status']??'oredering',
-          options: Map<String,String>.from(firestore['options']??{}),
+      status: firestore['status'] ?? 'oredering',
+      options: Map<String, String>.from(firestore['options'] ?? {}),
     );
   }
 
@@ -70,5 +137,11 @@ class OrderItem {
       'status': status,
       'options': options,
     };
+  }
+
+  OrderItem copyWith() {
+    return OrderItem.fromFirestore(
+      toMap(),
+    );
   }
 }
