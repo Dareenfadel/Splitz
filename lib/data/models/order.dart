@@ -7,7 +7,7 @@ class Order {
   final String tableNumber;
   double totalBill;
   double paidSoFar;
-  final bool paid;
+  bool paid;
   final List<OrderItem> items;
   final List<String> userIds;
   final String date;
@@ -36,6 +36,20 @@ class Order {
         .where((item) => item.userList.any((user) =>
             user.userId == userId && user.requestStatus == 'accepted'))
         .toList();
+  }
+
+  List<OrderItem> cartItemsForUserId(String uid) {
+    return items
+        .where((item) =>
+            item.userList.any((user) => user.userId == uid) &&
+            item.status == 'ordering')
+        .toList();
+  }
+
+  double cartTotalForUserId(String uid) {
+    return cartItemsForUserId(uid)
+        .map((item) => item.sharePrice)
+        .fold(0, (prev, price) => prev + price);
   }
 
   List<OrderItem> pendingItemsForUserId(String userId) {

@@ -10,6 +10,7 @@ import 'package:splitz/ui/custom_widgets/generic_error_screen.dart';
 import 'package:splitz/ui/custom_widgets/nav_bar_client.dart';
 import 'package:splitz/ui/screens/client_screens/current_order/current_order_screen.dart';
 import 'package:splitz/ui/screens/client_screens/current_order/widgets/already_paid_message.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/current_order_layout/current_order_layout.dart';
 import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_body.dart';
 import 'package:splitz/ui/screens/client_screens/view_cart.dart';
@@ -21,15 +22,19 @@ class ScannedHome extends StatefulWidget {
   _ScannedHomeState createState() => _ScannedHomeState();
 }
 
-class _ScannedHomeState extends State<ScannedHome> {
-  // Navigator Key
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
+class _ScannedHomeState extends State<ScannedHome>
+    with SingleTickerProviderStateMixin {
+  late TabController _currentOrderTabController;
   late int _currentIndex;
+
   void initState() {
     super.initState();
-
-    _currentIndex = 1;
+    _currentIndex = 0;
+    _currentOrderTabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: CurrentOrderLayoutTab.cart,
+    );
   }
 
   void _onTabTapped(int index) {
@@ -40,11 +45,8 @@ class _ScannedHomeState extends State<ScannedHome> {
 
   double _calculateTotalPrice(Order order) {
     //sum of prices of all items in the order
-
-    return order.items.fold(
-      0.0,
-      (total, item) => item.status == 'ordering' ? total + item.price : total,
-    );
+    var currentUser = context.watch<UserModel>();
+    return order.cartTotalForUserId(currentUser.uid);
   }
 
   @override
@@ -83,6 +85,7 @@ class _ScannedHomeState extends State<ScannedHome> {
           ),
           CurrentOrderScreen(
             orderId: orders.first.orderId,
+            tabController: _currentOrderTabController,
           ),
           MenuScreen(restaurantId: orders.first.restaurantId),
         ];
@@ -103,28 +106,10 @@ class _ScannedHomeState extends State<ScannedHome> {
                   left: 16,
                   right: 16,
                   child: FloatingActionButton.extended(
-                   
-                      
-onPressed: () {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => DraggableScrollableSheet(
-      initialChildSize: 0.98, // Opens to 90% of screen height
-      minChildSize: 0.98, // Minimum height (50% of screen)
-      maxChildSize: 0.98, // Maximum height (90% of screen)
-      builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: const ViewCartScreen(),
-      ),
-    ),
-  );
-},
-                    
+                    onPressed: () {
+                      _onTabTapped(1);
+                      _currentOrderTabController.animateTo(CurrentOrderLayoutTab.cart);
+                    },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),

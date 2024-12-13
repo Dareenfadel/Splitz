@@ -59,6 +59,14 @@ class _OrdersScreenState extends State<OrdersScreen>
           );
         }).toList(),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.pushNamed(context, '/scan-bill');
+        },
+        icon: const Icon(Icons.qr_code),
+        label: const Text('Scan Bill'),
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/order_item_user.dart';
 import 'package:splitz/data/models/user.dart';
@@ -98,7 +99,7 @@ class OrderItemCard_Base extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.access_time,
-                    color: Colors.orange,
+                    color: AppColors.primary,
                     size: 24,
                   ),
                   if (MediaQuery.of(context).size.width > 400) ...[
@@ -106,7 +107,7 @@ class OrderItemCard_Base extends StatelessWidget {
                     Text(
                       'Ordering',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.orange,
+                            color: AppColors.primary,
                           ),
                     ),
                   ],

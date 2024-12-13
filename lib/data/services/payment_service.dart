@@ -43,6 +43,7 @@ class PaymentService {
 
       if (order.isFullyPaid) {
         order.status = 'paid';
+        order.paid = true;
       }
 
       var newOrder = order.toMap();

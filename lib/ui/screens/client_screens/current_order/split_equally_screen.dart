@@ -6,17 +6,16 @@ import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/screens/client_screens/current_order/widgets/order_item_card/order_item_card__base.dart';
-import 'package:splitz/ui/screens/client_screens/payment/choose_payment_method_screen.dart';
 
 class SplitEquallyConfirmationScreen extends StatefulWidget {
   final Order order;
   final Map<String, UserModel> orderUsersMap;
 
-  SplitEquallyConfirmationScreen({
-    Key? key,
+  const SplitEquallyConfirmationScreen({
+    super.key,
     required this.order,
     required this.orderUsersMap,
-  }) : super(key: key);
+  });
 
   @override
   State<SplitEquallyConfirmationScreen> createState() =>
@@ -123,7 +122,7 @@ class _SplitEquallyConfirmationScreenState
       ),
       child: Row(
         children: [
-          SizedBox(
+          const SizedBox(
             width: 16,
             height: 16,
             child: CircularProgressIndicator(

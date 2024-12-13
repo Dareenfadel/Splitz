@@ -9,6 +9,7 @@ import 'package:splitz/data/models/order_item_user.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/auth.dart';
 import 'package:splitz/data/services/order_service.dart';
+import 'package:splitz/data/services/seeder_service.dart';
 import 'package:splitz/ui/screens/wrapper.dart';
 import 'package:toastification/toastification.dart';
 import 'constants/app_colors.dart';
@@ -20,6 +21,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // await SeederService().createDummyManager(
+  //   restaurantId: 'ZVCMxkUQjp6zcYv6NlYH',
+  // );
 
   // OrderService().addItemToOrder(
   //   restaurantId: 'ZVCMxkUQjp6zcYv6NlYH',

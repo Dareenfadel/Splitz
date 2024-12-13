@@ -1,8 +1,8 @@
 class UserModel {
   final String uid;
   final String? name;
-  final String userType; // 'manager' or 'client'
-  final String? restaurantId; // Used if user is a manager
+  String userType; // 'manager' or 'client'
+  String? restaurantId; // Used if user is a manager
   final List<String> orderIds;
   String? currentOrderId;
   final String? imageUrl;

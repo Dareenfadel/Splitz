@@ -10,11 +10,11 @@ class ClientNavigation {
     var args = settings.arguments as Map<String, dynamic>;
 
     switch (settings.name) {
-      case ClientRoutes.currentOrder:
-        return MaterialPageRoute(
-            builder: (_) => CurrentOrderScreen(
-                  orderId: args['orderId'],
-                ));
+      // case ClientRoutes.currentOrder:
+      //   return MaterialPageRoute(
+      //       builder: (_) => CurrentOrderScreen(
+      //             orderId: args['orderId'],
+      //           ));
       default:
         return MaterialPageRoute(
             builder: (_) => Center(

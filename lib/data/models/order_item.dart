@@ -13,7 +13,7 @@ class OrderItem {
   final Map<String, double> paidUsers;
   final List<OrderItemUser> userList;
   bool prepared;
-  final String status;
+  String status;
   final Map<String, String> options;
 
   OrderItem({
@@ -137,5 +137,11 @@ class OrderItem {
       'status': status,
       'options': options,
     };
+  }
+
+  OrderItem copyWith() {
+    return OrderItem.fromFirestore(
+      toMap(),
+    );
   }
 }

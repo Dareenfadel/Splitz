@@ -11,10 +11,10 @@ class ScannedClientNavigation {
 
     switch (settings.name) {
       case ScannedClientRoutes.currentOrder:
-        return MaterialPageRoute(
-            builder: (_) => CurrentOrderScreen(
-                  orderId: args['orderId'],
-                ));
+        // return MaterialPageRoute(
+        //     builder: (_) => CurrentOrderScreen(
+        //           orderId: args['orderId'],
+        //         ));
       default:
         return MaterialPageRoute(
             builder: (_) => Center(

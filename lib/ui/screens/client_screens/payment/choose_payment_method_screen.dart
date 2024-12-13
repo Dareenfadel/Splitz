@@ -84,12 +84,13 @@ class _ChoosePaymentMethodScreenState extends State<ChoosePaymentMethodScreen> {
   _onPayWithCard() async {
     var currentUser = context.read<UserModel>();
     var bill = widget.order.totalBillForUserId(currentUser.uid);
+
     var result = await pay.showPaymentSelector(
       PayProvider.google_pay,
       [
         PaymentItem(
           label: 'Total',
-          amount: bill.toString(),
+          amount: bill.toStringAsFixed(2),
           status: PaymentItemStatus.final_price,
         )
       ],

@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/current_order_layout/current_order_layout__cart.dart';
 
 import 'current_order_layout__all_items_tab.dart';
 import 'current_order_layout__my_items_tab.dart';
 import 'current_order_layout__requests_tab.dart';
+
+class CurrentOrderLayoutTab {
+  static const cart = 0;
+  static const requests = 1;
+  static const myItems = 2;
+  static const allItems = 3;
+}
 
 class CurrentOrderLayout extends StatefulWidget {
   final Order order;
@@ -14,8 +22,13 @@ class CurrentOrderLayout extends StatefulWidget {
   final Function(int itemIndex) onRejectPressed;
   final Function(int itemIndex) onManagePressed;
   final Function(int itemIndex) onSharePressed;
+  final Function(int itemIndex) onRemoveCartItemPressed;
   final Function() onProceedToPaymentPressed;
   final Function() onSplitEquallyPressed;
+  final Function() onCheckoutCartPressed;
+  final Function(int itemIndex) onEditCartItemPressed;
+  final Function(int itemIndex) onDuplicateCartItemPressed;
+  final TabController tabController;
 
   const CurrentOrderLayout({
     super.key,
@@ -27,32 +40,18 @@ class CurrentOrderLayout extends StatefulWidget {
     required this.onSharePressed,
     required this.onProceedToPaymentPressed,
     required this.onSplitEquallyPressed,
+    required this.onCheckoutCartPressed,
+    required this.onRemoveCartItemPressed,
+    required this.onEditCartItemPressed,
+    required this.onDuplicateCartItemPressed,
+    required this.tabController,
   });
 
   @override
   State<CurrentOrderLayout> createState() => _CurrentOrderLayoutState();
 }
 
-class _CurrentOrderLayoutState extends State<CurrentOrderLayout>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(
-      length: 3,
-      vsync: this,
-      initialIndex: 1,
-    );
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class _CurrentOrderLayoutState extends State<CurrentOrderLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,8 +77,9 @@ class _CurrentOrderLayoutState extends State<CurrentOrderLayout>
                 unselectedLabelColor: Colors.white,
                 indicatorColor: Colors.white,
                 indicatorWeight: 4,
-                controller: _tabController,
+                controller: widget.tabController,
                 tabs: [
+                  "Cart",
                   "Requests",
                   "My Items",
                   "All Items",
@@ -102,8 +102,16 @@ class _CurrentOrderLayoutState extends State<CurrentOrderLayout>
 
   Widget _buildTabBarView() {
     return TabBarView(
-      controller: _tabController,
+      controller: widget.tabController,
       children: [
+        CurrentOrderLayout_CartTab(
+          order: widget.order,
+          orderUsersMap: widget.orderUsersMap,
+          onCheckoutCartPressed: widget.onCheckoutCartPressed,
+          onRemoveCartItemPressed: widget.onRemoveCartItemPressed,
+          onEditCartItemPressed: widget.onEditCartItemPressed,
+          onDuplicateCartItemPressed: widget.onDuplicateCartItemPressed,
+        ),
         CurrentOrderLayout_RequestsTab(
           order: widget.order,
           orderUsersMap: widget.orderUsersMap,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/ui/custom_widgets/message_container.dart';
 
 import '../order_item_card/order_item_card__request.dart';
 
@@ -50,8 +51,6 @@ class _CurrentOrderLayout_RequestsTabState
   Padding _buildRequest(OrderItem requestItem) {
     var itemIndex = widget.order.items.indexOf(requestItem);
     var currentUser = context.watch<UserModel>();
-    var requestorId = requestItem.getRequestingUserIdFor(currentUser.uid);
-    var requestor = widget.orderUsersMap[requestorId]!;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -65,47 +64,12 @@ class _CurrentOrderLayout_RequestsTabState
     );
   }
 
-  Center _buildNoItems() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.request_page,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No Requests Yet!',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              'When others request to join your orders, they will appear here.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[400],
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildNoItems() {
+    return const MessageContainer(
+      icon: Icons.request_page,
+      message: 'No Requests Yet!',
+      subMessage:
+          'When others request to join your orders, they will appear here.',
     );
   }
 }

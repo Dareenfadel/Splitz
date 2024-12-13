@@ -236,14 +236,12 @@ class OrderService {
       if (user != null) {
         String userId = user.uid;
 
-        // Generate order ID (you can use Firestore auto-generated ID or create your own)
-        String orderId = _firestore.collection('orders').doc().id;
         // Query to find orders that match the restaurant and table number
         QuerySnapshot querySnapshot = await _firestore
             .collection('orders')
             .where('restaurant_id', isEqualTo: restaurantId)
             .where('table_number', isEqualTo: tableNumber)
-            .where('status', isEqualTo: 'not paid')
+            .where('paid', isEqualTo: false)
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
@@ -274,33 +272,21 @@ class OrderService {
           String orderId =
               _firestore.collection('orders').doc().id; // Generate new order ID
 
-        Order newOrder = Order(
-          orderId: orderId,
-          restaurantId: restaurantId,
-          status: 'not paid',  // Assuming new orders are 'pending'
-          tableNumber: tableNumber,
-          totalBill: 0.0,
-          paidSoFar: 0.0,
-          paid: false,
-          items: [],
-          userIds: [userId], // Add the user to the list
-        );
-        
-        // Create the new order in Firestore
-        await _firestore.collection('orders').doc(orderId).set({
-          'restaurant_id': restaurantId,
-          'order_id': orderId,
-          'status': 'ordering',
-          'table_number': tableNumber,
-          'total_bill': 0.0,
-          'paid_so_far': 0.0,
-          'paid': false,
-          'items': [],
-          'user_ids': [userId],
-      });
-       await _updateUserOrderIds(userId, orderId);
-        print('New order created and user added');
-      }
+          // Create the new order in Firestore
+          await _firestore.collection('orders').doc(orderId).set({
+            'restaurant_id': restaurantId,
+            'order_id': orderId,
+            'status': 'ordering',
+            'table_number': tableNumber,
+            'total_bill': 0.0,
+            'paid_so_far': 0.0,
+            'paid': false,
+            'items': [],
+            'user_ids': [userId],
+          });
+          await _updateUserOrderIds(userId, orderId);
+          print('New order created and user added');
+        }
       } else {
         print('User not signed in');
       }
@@ -442,10 +428,10 @@ class OrderService {
     });
   }
 
-  Future<void> sendSplitAllEquallyRequest({
+  Future<void> _updateOrderWithTransaction({
     required String orderId,
-    required String requestorUserId,
-  }) async {
+    required Function(Order) updateFunction,
+  }) {
     return _firestore.runTransaction((transaction) async {
       var orderRef = _firestore.collection('orders').doc(orderId);
       var orderSnapshot = await transaction.get(orderRef);
@@ -459,81 +445,114 @@ class OrderService {
         orderSnapshot.data()!,
       );
 
-      order.splitEquallyPendingUserIds = order.nonPaidUserIds
-          .where((userId) => userId != requestorUserId)
-          .toList();
+      updateFunction(order);
 
       var newOrder = order.toMap();
-
       transaction.update(orderRef, newOrder);
     });
+  }
+
+  Future<void> sendSplitAllEquallyRequest({
+    required String orderId,
+    required String requestorUserId,
+  }) async {
+    return _updateOrderWithTransaction(
+      orderId: orderId,
+      updateFunction: (order) {
+        order.splitEquallyPendingUserIds = order.nonPaidUserIds
+            .where((userId) => userId != requestorUserId)
+            .toList();
+      },
+    );
   }
 
   Future<void> acceptSplitAllEquallyRequest({
     required String orderId,
     required String acceptingUserId,
   }) async {
-    return _firestore.runTransaction((transaction) async {
-      var orderRef = _firestore.collection('orders').doc(orderId);
-      var orderSnapshot = await transaction.get(orderRef);
+    return _updateOrderWithTransaction(
+        orderId: orderId,
+        updateFunction: (order) {
+          order.splitEquallyPendingUserIds.remove(acceptingUserId);
 
-      if (!orderSnapshot.exists) {
-        throw Exception('Order not found');
-      }
+          if (order.splitEquallyPendingUserIds.isEmpty) {
+            for (var item in order.nonOrderingItems) {
+              for (var userId in order.nonPaidUserIds) {
+                var existingRequests =
+                    item.userList.where((user) => user.userId == userId);
 
-      var order = Order.fromFirestore(
-        orderSnapshot.id,
-        orderSnapshot.data()!,
-      );
-
-      order.splitEquallyPendingUserIds.remove(acceptingUserId);
-
-      if (order.splitEquallyPendingUserIds.isEmpty) {
-        for (var item in order.nonOrderingItems) {
-          for (var userId in order.nonPaidUserIds) {
-            var existingRequests =
-                item.userList.where((user) => user.userId == userId);
-
-            if (existingRequests.isNotEmpty) {
-              existingRequests.first.requestStatus = 'accepted';
-            } else {
-              item.userList.add(OrderItemUser(
-                userId: userId,
-                requestStatus: 'accepted',
-              ));
+                if (existingRequests.isNotEmpty) {
+                  existingRequests.first.requestStatus = 'accepted';
+                } else {
+                  item.userList.add(OrderItemUser(
+                    userId: userId,
+                    requestStatus: 'accepted',
+                  ));
+                }
+              }
             }
           }
-        }
-      }
-
-      var newOrder = order.toMap();
-
-      transaction.update(orderRef, newOrder);
-    });
+        });
   }
 
   Future<void> rejectSplitAllEquallyRequest({
     required String orderId,
     required String rejectingUserId,
   }) async {
-    return _firestore.runTransaction((transaction) async {
-      var orderRef = _firestore.collection('orders').doc(orderId);
-      var orderSnapshot = await transaction.get(orderRef);
+    return _updateOrderWithTransaction(
+      orderId: orderId,
+      updateFunction: (order) {
+        order.splitEquallyPendingUserIds = [];
+      },
+    );
+  }
 
-      if (!orderSnapshot.exists) {
-        throw Exception('Order not found');
-      }
+  checkoutCart(String orderId) {
+    return _updateOrderWithTransaction(
+      orderId: orderId,
+      updateFunction: (order) {
+        for (var item in order.items) {
+          item.status = 'pending';
+        }
 
-      var order = Order.fromFirestore(
-        orderSnapshot.id,
-        orderSnapshot.data()!,
-      );
+        order.totalBill = order.calculatedTotalBill;
+      },
+    );
+  }
 
-      order.splitEquallyPendingUserIds = [];
+  removeCartItem({required String orderId, required int itemIndex}) {
+    return _updateOrderWithTransaction(
+      orderId: orderId,
+      updateFunction: (order) {
+        order.items.removeAt(itemIndex);
+      },
+    );
+  }
 
-      var newOrder = order.toMap();
+  Stream<bool> listenToUserPaymentStatus({
+    required String orderId,
+    required userId,
+  }) {
+    return listenToOrderAndItsUsersByOrderId(orderId).map((data) {
+      var (order, orderUsersMap) = data;
 
-      transaction.update(orderRef, newOrder);
+      return order.userPaid(userId);
     });
+  }
+
+  Future<void> duplicateOrderItem({
+    required String orderId,
+    required int itemIndex,
+  }) {
+    return _updateOrderWithTransaction(
+      orderId: orderId,
+      updateFunction: (order) {
+        var itemToDuplicate = order.items[itemIndex];
+        var duplicateItem = itemToDuplicate.copyWith();
+
+        // Insert after the original item and shift the rest
+        order.items.insert(itemIndex + 1, duplicateItem);
+      },
+    );
   }
 }

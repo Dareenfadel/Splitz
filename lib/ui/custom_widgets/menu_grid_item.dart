@@ -5,7 +5,9 @@ class MenuCatrgoeyItem extends StatelessWidget {
   final String label;
   final String imageUrl;
   final VoidCallback onPressed;
-  final IconData? icon=Icons.arrow_forward;
+  final IconData? icon = Icons.arrow_forward;
+  final String defaultImageUrl =
+      'https://t3.ftcdn.net/jpg/04/60/01/36/360_F_460013622_6xF8uN6ubMvLx0tAJECBHfKPoNOR5cRa.jpg';
 
   MenuCatrgoeyItem({
     required this.imageUrl,
@@ -42,16 +44,21 @@ class MenuCatrgoeyItem extends StatelessWidget {
                 SizedBox(height: 30),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(50),
-                  child:imageUrl!=''?
-                   Image.network(
-                    imageUrl,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ):SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: Icon(icon)),
+                  child: imageUrl != ''
+                      ? Image.network(
+                          imageUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Image.network(
+                            defaultImageUrl,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : SizedBox(width: 50, height: 50, child: Icon(icon)),
                 ),
                 SizedBox(height: 5),
                 Text(

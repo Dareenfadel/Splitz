@@ -6,6 +6,7 @@ import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_item_service.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/default_stream_builder.dart';
+import 'package:splitz/ui/screens/client_screens/add_to_cart.dart';
 import 'package:splitz/ui/screens/client_screens/current_order/split_equally_screen.dart';
 import 'package:splitz/ui/screens/client_screens/payment/choose_payment_method_screen.dart';
 import 'widgets/current_order_layout/current_order_layout.dart';
@@ -13,10 +14,12 @@ import '../manage_order_item/manage_order_item_screen.dart';
 
 class CurrentOrderScreen extends StatefulWidget {
   final String orderId;
+  final TabController tabController;
 
   const CurrentOrderScreen({
     super.key,
     required this.orderId,
+    required this.tabController,
   });
 
   @override
@@ -95,6 +98,43 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
     if (mounted) context.loaderOverlay.hide();
   }
 
+  _onCheckoutCartPressed(Order order) async {
+    context.loaderOverlay.show();
+    await _orderService.checkoutCart(order.orderId);
+    if (mounted) context.loaderOverlay.hide();
+  }
+
+  _onRemoveCartItemPressed(int itemIndex) async {
+    context.loaderOverlay.show();
+    await _orderService.removeCartItem(
+      orderId: widget.orderId,
+      itemIndex: itemIndex,
+    );
+    if (mounted) context.loaderOverlay.hide();
+  }
+
+  _onEditCartItemPressed(Order order, int itemIndex) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddToCartScreen(
+          restaurantId: order.restaurantId,
+          orderItemInd: itemIndex,
+          orderId: order.orderId,
+        ),
+      ),
+    );
+  }
+
+  _onDuplicateCartItemPressed(int itemIndex) async {
+    context.loaderOverlay.show();
+    await _orderService.duplicateOrderItem(
+      orderId: widget.orderId,
+      itemIndex: itemIndex,
+    );
+    if (mounted) context.loaderOverlay.hide();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultStreamBuilder(
@@ -116,8 +156,14 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
           onRejectPressed: _onRejectPressed,
           onManagePressed: _onManagePressed,
           onSharePressed: _onSharePressed,
+          onRemoveCartItemPressed: _onRemoveCartItemPressed,
           onProceedToPaymentPressed: () => _onProceedToPaymentPressed(order),
           onSplitEquallyPressed: () => _onSplitEquallyPressed(order),
+          onCheckoutCartPressed: () => _onCheckoutCartPressed(order),
+          onEditCartItemPressed: (itemIndex) =>
+              _onEditCartItemPressed(order, itemIndex),
+          onDuplicateCartItemPressed: _onDuplicateCartItemPressed,
+          tabController: widget.tabController,
         );
       },
     );

@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/data/services/order_service.dart';
+import 'package:splitz/ui/screens/wrapper.dart';
 
 class CashPaymentScreen extends StatefulWidget {
   final Order order;
@@ -18,6 +21,32 @@ class CashPaymentScreen extends StatefulWidget {
 }
 
 class _CashPaymentScreenState extends State<CashPaymentScreen> {
+  final OrderService _orderService = OrderService();
+  late final StreamSubscription<bool> _isPaidStreamSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    var currentUser = context.read<UserModel>();
+    _isPaidStreamSubscription = _orderService
+        .listenToUserPaymentStatus(
+      orderId: widget.order.orderId,
+      userId: currentUser.uid,
+    )
+        .listen((isPaid) {
+      if (isPaid && mounted) {
+        Navigator.pushAndRemoveUntil(context,
+            MaterialPageRoute(builder: (_) => Wrapper()), (route) => false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _isPaidStreamSubscription.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

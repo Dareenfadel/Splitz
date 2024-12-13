@@ -1,42 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/ui/custom_widgets/message_container.dart';
-
-import '../order_item_card/order_item_card__in_receipt.dart';
+import 'package:splitz/ui/screens/client_screens/current_order/widgets/order_item_card/order_item_card__with_button.dart';
 
 // ignore: camel_case_types
-class CurrentOrderLayout_MyItemsTab extends StatefulWidget {
+class CurrentOrderLayout_CartTab extends StatefulWidget {
   final Order order;
   final Map<String, UserModel> orderUsersMap;
-  final Function(int itemIndex) onManagePressed;
-  final Function() onProceedToPaymentPressed;
+  final Function(int itemIndex) onRemoveCartItemPressed;
+  final Function() onCheckoutCartPressed;
+  final Function(int itemIndex) onEditCartItemPressed;
+  final Function(int itemIndex) onDuplicateCartItemPressed;
 
-  const CurrentOrderLayout_MyItemsTab({
+  const CurrentOrderLayout_CartTab({
     super.key,
-    required this.onManagePressed,
-    required this.onProceedToPaymentPressed,
     required this.order,
     required this.orderUsersMap,
+    required this.onCheckoutCartPressed,
+    required this.onRemoveCartItemPressed,
+    required this.onEditCartItemPressed,
+    required this.onDuplicateCartItemPressed,
   });
 
   @override
-  State<CurrentOrderLayout_MyItemsTab> createState() =>
-      _CurrentOrderLayout_MyItemsTabState();
+  State<CurrentOrderLayout_CartTab> createState() =>
+      _CurrentOrderLayout_CartTabState();
 }
 
 // ignore: camel_case_types
-class _CurrentOrderLayout_MyItemsTabState
-    extends State<CurrentOrderLayout_MyItemsTab> {
+class _CurrentOrderLayout_CartTabState
+    extends State<CurrentOrderLayout_CartTab> {
   late UserModel currentUser;
   late List<OrderItem> myItems;
 
   @override
   Widget build(BuildContext context) {
     currentUser = context.watch<UserModel>();
-    myItems = widget.order.acceptedItemsForUserId(currentUser.uid);
+    myItems = widget.order.cartItemsForUserId(currentUser.uid);
 
     return (myItems.isEmpty ? _buildNoItems() : _buildItemsList());
   }
@@ -93,7 +97,7 @@ class _CurrentOrderLayout_MyItemsTabState
                   ),
                 ),
                 Text(
-                  '${widget.order.totalBillForUserId(currentUser.uid).toStringAsFixed(2)} EGP',
+                  '${widget.order.cartTotalForUserId(currentUser.uid).toStringAsFixed(2)} EGP',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -107,17 +111,18 @@ class _CurrentOrderLayout_MyItemsTabState
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                widget.onProceedToPaymentPressed();
-              },
+              onPressed: widget.onCheckoutCartPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
               ),
-              child: const Text('Proceed to payment',
-                  style: TextStyle(color: Colors.white, fontSize: 16)),
+              child: const Text('Add All To Order',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  )),
             ),
           )
         ],
@@ -129,10 +134,26 @@ class _CurrentOrderLayout_MyItemsTabState
     var itemIndex = widget.order.items.indexOf(item);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: OrderItemCard_InReceipt(
+      child: OrderItemCard_WithButtons(
         item: item,
         ordersUsersMap: widget.orderUsersMap,
-        onManagePressed: () => widget.onManagePressed(itemIndex),
+        buttons: [
+          OrderItemCard_Props_Button(
+            onButtonPressed: () => widget.onEditCartItemPressed(itemIndex),
+            icon: Icons.edit,
+            color: AppColors.primary.withOpacity(0.2),
+          ),
+          OrderItemCard_Props_Button(
+            onButtonPressed: () => widget.onDuplicateCartItemPressed(itemIndex),
+            icon: Icons.add_outlined,
+            color: AppColors.primary.withOpacity(0.5),
+          ),
+          OrderItemCard_Props_Button(
+            onButtonPressed: () => widget.onRemoveCartItemPressed(itemIndex),
+            icon: Icons.delete,
+            color: AppColors.primary.withOpacity(0.8),
+          ),
+        ],
       ),
     );
   }
@@ -141,8 +162,7 @@ class _CurrentOrderLayout_MyItemsTabState
     return const MessageContainer(
       icon: Icons.shopping_cart,
       message: "No Items Added Yet!",
-      subMessage:
-          'Your items will appear here once you add them to your order.',
+      subMessage: 'Your items will appear here once you add them in your cart.',
     );
   }
 }
