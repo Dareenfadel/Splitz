@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
-
+import 'package:splitz/ui/custom_widgets/history_list.dart';
 import '../../../constants/app_colors.dart';
 
-class HistoryScreen extends StatelessWidget {
+class HistoryScreen extends StatefulWidget {
   final String restaurantId;
   HistoryScreen({required this.restaurantId});
+
+  @override
+  _HistoryScreenState createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
+  Future<void> _refreshHistory() async {
+    // Add your refresh logic here
+    await Future.delayed(Duration(seconds: 2)); // Simulate network request
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +29,10 @@ class HistoryScreen extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      body: const Center(
-        child: Text(
-          'History Screen',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: RefreshIndicator(
+        onRefresh: _refreshHistory,
+        child: Center(
+          child: HistoryList(restaurantId: widget.restaurantId),
         ),
       ),
     );
