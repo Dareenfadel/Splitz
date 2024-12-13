@@ -43,4 +43,26 @@ class CategoryService {
       print('Error adding menu category: $e');
     }
   }
+
+  Future<MenuCategory?> fetchCategoryById(
+      String restaurantId, String categoryId) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('restaurants')
+          .doc(restaurantId)
+          .collection('menu_categories')
+          .where(FieldPath.documentId, isEqualTo: categoryId)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return MenuCategory.fromFirestore(snapshot.docs.first);
+      } else {
+        print('Category not found');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching category by ID: $e');
+      return null;
+    }
+  }
 }

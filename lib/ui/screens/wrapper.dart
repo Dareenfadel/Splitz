@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:provider/provider.dart';
+import 'package:splitz/data/services/notifications_service.dart';
 import 'package:splitz/routes/manager_routes.dart';
 import 'package:splitz/ui/screens/authentication/authenticate.dart';
 import 'package:splitz/ui/screens/client_screens/home.dart';
@@ -12,7 +13,7 @@ class Wrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserModel?>();
-    
+
     if (user == null) {
       return Authenticate();
     }
@@ -23,6 +24,11 @@ class Wrapper extends StatelessWidget {
 
     if (user.userType == 'manager') {
       return ManagerNavigator();
+    }
+
+    if (user.userType == 'client') {
+      // Initialize notifications for the client
+      NotificationsService().initNotifications();
     }
 
     if (user.currentOrderId != null && user.currentOrderId!.length > 0) {

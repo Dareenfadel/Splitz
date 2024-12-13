@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitz/constants/app_colors.dart';
+import 'package:splitz/data/models/menu_category.dart';
 import 'package:splitz/data/models/menu_item.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/data/services/menu_category_service.dart';
 import 'package:splitz/data/services/menu_item_service.dart';
+import 'package:splitz/data/services/notifications_service.dart';
 import 'package:splitz/ui/custom_widgets/custom_floating_button.dart';
 import 'package:toastification/toastification.dart';
 
@@ -102,6 +105,15 @@ class _AllItemsScreenState extends State<AllItemsScreen> {
       showIcon: true, // show or hide the icon
       primaryColor: Colors.green,
     );
+    MenuCategory? category = await CategoryService()
+        .fetchCategoryById(widget.restaurantId, widget.categoryId);
+
+    if (category?.name.toLowerCase() == 'offers') {
+      print(category?.name);
+      print('Sending Notification to topic: offers');
+      NotificationsService.sendNotificationToTopic(
+          'offers', widget.restaurantId, id);
+    }
   }
 
   @override
