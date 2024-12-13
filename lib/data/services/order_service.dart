@@ -241,7 +241,7 @@ class OrderService {
         await _firestore.collection('orders').doc(orderId).set({
           'restaurant_id': restaurantId,
           'order_id': orderId,
-          'status': 'not paid',
+          'status': 'ordering',
           'table_number': tableNumber,
           'total_bill': 0.0,
           'paid_so_far': 0.0,
