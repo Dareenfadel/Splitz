@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_page.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/services/order_service.dart';
+import 'package:splitz/ui/screens/wrapper.dart';
 
 class QrCodeScanner extends StatefulWidget {
   QrCodeScanner({super.key});
@@ -74,7 +75,7 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => ScannedHome()), // The new page
+                    builder: (context) => Wrapper()), // The new page
                 (route) => false, // Remove all previous routes
               );
             },

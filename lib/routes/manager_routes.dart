@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/ui/screens/manager_screens/cashier_payment/cashier_screen.dart';
+import 'package:splitz/ui/screens/manager_screens/cashier_payment/scan_bill_qr_screen.dart';
 import 'package:splitz/ui/screens/manager_screens/menu_screens/add_menuItem_Screen.dart';
 import 'package:splitz/ui/screens/manager_screens/menu_screens/all_items_screen.dart';
 import 'package:splitz/ui/screens/manager_screens/home.dart';
@@ -45,6 +47,18 @@ class ManagerNavigator extends StatelessWidget {
               restaurantId: args["restaurantId"],
               categoryId: args["categoryId"],
             );
+          case '/scan-bill':
+            page = ScanBillQrScreen();
+            break;
+          case '/cashier':
+            final args = settings.arguments as Map<String, dynamic>;
+            var userId = args['userId'];
+            var orderId = args['orderId'];
+            page = CashierScreen(
+              userId: userId,
+              orderId: orderId,
+            );
+            break;
           default:
             page = AdminHomePage(restaurantId: user!.restaurantId!);
         }

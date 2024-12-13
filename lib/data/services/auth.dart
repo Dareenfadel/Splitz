@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:splitz/data/models/user.dart'; // Make sure this is the correct path
+import 'package:rxdart/rxdart.dart';
+import 'package:splitz/data/models/user.dart';
+import 'package:splitz/data/services/order_service.dart'; // Make sure this is the correct path
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -22,13 +24,28 @@ class AuthService {
     });
   }
 
-  Stream<UserModel?> get user {
-    return _auth.authStateChanges().asyncMap((User? user) async {
-      if (user != null) {
-        return await _userFromFirebaseUser(user);
+  Stream<UserModel?> _streamUserFromFirebaseUser(User? user) {
+    if (user == null) {
+      return Stream.value(null);
+    }
+
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .snapshots()
+        .map((userDoc) {
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        return UserModel.fromMap(userData, user.uid);
       }
       return null;
     });
+  }
+
+  Stream<UserModel?> get user {
+    return _auth
+        .authStateChanges()
+        .switchMap((user) => _streamUserFromFirebaseUser(user));
   }
 
   // Sign in anonymously
