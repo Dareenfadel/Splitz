@@ -27,7 +27,7 @@ class MenuItemService {
         'preparation_time': item.preparationTime,
         'price': item.price,
         'overall_rating': item.overallRating,
-        'count':0,
+        'count': 0,
       });
 
       print('Menu item added with ID: ${itemRef.id}');
@@ -480,12 +480,36 @@ class MenuItemService {
 
   Future<void> deleteMenuItem(String restaurantId, String menuItemId) async {
     try {
+      // Fetch all categories
+      QuerySnapshot categoriesSnapshot = await _db
+          .collection('restaurants')
+          .doc(restaurantId)
+          .collection('menu_categories')
+          .get();
+
+      // Iterate through each category and remove the menu item ID if it exists
+      for (var categoryDoc in categoriesSnapshot.docs) {
+        MenuCategory category = MenuCategory.fromFirestore(categoryDoc);
+        if (category.itemIds.contains(menuItemId)) {
+          category.itemIds.remove(menuItemId);
+          await _db
+              .collection('restaurants')
+              .doc(restaurantId)
+              .collection('menu_categories')
+              .doc(category.id)
+              .update({'item_ids': category.itemIds});
+        }
+      }
+
+      // Delete the menu item
       await _db
           .collection('restaurants')
           .doc(restaurantId)
           .collection('menu_items')
           .doc(menuItemId)
           .delete();
+
+      print('Menu item and references in categories deleted successfully');
     } catch (e) {
       print('Error deleting item ${e}');
     }
@@ -504,16 +528,15 @@ class MenuItemService {
       print('Error deleting category ${e}');
     }
   }
-  Future <void>incrementCount(String restaurantId, String menuItemId) async {
+
+  Future<void> incrementCount(String restaurantId, String menuItemId) async {
     try {
       await _db
           .collection('restaurants')
           .doc(restaurantId)
           .collection('menu_items')
           .doc(menuItemId)
-          .update({
-        'count': FieldValue.increment(1)
-      });
+          .update({'count': FieldValue.increment(1)});
     } catch (e) {
       print('Error incrementing count ${e}');
     }
