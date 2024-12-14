@@ -13,7 +13,12 @@ import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:splitz/ui/screens/client_screens/menu.dart';
 
 class NotificationsService {
-  final _firebaseMessaging = FirebaseMessaging.instance;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  NotificationsService._privateConstructor();
+  static final NotificationsService _instance =
+      NotificationsService._privateConstructor();
+  factory NotificationsService() => _instance;
 
   Future<void> initNotifications(String userId) async {
     await _firebaseMessaging.requestPermission();
@@ -35,14 +40,21 @@ class NotificationsService {
   }
 
   Future initPushNotifications() async {
-    // For when the app is started from a terminated state
-    FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
     // Handle when the app is in the background and notification is tapped
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       handleMessage(message); // Handle background notification tap
     });
     // Handle when the app is in the foreground
     FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
+  }
+
+  Future<void> handleInitialMessage() async {
+    final RemoteMessage? initialMessage =
+        await _firebaseMessaging.getInitialMessage();
+
+    if (initialMessage != null) {
+      handleMessage(initialMessage);
+    }
   }
 
   static Future<String> getAccessToken() async {
