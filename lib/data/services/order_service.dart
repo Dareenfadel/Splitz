@@ -283,6 +283,7 @@ class OrderService {
             'paid': false,
             'items': [],
             'user_ids': [userId],
+            'date': FieldValue.serverTimestamp().toString(),
           });
           await _updateUserOrderIds(userId, orderId);
           print('New order created and user added');
@@ -309,7 +310,7 @@ class OrderService {
         .snapshots()
         .switchMap((userDoc) {
       if (!userDoc.exists) return Stream.value([]);
-      print(userDoc.data());
+     
       String? currentOrderId = userDoc.get('currentOrderId') as String?;
       print("current order id is $currentOrderId");
       if (currentOrderId == null) return Stream.value([]);

@@ -8,6 +8,7 @@ import 'package:splitz/data/models/user.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_page.dart';
 import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
+import 'package:splitz/ui/screens/client_screens/all_restaurants.dart';
 class ClientHome extends StatefulWidget {
   // ignore: use_super_parameters
 
@@ -80,7 +81,7 @@ class _ClientHomeState extends State<ClientHome> {
                   shape: const CircleBorder(), // Make it a circle
                   hoverColor: AppColors.secondary,
                   onPressed: () {
-                    print('QR Code Scanner Floating Action Button Pressed');
+                    // print('QR Code Scanner Floating Action Button Pressed');
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => QrCodeScanner()),
@@ -267,22 +268,45 @@ Widget _buildOffersSection(List<Restaurant> offers) {
 }
 
 Widget _buildRestaurantsSection(List<Restaurant> topRated, String sectionTitle) {
-  final top5 = topRated.take(5).toList(); // Get top 5 restaurants
+  final top5 = topRated.take(3).toList(); // Get top 5 restaurants
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       // Section Title
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          sectionTitle,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), // Larger font
+       Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                sectionTitle,
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold), // Larger font
+              ),
+            ),
+            const Spacer(),
+            // View All Button
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextButton(
+                onPressed: () {
+                  // Navigate to the restaurants screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AllRestaurantsScreen()),
+                  );
+                },
+                child: const Text(
+                  'View All',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
       // Horizontal Scrolling List
       SizedBox(
-        height: 220, // Adjusted height to reduce white space
+        height:sectionTitle=='🔥Top Rated Restaurants'? 220:205, // Adjusted height to reduce white space
         child: ListView.builder(
           scrollDirection: Axis.horizontal, // Enable horizontal scrolling
           itemCount: top5.length,
@@ -340,7 +364,8 @@ Widget _buildRestaurantsSection(List<Restaurant> topRated, String sectionTitle) 
                             maxLines: 1, // Prevent text overflow
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4.0), // Reduced space between name and rating
+                          const SizedBox(height: 4.0), 
+                          sectionTitle=='🔥Top Rated Restaurants'?
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -351,7 +376,8 @@ Widget _buildRestaurantsSection(List<Restaurant> topRated, String sectionTitle) 
                                 style: const TextStyle(fontSize: 14), // Adjusted font size for rating
                               ),
                             ],
-                          ),
+                          ):
+                          const SizedBox(height: 0.0),
                         ],
                       ),
                     ),
@@ -368,11 +394,12 @@ Widget _buildRestaurantsSection(List<Restaurant> topRated, String sectionTitle) 
 
 List<Restaurant>_getmoreRestaurants(List<Restaurant> topRatedRestaurants, List<Restaurant> restaurants) {
 final List<Restaurant> randomRestaurants = [];
+topRatedRestaurants = topRatedRestaurants.take(3).toList();
 final List<Restaurant> nonTopRatedRestaurants = restaurants.where((restaurant) => !topRatedRestaurants.contains(restaurant)).toList();
 
-if (nonTopRatedRestaurants.length >= 5) {
+if (nonTopRatedRestaurants.length >= 3) {
   // If there are enough non-top-rated restaurants, pick 5 randomly
-  while (randomRestaurants.length < 5) {
+  while (randomRestaurants.length < 3) {
     final randomRestaurant = nonTopRatedRestaurants[DateTime.now().microsecondsSinceEpoch % nonTopRatedRestaurants.length];
     if (!randomRestaurants.contains(randomRestaurant)) {
       randomRestaurants.add(randomRestaurant);
@@ -383,7 +410,7 @@ if (nonTopRatedRestaurants.length >= 5) {
   randomRestaurants.addAll(nonTopRatedRestaurants);
   
   // Get the remaining needed count from the top-rated list
-  final remainingCount = 5 - randomRestaurants.length;
+  final remainingCount = 3 - randomRestaurants.length;
   final topRatedRemaining = topRatedRestaurants.take(remainingCount).toList();
   randomRestaurants.addAll(topRatedRemaining);
 }
@@ -394,7 +421,7 @@ void _goToRestaurantDetails(Restaurant restaurant) {
  Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => MenuScreen(restaurantId: restaurant.id!),
+      builder: (context) => MenuScreen(restaurantId: restaurant.id!, restaurantName: restaurant.name),
     ),
   );
 }

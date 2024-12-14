@@ -37,6 +37,11 @@ class _MenuScreenState extends State<MenuScreen> {
     try {
       List<MenuCategory> fetchedCategories =
           await CategoryService().fetchMenuCategories(restaurantId!);
+            fetchedCategories.sort((a, b) {
+      if (a.name.toLowerCase() == 'offers') return -1;
+      if (b.name.toLowerCase() == 'offers') return 1;
+      return 0;
+    });
       setState(() {
         categories = fetchedCategories;
         isLoading = false;
@@ -48,6 +53,7 @@ class _MenuScreenState extends State<MenuScreen> {
       _showErrorSnackBar('Failed to load categories');
     }
   }
+  
 
   // Method to add a new category
   void _addCategory(MenuCategory newCategory) async {

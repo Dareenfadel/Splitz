@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
@@ -25,6 +26,18 @@ class UsersService {
         acc[user.uid] = user;
         return acc;
       });
+    } catch (e) {
+      throw Exception('Failed to fetch users: $e');
+    }
+  }
+  Future<bool> haveCurrentOrder() async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('users')
+          .where(FieldPath.documentId, isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+          .where('currentOrderId', isNull: false)
+          .get();
+      return querySnapshot.docs.isNotEmpty;
     } catch (e) {
       throw Exception('Failed to fetch users: $e');
     }
