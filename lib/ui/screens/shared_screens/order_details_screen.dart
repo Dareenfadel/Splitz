@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
+import 'package:splitz/data/models/user.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
   final Order order;
@@ -9,6 +11,8 @@ class OrderDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserModel?>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Order Details', style: TextStyle(color: Colors.white)),
@@ -20,10 +24,14 @@ class OrderDetailsScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                Text('Items:',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                SizedBox(height: 8),
+                if (user?.userType == 'client') ...[
+                  _buildSectionTitle('My Bill'),
+                  ...order.items
+                      .where((item) =>
+                          item.userList.any((u) => u.userId == user!.uid))
+                      .map((item) => _buildOrderItem(item)),
+                  _buildSectionTitle('All Orders'),
+                ],
                 ...order.items.map((item) => _buildOrderItem(item)),
                 SizedBox(height: 16),
                 Card(
@@ -43,15 +51,22 @@ class OrderDetailsScreen extends StatelessWidget {
                           ],
                         ),
                         Divider(),
-                        _buildOrderInfo('Order ID', order.orderId),
-                        _buildOrderInfo('Restaurant ID', order.restaurantId),
+                        if (user?.userType == 'manager')
+                          _buildOrderInfo('Order ID', order.orderId),
+                        if (user?.userType == 'manager')
+                          _buildOrderInfo('Restaurant ID', order.restaurantId),
                         _buildOrderInfo('Table Number', order.tableNumber),
                         _buildOrderInfo('Order Date', order.date),
                         Divider(),
                         _buildTotalInfo('Total Bill', order.totalBill),
-                        _buildTotalInfo('Paid So Far', order.paidSoFar),
-                        _buildOrderInfo('Status',
-                            order.status == 'paid' ? 'Paid' : 'Unpaid'),
+                        if (user?.userType == 'manager')
+                          _buildTotalInfo('Paid So Far', order.paidSoFar),
+                        if (user?.userType == 'client')
+                          _buildTotalInfo(
+                              'My Total', _calculateMyTotal(user!.uid)),
+                        if (user?.userType == 'manager')
+                          _buildOrderInfo('Status',
+                              order.status == 'paid' ? 'Paid' : 'Unpaid'),
                       ],
                     ),
                   ),
@@ -60,6 +75,16 @@ class OrderDetailsScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -143,5 +168,15 @@ class OrderDetailsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  double _calculateMyTotal(String userId) {
+    double total = 0.0;
+    for (var item in order.items) {
+      if (item.userList.any((u) => u.userId == userId)) {
+        total += item.paidAmount;
+      }
+    }
+    return total;
   }
 }

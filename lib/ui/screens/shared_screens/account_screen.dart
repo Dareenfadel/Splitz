@@ -4,6 +4,7 @@ import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/auth.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/ui/custom_widgets/custom_button.dart';
+import 'package:splitz/ui/screens/shared_screens/history_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   final AuthService _auth = AuthService();
@@ -43,6 +44,7 @@ class AccountScreen extends StatelessWidget {
             children: [
               _buildProfileSection(user),
               const SizedBox(height: 20),
+              if (user?.userType == 'client') _buildOrderHistoryOption(context),
               _buildSettingsSection(context),
             ],
           ),
@@ -83,6 +85,23 @@ class AccountScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildOrderHistoryOption(BuildContext context) {
+    return ListTile(
+      leading: Icon(Icons.history, color: AppColors.primary),
+      title: Text('View Order History'),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => HistoryScreen(
+                    restaurantId: '',
+                  )),
+        );
+      },
     );
   }
 

@@ -37,6 +37,27 @@ class OrderService {
     }
   }
 
+  /// Fetch orders by client using orderIds from UserModel
+  Future<List<Order>> fetchOrdersByClient(UserModel user) async {
+    try {
+      if (user.orderIds.isEmpty) {
+        return [];
+      }
+
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('orders')
+          .where(FieldPath.documentId, whereIn: user.orderIds)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) =>
+              Order.fromFirestore(doc.id, doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch orders by client: $e');
+    }
+  }
+
   /// Fetch a specific order by ID
   Future<Order?> fetchOrderById(String orderId) async {
     try {
