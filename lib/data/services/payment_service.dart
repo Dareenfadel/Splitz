@@ -40,6 +40,7 @@ class PaymentService {
       });
 
       order.paidSoFar = order.calculatedPaidSoFar;
+      order.paidUsers.add(userId);
 
       if (order.isFullyPaid) {
         order.status = 'paid';

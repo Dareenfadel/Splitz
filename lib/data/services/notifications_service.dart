@@ -1,9 +1,16 @@
+import 'dart:async';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/menu_item.dart';
+import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/restaurant.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_item_service.dart';
+import 'package:splitz/data/services/order_item_service.dart';
+import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/data/services/restaurant_service.dart';
 import 'package:splitz/data/services/users_service.dart';
 import 'package:splitz/main.dart';
@@ -11,6 +18,25 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:splitz/ui/screens/client_screens/menu.dart';
+import 'package:toastification/toastification.dart';
+
+class SplittingRequestNotificationTypes {
+  static const String splitRequest = 'split_request';
+  static const String splitRequestAccepted = 'split_request_accepted';
+  static const String splitRequestRejected = 'split_request_rejected';
+
+  static const String splitEquallyRequest = 'split_equally_request';
+  static const String splitEquallyRequestAccepted =
+      'split_equally_request_accepted';
+  static const String splitEquallyRequestRejected =
+      'split_equally_request_rejected';
+      
+  static const String splitLeave = 'split_leave';
+  static const String splitJoin = 'split_join';
+
+  static const String prefix = 'split_';
+  
+}
 
 class NotificationsService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -19,6 +45,11 @@ class NotificationsService {
   static final NotificationsService _instance =
       NotificationsService._privateConstructor();
   factory NotificationsService() => _instance;
+
+  static final OrderService _orderService = OrderService();
+  static final OrderItemService _orderItemService = OrderItemService();
+
+  static StreamSubscription<RemoteMessage>? _onMessageSubscription;
 
   Future<void> initNotifications(String userId) async {
     await _firebaseMessaging.requestPermission();
@@ -45,7 +76,9 @@ class NotificationsService {
       handleMessage(message); // Handle background notification tap
     });
     // Handle when the app is in the foreground
-    FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
+    _onMessageSubscription?.cancel(); // Cancel the previous subscription
+    _onMessageSubscription =
+        FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
   }
 
   Future<void> handleInitialMessage() async {
@@ -142,7 +175,17 @@ class NotificationsService {
     }
   }
 
-  static sendNotificationViaFcmToken(String fcmToken) async {
+  static Future<void> sendNotificationViaFcmToken({
+    required String fcmToken,
+    required String title,
+    required String body,
+    required Map<String, String> data,
+  }) async {
+    if (fcmToken == null || fcmToken.isEmpty) {
+      print('FCM token is null or empty [$fcmToken]');
+      return;
+    }
+
     final String serverAccessTokenKey = await getAccessToken();
     String endpointFirebaseCloudMessaging =
         "https://fcm.googleapis.com/v1/projects/guc-splitz/messages:send";
@@ -150,10 +193,8 @@ class NotificationsService {
     final Map<String, dynamic> message = {
       'message': {
         'token': fcmToken,
-        'notification': {'title': 'Split Request', 'body': ''},
-        'data': {
-          'type': 'split',
-        }
+        'notification': {'title': title, 'body': body},
+        'data': data
       }
     };
 
@@ -169,6 +210,8 @@ class NotificationsService {
     if (response.statusCode == 200) {
       print('Notification sent successfully');
     } else {
+      print('Failed to send notification. Error: ${response.body}');
+
       print('Failed to send notification. Error: ${response.statusCode}');
     }
   }
@@ -207,11 +250,25 @@ class NotificationsService {
           'Message also contained a notification: ${notification.title}, ${notification.body}');
     }
 
-    if (type == 'split') {
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        SnackBar(content: Text('New split request!')),
-      );
+    if (type.startsWith(SplittingRequestNotificationTypes.prefix)) {
+      handleSplittingRequestNotification(message);
     }
+  }
+
+  void handleSplittingRequestNotification(RemoteMessage message) {
+    if (navigatorKey.currentContext == null) return;
+    if (message.notification == null) return;
+
+    FlutterRingtonePlayer().playNotification();
+    toastification.show(
+      context: navigatorKey.currentContext!,
+      title: Text(message.notification!.title ?? ''),
+      description: Text(message.notification!.body ?? ''),
+      autoCloseDuration: Duration(seconds: 5),
+      alignment: Alignment.topCenter,
+      primaryColor: AppColors.primary,
+      icon: Icon(Icons.notifications),
+    );
   }
 
   // if (restaurantId != null && type == 'offer') {
@@ -230,4 +287,293 @@ class NotificationsService {
   //     );
   //   });
   // }
+
+  static Future<void> _sendSplittingRequestNotificationHelper({
+    required String orderId,
+    required int itemIndex,
+    required String requestedToUserId,
+    required Function({
+      required OrderItem orderItem,
+      required UserModel requestedToUser,
+      required UserModel requestedByUser,
+    }) sendNotification,
+  }) async {
+    var (orderItem, usersMap) = await _orderItemService.getOrderItemAndItsUsers(
+      orderId: orderId,
+      itemIndex: itemIndex,
+    );
+    print(
+        "Trying to get request for $requestedToUserId, orderItem: ${orderItem.toMap()}");
+    var request = orderItem.getRequestFor(requestedToUserId);
+
+    var requestedToUser = usersMap[request.userId]!;
+    var requestedByUser = usersMap[request.requestedBy]!;
+
+    if (requestedToUser.fcmToken == null || requestedToUser.fcmToken!.isEmpty) {
+      print(
+          'User with [id=${requestedToUser.uid}] does not have an FCM token [${requestedToUser.fcmToken}]');
+      return Future.value();
+    }
+
+    if (requestedByUser.fcmToken == null || requestedByUser.fcmToken!.isEmpty) {
+      print(
+          'User with [id=${requestedByUser.uid}] does not have an FCM token [${requestedByUser.fcmToken}]');
+      return Future.value();
+    }
+
+    sendNotification(
+      orderItem: orderItem,
+      requestedToUser: requestedToUser,
+      requestedByUser: requestedByUser,
+    );
+  }
+
+  static Future<void> sendSplittingRequestNotification({
+    required String orderId,
+    required int itemIndex,
+    required String requestedToUserId,
+  }) async {
+    return _sendSplittingRequestNotificationHelper(
+      orderId: orderId,
+      itemIndex: itemIndex,
+      requestedToUserId: requestedToUserId,
+      sendNotification: ({
+        required orderItem,
+        required requestedToUser,
+        required requestedByUser,
+      }) {
+        sendNotificationViaFcmToken(
+          fcmToken: requestedToUser.fcmToken!,
+          title: 'Split Request',
+          body:
+              '${requestedByUser.name ?? 'Someone'} wants to split ${orderItem.itemName} with you!',
+          data: {
+            'type': SplittingRequestNotificationTypes.splitRequest,
+          },
+        );
+      },
+    );
+  }
+
+  static Future<void> sendAcceptSplittingRequestNotification({
+    required String orderId,
+    required int itemIndex,
+    required String requestedToUserId,
+  }) async {
+    return _sendSplittingRequestNotificationHelper(
+      orderId: orderId,
+      itemIndex: itemIndex,
+      requestedToUserId: requestedToUserId,
+      sendNotification: ({
+        required orderItem,
+        required requestedToUser,
+        required requestedByUser,
+      }) {
+        sendNotificationViaFcmToken(
+          fcmToken: requestedByUser.fcmToken!,
+          title: 'Split Request Accepted',
+          body:
+              '${requestedToUser.name ?? 'Someone'} accepted your split request for an ${orderItem.itemName}!',
+          data: {
+            'type': SplittingRequestNotificationTypes.splitRequestAccepted,
+          },
+        );
+      },
+    );
+  }
+
+  // This special, because the deleted request is not in the order item
+  static Future<void> sendRejectSplittingRequestNotification({
+    required OrderItem orderItemBeforeRejecting,
+    required Map<String, UserModel> usersMap,
+    required String requestedToUserId,
+  }) async {
+    var request = orderItemBeforeRejecting.getRequestFor(requestedToUserId);
+    var requestedToUser = usersMap[request.userId]!;
+    var requestedByUser = usersMap[request.requestedBy]!;
+
+    if (requestedToUser.fcmToken == null || requestedToUser.fcmToken!.isEmpty) {
+      print(
+          'User with [id=${requestedToUser.uid}] does not have an FCM token [${requestedToUser.fcmToken}]');
+      return;
+    }
+
+    if (requestedByUser.fcmToken == null || requestedByUser.fcmToken!.isEmpty) {
+      print(
+          'User with [id=${requestedByUser.uid}] does not have an FCM token [${requestedByUser.fcmToken}]');
+      return;
+    }
+
+    sendNotificationViaFcmToken(
+      fcmToken: requestedByUser.fcmToken!,
+      title: 'Split Request Rejected',
+      body:
+          '${requestedToUser.name ?? 'Someone'} rejected your split request for an ${orderItemBeforeRejecting.itemName}!',
+      data: {
+        'type': SplittingRequestNotificationTypes.splitRequestRejected,
+      },
+    );
+  }
+
+  static Future<void> _sendSplittingEquallyRequestNotificationHelper({
+    required String orderId,
+    required String requestedByUserId,
+  }) async {
+    var (order, usersMap) =
+        await _orderService.listenToOrderAndItsUsersByOrderId(orderId).first;
+    var requestedByUser = usersMap[requestedByUserId]!;
+  }
+
+  static Future<void> sendSplittingEquallyRequestNotification({
+    required String orderId,
+    required String requestedByUserId,
+  }) async {
+    var (order, usersMap) =
+        await _orderService.listenToOrderAndItsUsersByOrderId(orderId).first;
+    var requestedByUser = usersMap[requestedByUserId]!;
+
+    for (final user in usersMap.values) {
+      if (user.uid == requestedByUser.uid) {
+        continue;
+      }
+
+      if (user.fcmToken == null) {
+        print('User with [id=${user.uid}] does not have an FCM token');
+        continue;
+      }
+
+      sendNotificationViaFcmToken(
+        fcmToken: user.fcmToken!,
+        title: 'Split Equally Request',
+        body:
+            '${requestedByUser.name ?? 'Someone'} wants to split the order equally with you!',
+        data: {
+          'type': SplittingRequestNotificationTypes.splitEquallyRequest,
+        },
+      );
+    }
+  }
+
+  static Future<void> sendAcceptSplittingEquallyRequestNotification({
+    required String orderId,
+    required String acceptingUserId,
+  }) async {
+    var (order, usersMap) =
+        await _orderService.listenToOrderAndItsUsersByOrderId(orderId).first;
+    var acceptingUser = usersMap[acceptingUserId]!;
+
+    for (final user in usersMap.values) {
+      if (user.uid == acceptingUser.uid) {
+        continue;
+      }
+
+      if (user.fcmToken == null) {
+        print('User with [id=${user.uid}] does not have an FCM token');
+        continue;
+      }
+
+      sendNotificationViaFcmToken(
+        fcmToken: user.fcmToken!,
+        title: 'Split Equally Request Accepted',
+        body:
+            '${acceptingUser.name ?? 'Someone'} accepted the split equally request!',
+        data: {
+          'type': SplittingRequestNotificationTypes.splitEquallyRequestAccepted,
+        },
+      );
+    }
+  }
+
+  static Future<void> sendRejectSplittingEquallyRequestNotification({
+    required String orderId,
+    required String rejectingUserId,
+  }) async {
+    var (order, usersMap) =
+        await _orderService.listenToOrderAndItsUsersByOrderId(orderId).first;
+    var rejectingUser = usersMap[rejectingUserId]!;
+
+    for (final user in usersMap.values) {
+      if (user.uid == rejectingUser.uid) {
+        continue;
+      }
+
+      if (user.fcmToken == null) {
+        print('User with [id=${user.uid}] does not have an FCM token');
+        continue;
+      }
+
+      sendNotificationViaFcmToken(
+        fcmToken: user.fcmToken!,
+        title: 'Split Equally Request Rejected',
+        body:
+            '${rejectingUser.name ?? 'Someone'} rejected the split equally request!',
+        data: {
+          'type': SplittingRequestNotificationTypes.splitEquallyRequestRejected,
+        },
+      );
+    }
+  }
+
+  static Future<void> sendLeaveOrderItemNotification({
+    required String orderId,
+    required int itemIndex,
+    required String leavingUserId,
+  }) async {
+    var (order, usersMap) =
+        await _orderService.listenToOrderAndItsUsersByOrderId(orderId).first;
+    var orderItem = order.items[itemIndex];
+
+    for (final user in usersMap.values) {
+      if (user.uid == leavingUserId) {
+        continue;
+      }
+
+      if (user.fcmToken == null) {
+        print('User with [id=${user.uid}] does not have an FCM token');
+        continue;
+      }
+
+      sendNotificationViaFcmToken(
+        fcmToken: user.fcmToken!,
+        title: 'User Left Order Item',
+        body:
+            '${user.name ?? 'Someone'} left the order item ${orderItem.itemName}!',
+        data: {
+          'type': SplittingRequestNotificationTypes.splitLeave,
+        },
+      );
+    }
+  }
+  
+  
+  static Future<void> sendJoinOrderItemNotification({
+    required String orderId,
+    required int itemIndex,
+    required String joiningUserId,
+  }) async {
+    var (order, usersMap) =
+        await _orderService.listenToOrderAndItsUsersByOrderId(orderId).first;
+    var orderItem = order.items[itemIndex];
+
+    for (final user in usersMap.values) {
+      if (user.uid == joiningUserId) {
+        continue;
+      }
+
+      if (user.fcmToken == null) {
+        print('User with [id=${user.uid}] does not have an FCM token');
+        continue;
+      }
+
+      sendNotificationViaFcmToken(
+        fcmToken: user.fcmToken!,
+        title: 'User Joined Order Item',
+        body:
+            '${user.name ?? 'Someone'} joined the order item ${orderItem.itemName}!',
+        data: {
+          'type': SplittingRequestNotificationTypes.splitJoin,
+        },
+      );
+    }
+  }
 }

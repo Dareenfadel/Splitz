@@ -46,7 +46,7 @@ class OrderItemCard_OtherPeopleItem extends StatelessWidget {
           ),
         ),
         child: const Text(
-          'Share',
+          'Join',
           style: TextStyle(
             color: Colors.white,
             fontSize: 14,

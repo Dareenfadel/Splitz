@@ -60,6 +60,7 @@ dependencies:
   http:
   googleapis:
   googleapis_auth:
+  flutter_ringtone_player: ^4.0.0+3
 
 dev_dependencies:
   flutter_test:

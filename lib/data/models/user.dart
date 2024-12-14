@@ -42,7 +42,7 @@ class UserModel {
       orderIds: List<String>.from(data['orderIds'] ?? []),
       currentOrderId: data['currentOrderId'] ?? '',
       imageUrl: data['imageUrl'],
-      fcmToken: data['fcm'] ?? '',
+      fcmToken: data['fcm'] ?? data['fcmToken'] ?? '', // Added 'fcm' and 'fcmToken' as I found both in the Firestore
     );
   }
 }
