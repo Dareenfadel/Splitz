@@ -28,7 +28,7 @@ class Wrapper extends StatelessWidget {
 
     if (user.userType == 'client') {
       // Initialize notifications for the client
-      NotificationsService().initNotifications();
+      NotificationsService().initNotifications(user.uid);
     }
 
     if (user.currentOrderId != null && user.currentOrderId!.length > 0) {

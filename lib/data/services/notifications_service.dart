@@ -2,43 +2,47 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:splitz/data/models/menu_item.dart';
 import 'package:splitz/data/models/restaurant.dart';
+import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_item_service.dart';
 import 'package:splitz/data/services/restaurant_service.dart';
+import 'package:splitz/data/services/users_service.dart';
 import 'package:splitz/main.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart' as auth;
-import 'package:googleapis/servicecontrol/v1.dart' as servicecontrol;
+import 'package:splitz/ui/screens/client_screens/menu.dart';
 
 class NotificationsService {
   final _firebaseMessaging = FirebaseMessaging.instance;
 
-  Future<void> initNotifications() async {
+  Future<void> initNotifications(String userId) async {
     await _firebaseMessaging.requestPermission();
-    _firebaseMessaging.getToken().then((token) {
-      print('Token: $token');
+    _firebaseMessaging.getToken().then((token) async {
+      print('FCM Token: $token');
+      if (token != null) {
+        await saveTokenToDatabase(userId, token);
+      }
     });
     await _firebaseMessaging.subscribeToTopic('offers');
     print('Subscribed to offers topic');
-
     initPushNotifications();
   }
 
+  Future<void> saveTokenToDatabase(String userId, String token) async {
+    // Assuming you have a User model and a UserService to handle database operations
+    UsersService userService = UsersService();
+    await userService.updateUserFcmToken(userId, token);
+  }
+
   Future initPushNotifications() async {
+    // For when the app is started from a terminated state
     FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Received a message while in the foreground!');
-      print('Message data: ${message.data}');
-
-      if (message.notification != null) {
-        RemoteNotification notification = message.notification!;
-
-        print(
-            'Message also contained a notification: ${notification.title}, ${notification.body}');
-      }
+    // Handle when the app is in the background and notification is tapped
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      handleMessage(message); // Handle background notification tap
     });
-
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // Handle when the app is in the foreground
+    FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
   }
 
   static Future<String> getAccessToken() async {
@@ -105,6 +109,7 @@ class NotificationsService {
         'data': {
           'restaurantId': restaurantId,
           'itemId': itemId,
+          'type': 'offer',
         }
       }
     };
@@ -120,19 +125,97 @@ class NotificationsService {
 
     if (response.statusCode == 200) {
       print('Notification sent successfully');
-      print(response.body);
+    } else {
+      print('Failed to send notification. Error: ${response.statusCode}');
+    }
+  }
+
+  static sendNotificationViaFcmToken(String fcmToken) async {
+    final String serverAccessTokenKey = await getAccessToken();
+    String endpointFirebaseCloudMessaging =
+        "https://fcm.googleapis.com/v1/projects/guc-splitz/messages:send";
+
+    final Map<String, dynamic> message = {
+      'message': {
+        'token': fcmToken,
+        'notification': {'title': 'Split Request', 'body': ''},
+        'data': {
+          'type': 'split',
+        }
+      }
+    };
+
+    final http.Response response = await http.post(
+      Uri.parse(endpointFirebaseCloudMessaging),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $serverAccessTokenKey'
+      },
+      body: jsonEncode(message),
+    );
+
+    if (response.statusCode == 200) {
+      print('Notification sent successfully');
     } else {
       print('Failed to send notification. Error: ${response.statusCode}');
     }
   }
 
   void handleMessage(RemoteMessage? message) {
-    print('Message: $message');
     if (message == null) return;
+
+    final data = message.data;
+    final restaurantId = data['restaurantId'];
+    final type = data['type'];
+
+    if (restaurantId != null && type == 'offer') {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => MenuScreen(restaurantId: restaurantId),
+        ),
+      );
+    }
+
+    if (type == 'split') {}
   }
 
-  Future<void> _firebaseMessagingBackgroundHandler(
+  Future<void> _firebaseMessagingForegroundHandler(
       RemoteMessage message) async {
-    print('Handling a background message: ${message.messageId}');
+    print('Received a message while in the foreground!');
+    print('Message data: ${message.data}');
+
+    final data = message.data;
+    final restaurantId = data['restaurantId'];
+    final type = data['type'];
+
+    if (message.notification != null) {
+      RemoteNotification notification = message.notification!;
+
+      print(
+          'Message also contained a notification: ${notification.title}, ${notification.body}');
+    }
+
+    if (type == 'split') {
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+        SnackBar(content: Text('New split request!')),
+      );
+    }
   }
+
+  // if (restaurantId != null && type == 'offer') {
+  //   RestaurantService restaurantService = RestaurantService();
+  //   restaurantService.fetchRestaurantById(restaurantId).then((restaurant) {
+  //     ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+  //       SnackBar(content: Text('New offers from ${restaurant.name}')),
+  //     );
+  //   });
+
+  //   Future.delayed(Duration(seconds: 2), () {
+  //     navigatorKey.currentState?.push(
+  //       MaterialPageRoute(
+  //         builder: (context) => MenuScreen(restaurantId: restaurantId),
+  //       ),
+  //     );
+  //   });
+  // }
 }
