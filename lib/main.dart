@@ -15,6 +15,8 @@ import 'package:toastification/toastification.dart';
 import 'constants/app_colors.dart';
 import 'firebase_options.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +85,7 @@ class MyApp extends StatelessWidget {
       ],
       child: ToastificationWrapper(
         child: MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'Flutter Demo',
           theme: ThemeData(
             colorScheme:
