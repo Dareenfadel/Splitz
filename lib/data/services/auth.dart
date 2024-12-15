@@ -161,4 +161,32 @@ class AuthService {
       print("Error storing user data: $e");
     }
   }
+
+  // Change password
+  Future<bool> changePassword(
+      String currentPassword, String newPassword) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        // Re-authenticate the user with the current password
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPassword,
+        );
+
+        await user.reauthenticateWithCredential(credential);
+
+        // Update the password
+        await user.updatePassword(newPassword);
+        print("Password changed successfully");
+        return true;
+      } else {
+        print("No user is signed in");
+        return false;
+      }
+    } catch (e) {
+      print("Error changing password: $e");
+      return false;
+    }
+  }
 }

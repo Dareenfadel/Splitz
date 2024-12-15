@@ -6,6 +6,7 @@ class UserModel {
   final List<String> orderIds;
   String? currentOrderId;
   final String? imageUrl;
+  final String? fcmToken;
 
   UserModel({
     required this.uid,
@@ -15,6 +16,7 @@ class UserModel {
     required this.orderIds,
     this.currentOrderId,
     this.imageUrl,
+    this.fcmToken,
   });
 
   // Convert UserModel to Map (Firestore store)
@@ -26,6 +28,7 @@ class UserModel {
       'orderIds': orderIds,
       'currentOrderId': currentOrderId,
       'imageUrl': imageUrl,
+      'fcm': fcmToken,
     };
   }
 
@@ -39,6 +42,7 @@ class UserModel {
       orderIds: List<String>.from(data['orderIds'] ?? []),
       currentOrderId: data['currentOrderId'] ?? '',
       imageUrl: data['imageUrl'],
+      fcmToken: data['fcm'] ?? data['fcmToken'] ?? '', // Added 'fcm' and 'fcmToken' as I found both in the Firestore
     );
   }
 }

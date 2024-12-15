@@ -30,6 +30,16 @@ class UsersService {
       throw Exception('Failed to fetch users: $e');
     }
   }
+
+  Future<void> updateUserFcmToken(String userId, String fcmToken) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'fcmToken': fcmToken,
+      });
+    } catch (e) {
+      throw Exception('Failed to update FCM token: $e');
+    }
+  }
   Future<bool> haveCurrentOrder() async {
     try {
       QuerySnapshot querySnapshot = await _firestore

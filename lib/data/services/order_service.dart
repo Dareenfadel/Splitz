@@ -6,6 +6,7 @@ import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/order_item_user.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_item_service.dart';
+import 'package:splitz/data/services/notifications_service.dart';
 import 'package:splitz/data/services/users_service.dart';
 
 class OrderService {
@@ -34,6 +35,27 @@ class OrderService {
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch orders: $e');
+    }
+  }
+
+  /// Fetch orders by client using orderIds from UserModel
+  Future<List<Order>> fetchOrdersByClient(UserModel user) async {
+    try {
+      if (user.orderIds.isEmpty) {
+        return [];
+      }
+
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('orders')
+          .where(FieldPath.documentId, whereIn: user.orderIds)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) =>
+              Order.fromFirestore(doc.id, doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch orders by client: $e');
     }
   }
 
@@ -274,6 +296,7 @@ class OrderService {
 
           // Create the new order in Firestore
           await _firestore.collection('orders').doc(orderId).set({
+            'date': DateTime.now().toIso8601String().split('T').first,
             'restaurant_id': restaurantId,
             'order_id': orderId,
             'status': 'ordering',
@@ -457,7 +480,7 @@ class OrderService {
     required String orderId,
     required String requestorUserId,
   }) async {
-    return _updateOrderWithTransaction(
+    await _updateOrderWithTransaction(
       orderId: orderId,
       updateFunction: (order) {
         order.splitEquallyPendingUserIds = order.nonPaidUserIds
@@ -465,13 +488,18 @@ class OrderService {
             .toList();
       },
     );
+
+    await NotificationsService.sendSplittingEquallyRequestNotification(
+      orderId: orderId,
+      requestedByUserId: requestorUserId,
+    );
   }
 
   Future<void> acceptSplitAllEquallyRequest({
     required String orderId,
     required String acceptingUserId,
   }) async {
-    return _updateOrderWithTransaction(
+    await _updateOrderWithTransaction(
         orderId: orderId,
         updateFunction: (order) {
           order.splitEquallyPendingUserIds.remove(acceptingUserId);
@@ -494,17 +522,27 @@ class OrderService {
             }
           }
         });
+
+    await NotificationsService.sendAcceptSplittingEquallyRequestNotification(
+      orderId: orderId,
+      acceptingUserId: acceptingUserId,
+    );
   }
 
   Future<void> rejectSplitAllEquallyRequest({
     required String orderId,
     required String rejectingUserId,
   }) async {
-    return _updateOrderWithTransaction(
+    await _updateOrderWithTransaction(
       orderId: orderId,
       updateFunction: (order) {
         order.splitEquallyPendingUserIds = [];
       },
+    );
+
+    await NotificationsService.sendRejectSplittingEquallyRequestNotification(
+      orderId: orderId,
+      rejectingUserId: rejectingUserId,
     );
   }
 

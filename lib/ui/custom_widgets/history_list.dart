@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:splitz/data/models/order.dart';
+import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/history_card.dart';
-import 'package:splitz/ui/screens/manager_screens/order_details_screen.dart';
+import 'package:splitz/ui/screens/shared_screens/order_details_screen.dart';
 
 class HistoryList extends StatelessWidget {
   final String restaurantId;
@@ -12,8 +14,12 @@ class HistoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserModel?>(context);
+
     return FutureBuilder<List<Order>>(
-      future: _orderService.fetchOrdersByRestaurant(restaurantId),
+      future: user?.userType == 'manager'
+          ? _orderService.fetchOrdersByRestaurant(restaurantId)
+          : _orderService.fetchOrdersByClient(user!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -25,6 +31,7 @@ class HistoryList extends StatelessWidget {
           final orders = snapshot.data!;
           orders
               .sort((a, b) => b.date.compareTo(a.date)); // Sort orders by date
+
           return ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {

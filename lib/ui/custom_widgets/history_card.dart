@@ -52,7 +52,6 @@ class HistoryCard extends StatelessWidget {
                   style: TextStyle(color: Colors.grey, fontSize: 16.0),
                 ),
                 SizedBox(height: 8.0),
-                _buildItemImages(order.items),
               ],
             ),
             trailing:
@@ -63,33 +62,13 @@ class HistoryCard extends StatelessWidget {
             top: 8.0,
             right: 8.0,
             child: Icon(
-              order.status == 'paid' ? Icons.check_circle : Icons.info,
+              order.status == 'paid'
+                  ? Icons.check_circle
+                  : Icons.hourglass_top_rounded,
               color: order.status == 'paid' ? Colors.green : Colors.blue,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildItemImages(List<OrderItem> items) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: items.map((item) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(25.0),
-              child: Image.network(
-                item.imageUrl,
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

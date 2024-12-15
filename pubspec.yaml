@@ -56,7 +56,12 @@ dependencies:
   flutter_dotenv: ^5.2.1
   pay: ^2.0.0
   qr_flutter: ^4.1.0
-  url_launcher: ^6.1.11
+  firebase_messaging: ^15.1.5
+  http:
+  googleapis:
+  googleapis_auth:
+  flutter_ringtone_player: ^4.0.0+3
+  flutter_pannable_rating_bar: ^2.7.2+1  url_launcher: ^6.1.11
 
 
 dev_dependencies:
