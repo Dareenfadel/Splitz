@@ -5,6 +5,7 @@ import 'package:splitz/data/services/auth.dart';
 import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/ui/custom_widgets/custom_button.dart';
 import 'package:splitz/ui/screens/shared_screens/history_screen.dart';
+import 'package:splitz/ui/screens/wrapper.dart';
 
 class AccountScreen extends StatelessWidget {
   final AuthService _auth = AuthService();
@@ -27,8 +28,11 @@ class AccountScreen extends StatelessWidget {
           IconButton(
             onPressed: () async {
               await _auth.signOut();
-              Navigator.of(context)
-                  .pop(); // Navigate back to the previous screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => Wrapper()),
+                (route) => false,
+              );
             },
             icon: const Icon(Icons.logout_outlined),
             color: Colors.white,

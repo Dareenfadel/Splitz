@@ -12,7 +12,7 @@ class Wrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserModel?>();
-    
+
     if (user == null) {
       return Authenticate();
     }

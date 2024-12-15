@@ -295,6 +295,7 @@ class OrderService {
 
           // Create the new order in Firestore
           await _firestore.collection('orders').doc(orderId).set({
+            'date': DateTime.now().toIso8601String().split('T').first,
             'restaurant_id': restaurantId,
             'order_id': orderId,
             'status': 'ordering',
