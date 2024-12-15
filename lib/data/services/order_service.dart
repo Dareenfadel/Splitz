@@ -165,7 +165,7 @@ class OrderService {
   }
 
   Future<void> updateItemStatus(
-      String orderId, String itemID, String newStatus) async {
+      String orderId, String itemID, String newStatus, int index) async {
     try {
       DocumentReference orderRef = _firestore.collection('orders').doc(orderId);
       DocumentSnapshot orderSnapshot = await orderRef.get();
@@ -176,8 +176,8 @@ class OrderService {
 
         // Update item status
         for (var item in order.items) {
-          if (item.itemId == itemID) {
-            // item.prepared = true;
+          int listIndex = order.items.indexOf(item);
+          if (item.itemId == itemID && listIndex == index) {
             item.status = newStatus;
           }
         }
@@ -201,7 +201,6 @@ class OrderService {
       DocumentReference orderRef =
           FirebaseFirestore.instance.collection('orders').doc(orderId);
 
-      // if (newStatus == "served") {
       DocumentSnapshot orderSnapshot = await orderRef.get();
 
       if (orderSnapshot.exists) {
@@ -211,24 +210,23 @@ class OrderService {
           return OrderItem.fromFirestore(item as Map<String, dynamic>);
         }).toList();
 
-        // Mark items as served
         for (var item in items) {
-          // item.prepared = true;
-          item.status = newStatus;
+          if (item.status != 'ordering' &&
+              item.status != 'served' &&
+              newStatus != 'pending') {
+            item.status = newStatus;
+          }
         }
         await orderRef.update({
           'status': newStatus,
           'items': items.map((item) => item.toMap()).toList(),
         });
 
-        print('Order status updated to "served" and items marked as served');
+        print(
+            'Order status updated to $newStatus and items marked as $newStatus ');
       } else {
         print('Order not found');
       }
-      // } else {
-      //   await orderRef.update({
-      //     'status': newStatus,
-      //   });
       print('Order status updated to $newStatus');
       // }
     } catch (e) {

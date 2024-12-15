@@ -11,13 +11,14 @@ class OrderCard extends StatefulWidget {
   final Order order;
   final String orderId;
   final Function(String) updateStatus;
-  final Function(Order) onFlagChanged;
+  bool hasNewItems;
 
-  OrderCard(
-      {required this.order,
-      required this.orderId,
-      required this.updateStatus,
-      required this.onFlagChanged});
+  OrderCard({
+    required this.order,
+    required this.orderId,
+    required this.updateStatus,
+    required this.hasNewItems,
+  });
 
   @override
   _OrderCardState createState() => _OrderCardState();
@@ -27,32 +28,26 @@ class _OrderCardState extends State<OrderCard> {
   late List<OrderItem> items;
   final OrderService _orderService = OrderService();
   late StreamSubscription<List<Order>> _orderSubscription;
-  late bool hasNewItems;
 
   @override
   void initState() {
     super.initState();
     items = widget.order.items;
-    hasNewItems = false;
 
     void updateItems(List<OrderItem> updatedItems) {
       setState(() {
-        // Sort updated items based on status
-        items = updatedItems
-          ..sort((a, b) {
-            // Define priority for statuses
-            const statusPriority = {
-              'pending': 0,
-              'in progress': 1,
-              'served': 2
-            };
+        for (var updatedItem in updatedItems) {
+          final updatedItemIndex = updatedItems.indexOf(updatedItem);
 
-            // Compare statuses
-            int statusComparison =
-                statusPriority[a.status]!.compareTo(statusPriority[b.status]!);
-
-            return statusComparison;
-          });
+          if (items.elementAtOrNull(updatedItemIndex) != null) {
+            if (items[updatedItemIndex].status == "ordering" &&
+                updatedItem.status == "pending") {
+              widget.updateStatus("pending");
+            }
+          } else {
+            items.add(updatedItem);
+          }
+        }
       });
     }
 
@@ -63,28 +58,13 @@ class _OrderCardState extends State<OrderCard> {
           (order) => order.orderId == widget.orderId,
           orElse: () => widget.order);
 
-      if (updatedOrder.items.length > items.length) {
-        final newItems = updatedOrder.items
-            .where((newItem) => !items
-                .any((existingItem) => existingItem.itemId == newItem.itemId))
-            .toList();
-
-        final validNewItems =
-            newItems.where((item) => item.status != "ordering").toList();
-
-        if (validNewItems.isNotEmpty) {
-          updateItems(updatedOrder.items);
-          hasNewItems = true;
-          widget.onFlagChanged(widget.order);
-          widget.updateStatus("pending");
-        }
-      }
+      updateItems(updatedOrder.items);
     });
   }
 
   void updateFlag(bool newValue) {
     setState(() {
-      hasNewItems = newValue;
+      widget.hasNewItems = newValue;
     });
   }
 
@@ -131,7 +111,7 @@ class _OrderCardState extends State<OrderCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (hasNewItems)
+                if (widget.hasNewItems)
                   const Padding(
                     padding: EdgeInsets.only(right: 20),
                     child: CircleAvatar(
@@ -164,7 +144,7 @@ class _OrderCardState extends State<OrderCard> {
                                   orderId: widget.orderId,
                                   updateStatus: (newStatus) =>
                                       widget.updateStatus(newStatus),
-                                  hasNewItems: hasNewItems,
+                                  hasNewItems: widget.hasNewItems,
                                   updateFlag: updateFlag),
                             ),
                           ));

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:splitz/data/models/order_item.dart';
@@ -31,14 +30,16 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   late List<OrderItem> items;
   final OrderService _orderService = OrderService();
   late StreamSubscription<List<Order>> _orderSubscription;
+  bool hasPending = false;
 
   @override
   void initState() {
     super.initState();
     items = widget.order.items;
+    hasPending = false;
 
     if (widget.hasNewItems) {
-      showToast();
+      showToast("New item(s) added to the order!");
       WidgetsBinding.instance.addPostFrameCallback((_) {
         widget.updateFlag(false);
       });
@@ -46,20 +47,20 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
     void updateItems(List<OrderItem> updatedItems) {
       setState(() {
-        items = updatedItems
-          ..sort((a, b) {
-            const statusPriority = {
-              'pending': 0,
-              'in progress': 1,
-              'served': 2
-            };
+        for (var updatedItem in updatedItems) {
+          final updatedItemIndex = updatedItems.indexOf(updatedItem);
 
-            int statusComparison =
-                statusPriority[a.status]!.compareTo(statusPriority[b.status]!);
-
-            return statusComparison;
-          });
-        widget.updateStatus("pending");
+          if (items.elementAtOrNull(updatedItemIndex) != null) {
+            if (items[updatedItemIndex].status == "ordering" &&
+                updatedItem.status == "pending") {
+              items[updatedItemIndex] = updatedItem;
+              showToast("New item(s) added to the order!");
+              widget.updateStatus("pending");
+            }
+          } else {
+            items.add(updatedItem);
+          }
+        }
       });
     }
 
@@ -70,20 +71,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           (order) => order.orderId == widget.orderId,
           orElse: () => widget.order);
 
-      if (updatedOrder.items.length > items.length) {
-        final newItems = updatedOrder.items
-            .where((newItem) => !items
-                .any((existingItem) => existingItem.itemId == newItem.itemId))
-            .toList();
-
-        final validNewItems =
-            newItems.where((item) => item.status != "ordering").toList();
-
-        if (validNewItems.isNotEmpty) {
-          updateItems([...items, ...validNewItems]);
-        }
-      }
+      updateItems(updatedOrder.items);
     });
+  }
+
+  void triggerItemsList() {
+    items.removeAt(1);
   }
 
   @override
@@ -92,10 +85,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     super.dispose();
   }
 
-  void showToast() {
+  void showToast(String message) {
     Fluttertoast.showToast(
-      msg: "New item(s) added to the order!",
-      toastLength: Toast.LENGTH_LONG,
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.CENTER,
       backgroundColor: AppColors.primary,
       textColor: Colors.white,
@@ -105,6 +98,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final tableNumber = widget.order.tableNumber;
+
+    final pendingItems =
+        items.where((item) => item.status == 'pending').toList();
+    final inProgressItems =
+        items.where((item) => item.status == 'in progress').toList();
+    final servedItems = items.where((item) => item.status == 'served').toList();
+
+    if (pendingItems.isNotEmpty) hasPending = true;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -121,75 +122,142 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: ListView.builder(
+            child: ListView(
               padding: const EdgeInsets.all(16.0),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                if (item.status == 'in progress' &&
-                    widget.order.status == 'in progress') {
-                  return Dismissible(
-                    key: Key(item.itemId),
-                    direction: DismissDirection.startToEnd,
-                    onDismissed: (direction) {},
-                    confirmDismiss: (direction) async {
-                      setState(() {
-                        _orderService.updateItemStatus(
-                            widget.orderId, item.itemId, "served");
-                        item.status = 'served';
-                      });
-                      return false;
-                    },
-                    background: Card(
-                      color: AppColors.secondary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Container(
-                        alignment: Alignment.centerLeft,
-                        margin: const EdgeInsets.all(20),
-                        child: const Text(
-                          'Served',
-                          style: TextStyle(color: Colors.black, fontSize: 16),
-                        ),
-                      ),
+              children: [
+                if (pendingItems.isNotEmpty)
+                  ExpansionTile(
+                    childrenPadding:
+                        const EdgeInsets.symmetric(horizontal: 8.0),
+                    title: const Text(
+                      'Pending Items',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black),
                     ),
-                    child: ItemDetails(item: item),
-                  );
-                } else if (item.status == 'served' &&
-                    widget.order.status == 'in progress') {
-                  return Dismissible(
-                    key: Key(item.itemId),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (direction) {},
-                    confirmDismiss: (direction) async {
-                      setState(() {
-                        _orderService.updateItemStatus(
-                            widget.orderId, item.itemId, "in progress");
-                        item.status = 'in progress';
-                      });
-                      return false;
-                    },
-                    background: Card(
-                      color: Colors.blue.shade50,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Container(
-                        alignment: Alignment.centerRight,
-                        margin: const EdgeInsets.all(20),
-                        child: const Text(
-                          'Undo',
-                          style: TextStyle(color: Colors.black, fontSize: 16),
-                        ),
-                      ),
+                    initiallyExpanded: true,
+                    children: pendingItems.map((item) {
+                      return ItemDetails(item: item);
+                    }).toList(),
+                  ),
+                if (inProgressItems.isNotEmpty)
+                  ExpansionTile(
+                    title: const Text(
+                      'In Progress',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black),
                     ),
-                    child: ItemDetails(item: item),
-                  );
-                } else {
-                  return ItemDetails(item: item);
-                }
-              },
+                    initiallyExpanded: widget.order.status == "in progress",
+                    children: inProgressItems
+                        .asMap()
+                        .map((index, item) {
+                          final uniqueKey = Key('${item.itemId}_$index');
+                          final childWidget = widget.order.status ==
+                                  'in progress'
+                              ? Dismissible(
+                                  key: uniqueKey,
+                                  direction: DismissDirection.startToEnd,
+                                  onDismissed: (direction) {},
+                                  confirmDismiss: (direction) async {
+                                    setState(() {
+                                      int originalIndex = items.indexOf(item);
+                                      _orderService.updateItemStatus(
+                                          widget.orderId,
+                                          item.itemId,
+                                          "served",
+                                          originalIndex);
+                                      item.status = 'served';
+                                    });
+                                    return false;
+                                  },
+                                  background: Card(
+                                    color: AppColors.secondary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Container(
+                                      alignment: Alignment.centerLeft,
+                                      margin: const EdgeInsets.all(20),
+                                      child: const Text(
+                                        'Served',
+                                        style: TextStyle(
+                                            color: Colors.black, fontSize: 16),
+                                      ),
+                                    ),
+                                  ),
+                                  child: ItemDetails(item: item),
+                                )
+                              : ItemDetails(item: item);
+                          return MapEntry(
+                              index,
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: childWidget,
+                              ));
+                        })
+                        .values
+                        .toList(),
+                  ),
+                if (servedItems.isNotEmpty)
+                  ExpansionTile(
+                    title: const Text(
+                      'Served Items',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    initiallyExpanded: widget.order.status == "served",
+                    children: servedItems
+                        .asMap()
+                        .map((index, item) {
+                          final uniqueKey = Key('${item.itemId}_$index');
+                          final childWidget = widget.order.status ==
+                                  'in progress'
+                              ? Dismissible(
+                                  key: uniqueKey,
+                                  direction: DismissDirection.endToStart,
+                                  onDismissed: (direction) {},
+                                  confirmDismiss: (direction) async {
+                                    setState(() {
+                                      int originalIndex = items.indexOf(item);
+                                      _orderService.updateItemStatus(
+                                          widget.orderId,
+                                          item.itemId,
+                                          "in progress",
+                                          originalIndex);
+                                      item.status = 'in progress';
+                                    });
+                                    return false;
+                                  },
+                                  background: Card(
+                                    color: const Color(0xffFED9E1),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Container(
+                                      alignment: Alignment.centerRight,
+                                      margin: const EdgeInsets.all(20),
+                                      child: const Text(
+                                        'Undo',
+                                        style: TextStyle(
+                                            color: Colors.black, fontSize: 16),
+                                      ),
+                                    ),
+                                  ),
+                                  child: ItemDetails(item: item),
+                                )
+                              : ItemDetails(item: item);
+                          return MapEntry(
+                              index,
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: childWidget,
+                              ));
+                        })
+                        .values
+                        .toList(),
+                  )
+              ],
             ),
           ),
           if (widget.order.status == "served")
@@ -215,10 +283,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         ),
                       ),
                     ])),
-          StatusButton(
-            orderStatus: widget.order.status,
-            updateStatus: widget.updateStatus,
-          ),
+          if (!hasPending || widget.order.status == "pending")
+            StatusButton(
+              orderStatus: widget.order.status,
+              updateStatus: widget.updateStatus,
+            )
         ],
       ),
     );

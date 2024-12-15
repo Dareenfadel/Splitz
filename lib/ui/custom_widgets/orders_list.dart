@@ -22,18 +22,35 @@ class _OrdersListState extends State<OrdersList> {
     super.initState();
   }
 
-  void updateOrderList(Order updatedOrder) {
-    setState(() {
-      // Find the index of the order and update it
-      int index =
-          orders.indexWhere((order) => order.orderId == updatedOrder.orderId);
-      if (index != -1) {
-        // Update the order at the found index
-        orders[index] = updatedOrder;
+  bool checkNewItems(Order order) {
+    bool hasPendingItem = false;
+    bool hasOtherItem = false;
 
-        // Move the updated order to the top of the list
-        orders.insert(0, orders.removeAt(index));
+    for (var item in order.items) {
+      if (item.status == "pending") {
+        hasPendingItem = true;
+      } else if (item.status != "ordering") {
+        hasOtherItem = true;
       }
+
+      if (hasPendingItem && hasOtherItem) {
+        break;
+      }
+    }
+    return hasPendingItem && hasOtherItem;
+  }
+
+  void sortOrders() {
+    orders.sort((a, b) {
+      bool aHasNewItems = checkNewItems(a);
+      bool bHasNewItems = checkNewItems(b);
+
+      if (aHasNewItems && !bHasNewItems) {
+        return -1;
+      } else if (!aHasNewItems && bHasNewItems) {
+        return 1;
+      }
+      return 0;
     });
   }
 
@@ -54,17 +71,21 @@ class _OrdersListState extends State<OrdersList> {
           );
         }
 
-        final orders = snapshot.data!;
+        orders = snapshot.data!;
+        sortOrders();
+
         return ListView.builder(
           itemCount: orders.length,
           itemBuilder: (context, index) {
             final order = orders[index];
+            bool hasNewItems = checkNewItems(order);
             return OrderCard(
-                order: order,
-                orderId: order.orderId,
-                updateStatus: (newStatus) =>
-                    _orderService.updateOrderStatus(order.orderId, newStatus),
-                onFlagChanged: updateOrderList);
+              order: order,
+              orderId: order.orderId,
+              updateStatus: (newStatus) =>
+                  _orderService.updateOrderStatus(order.orderId, newStatus),
+              hasNewItems: hasNewItems,
+            );
           },
         );
       },

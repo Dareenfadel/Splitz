@@ -5,7 +5,10 @@ class StatusButton extends StatelessWidget {
   final String orderStatus;
   final Function(String) updateStatus;
 
-  StatusButton({required this.orderStatus, required this.updateStatus});
+  StatusButton({
+    required this.orderStatus,
+    required this.updateStatus,
+  });
 
   String getOrderStatusText(String status) {
     switch (status) {
@@ -23,7 +26,7 @@ class StatusButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 30.0),
+      padding: const EdgeInsets.only(bottom: 20.0, top: 10),
       child: Container(
         width: 180,
         child: FloatingActionButton(

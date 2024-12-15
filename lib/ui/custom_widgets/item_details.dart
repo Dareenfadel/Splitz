@@ -11,7 +11,7 @@ class ItemDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: item.status == "in progress"
-          ? Colors.blue.shade50
+          ? const Color(0xffFED9E1)
           : item.status == "served"
               ? AppColors.secondary
               : Colors.white,
