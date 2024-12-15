@@ -80,16 +80,21 @@ class RestaurantService {
         double overallRating =
             (restaurantData['overall_rating'] ?? 0).toDouble();
         String image = restaurantData['image'] ?? '';
+        List<double> ratings = restaurantData['ratings'] != null
+            ? (restaurantData['ratings'] as List<dynamic>)
+                .map((rating) => rating as double)
+                .toList()
+            : [];
         restaurants.add(
           Restaurant(
-            id: doc.id,
-            name: name,
-            overallRating: overallRating,
-            image: image,
-            reviews: reviews,
-            menuCategories: menuCategories,
-            menuItems: menuItems,
-          ),
+              id: doc.id,
+              name: name,
+              overallRating: overallRating,
+              image: image,
+              reviews: reviews,
+              menuCategories: menuCategories,
+              menuItems: menuItems,
+              ratings: ratings),
         );
       }
 
@@ -141,26 +146,67 @@ class RestaurantService {
       String name = restaurantData['name'] ?? 'Unknown';
       double overallRating = (restaurantData['overall_rating'] ?? 0).toDouble();
       String image = restaurantData['image'] ?? '';
+      List<double> ratings = restaurantData['ratings'] != null
+          ? (restaurantData['ratings'] as List<dynamic>)
+              .map((rating) => rating as double)
+              .toList()
+          : [];
       return Restaurant(
-        id: restaurantId,
-        name: name,
-        overallRating: overallRating,
-        image: image,
-        reviews: reviews,
-        menuCategories: menuCategories,
-        menuItems: menuItems,
-      );
+          id: restaurantId,
+          name: name,
+          overallRating: overallRating,
+          image: image,
+          reviews: reviews,
+          menuCategories: menuCategories,
+          menuItems: menuItems,
+          ratings: ratings);
     } catch (e) {
       print('Error fetching restaurant: $e');
       return Restaurant(
-        id: restaurantId,
-        name: 'Unknown',
-        overallRating: 0.0,
-        image: '',
-        reviews: [],
-        menuCategories: [],
-        menuItems: [],
-      );
+          id: restaurantId,
+          name: 'Unknown',
+          overallRating: 0.0,
+          image: '',
+          reviews: [],
+          menuCategories: [],
+          menuItems: [],
+          ratings: []);
+    }
+  }
+
+  Future<void> updateOverallRating(
+      String restaurantId, double newRating) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('restaurants')
+          .where(FieldPath.documentId, isEqualTo: restaurantId)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        DocumentSnapshot doc = snapshot.docs.first;
+        Map<String, dynamic> restaurantData =
+            doc.data() as Map<String, dynamic>;
+
+        List<double> ratings = restaurantData['ratings'] != null
+            ? (restaurantData['ratings'] as List<dynamic>)
+                .map((rating) => rating as double)
+                .toList()
+            : [];
+        ratings.add(newRating);
+
+        double overallRating = ratings.reduce((a, b) => a + b) / ratings.length;
+        overallRating = double.parse(overallRating.toStringAsFixed(2));
+
+        await _db.collection('restaurants').doc(restaurantId).update({
+          'ratings': ratings,
+          'overall_rating': overallRating,
+        });
+
+        print('Overall rating updated successfully.');
+      } else {
+        print('Restaurant not found.');
+      }
+    } catch (e) {
+      print('Error updating overall rating: $e');
     }
   }
 }

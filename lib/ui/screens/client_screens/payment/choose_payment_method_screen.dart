@@ -3,9 +3,13 @@ import 'package:loader_overlay/loader_overlay.dart';
 import 'package:pay/pay.dart';
 import 'package:provider/provider.dart';
 import 'package:splitz/data/models/order.dart';
+import 'package:splitz/data/models/restaurant.dart';
 import 'package:splitz/data/models/user.dart';
+import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/data/services/payment_service.dart';
+import 'package:splitz/data/services/restaurant_service.dart';
 import 'package:splitz/ui/screens/client_screens/payment/cash_payment_screen.dart';
+import 'package:splitz/ui/screens/client_screens/rate_restaurant.dart';
 import 'package:splitz/ui/screens/wrapper.dart';
 
 const String defaultGooglePay = '''{
@@ -74,9 +78,22 @@ class _ChoosePaymentMethodScreenState extends State<ChoosePaymentMethodScreen> {
       userId: currentUser.uid,
     );
     if (mounted) context.loaderOverlay.hide();
+
+    OrderService orderService = OrderService();
+    Order? order =
+        await orderService.fetchOrderById(currentUser.currentOrderId!);
+    String restaurantId = order!.restaurantId;
+
+    RestaurantService restaurantService = RestaurantService();
+    Restaurant restaurant =
+        await restaurantService.fetchRestaurantById(restaurantId);
+    String restaurantName = restaurant.name;
+
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => Wrapper()),
+      MaterialPageRoute(
+          builder: (_) => RateRestaurantScreen(
+              restaurantId: restaurantId, restaurantName: restaurantName)),
       (route) => false,
     );
   }

@@ -11,6 +11,7 @@ class Restaurant {
   final List<Review> reviews;
   final List<MenuCategory> menuCategories;
   final List<MenuItemModel> menuItems; // Directly inside the restaurant
+  final List<double> ratings;
 
   Restaurant({
     this.id,
@@ -20,6 +21,7 @@ class Restaurant {
     required this.reviews,
     required this.menuCategories,
     required this.menuItems,
+    required this.ratings,
   });
 // Fetching Restaurant Data only not enough need to fetch menu categories and menu items to create Restaurant object(use fetch in restaurant_service.dart)
   factory Restaurant.fromFirestore(DocumentSnapshot doc) {
@@ -38,6 +40,9 @@ class Restaurant {
       menuItems: (firestore['menu_items'] as List)
           .map((e) => MenuItemModel.fromFirestore(e))
           .toList(),
+      ratings: (firestore['ratings'] as List<dynamic>)
+          .map((e) => e as double)
+          .toList(),
     );
   }
 
@@ -50,6 +55,7 @@ class Restaurant {
       'reviews': reviews.map((e) => e.toMap()).toList(),
       'menu_categories': menuCategories.map((e) => e.toMap()).toList(),
       'menu_items': menuItems.map((e) => e.toMap()).toList(),
+      'ratings': ratings,
     };
   }
 }
