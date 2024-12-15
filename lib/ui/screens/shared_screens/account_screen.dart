@@ -69,8 +69,14 @@ class AccountScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 40,
-              backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150'), // Replace with actual user image URL
+              backgroundColor: AppColors.secondary,
+              child: Text(
+                (user?.name?.substring(0, 1).toUpperCase() ?? 'G'),
+                style: const TextStyle(
+                  fontSize: 40,
+                  color: Colors.white,
+                ),
+              ),
             ),
             const SizedBox(width: 20),
             Column(
