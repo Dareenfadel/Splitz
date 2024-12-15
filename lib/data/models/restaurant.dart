@@ -40,7 +40,7 @@ class Restaurant {
       menuItems: (firestore['menu_items'] as List)
           .map((e) => MenuItemModel.fromFirestore(e))
           .toList(),
-      ratings: (firestore['ratings'] as List<dynamic>)
+      ratings: (firestore['ratings'] as List<dynamic>? ?? [])
           .map((e) => e as double)
           .toList(),
     );
