@@ -109,7 +109,12 @@ class OrderItem {
       extras: Map<String, int>.from(firestore['extras'] ?? []),
       notes: firestore['notes'] ?? '',
       paidAmount: (firestore['paid_amount'] ?? 0).toDouble(),
-      paidUsers: Map<String, double>.from(firestore['paid_users'] ?? {}),
+      paidUsers: Map<String, double>.from((firestore['paid_users'] ?? {}).map(
+          (key, value) => MapEntry(
+              key as String,
+              (value as num)
+                  .toDouble() // convert num (in case of int) to double
+              ))),
       prepared: firestore['prepared'] ?? false,
       price: (firestore['price'] ?? 0).toDouble(),
       userList: (firestore['user_list'] as List<dynamic>?)

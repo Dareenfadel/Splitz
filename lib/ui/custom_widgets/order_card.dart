@@ -1,23 +1,104 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:splitz/constants/app_colors.dart';
+import 'package:splitz/data/models/order_item.dart';
+import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/ui/custom_widgets/item_preview.dart';
 import '../../data/models/order.dart';
 import 'order_details.dart';
 
-class OrderCard extends StatelessWidget {
+class OrderCard extends StatefulWidget {
   final Order order;
   final String orderId;
   final Function(String) updateStatus;
+  final Function(Order) onFlagChanged;
 
   OrderCard(
-      {required this.order, required this.orderId, required this.updateStatus});
+      {required this.order,
+      required this.orderId,
+      required this.updateStatus,
+      required this.onFlagChanged});
+
+  @override
+  _OrderCardState createState() => _OrderCardState();
+}
+
+class _OrderCardState extends State<OrderCard> {
+  late List<OrderItem> items;
+  final OrderService _orderService = OrderService();
+  late StreamSubscription<List<Order>> _orderSubscription;
+  late bool hasNewItems;
+
+  @override
+  void initState() {
+    super.initState();
+    items = widget.order.items;
+    hasNewItems = false;
+
+    void updateItems(List<OrderItem> updatedItems) {
+      setState(() {
+        // Sort updated items based on status
+        items = updatedItems
+          ..sort((a, b) {
+            // Define priority for statuses
+            const statusPriority = {
+              'pending': 0,
+              'in progress': 1,
+              'served': 2
+            };
+
+            // Compare statuses
+            int statusComparison =
+                statusPriority[a.status]!.compareTo(statusPriority[b.status]!);
+
+            return statusComparison;
+          });
+      });
+    }
+
+    _orderSubscription = _orderService
+        .listenToOrdersByRestaurant(widget.order.restaurantId)
+        .listen((orders) {
+      final updatedOrder = orders.firstWhere(
+          (order) => order.orderId == widget.orderId,
+          orElse: () => widget.order);
+
+      if (updatedOrder.items.length > items.length) {
+        final newItems = updatedOrder.items
+            .where((newItem) => !items
+                .any((existingItem) => existingItem.itemId == newItem.itemId))
+            .toList();
+
+        final validNewItems =
+            newItems.where((item) => item.status != "ordering").toList();
+
+        if (validNewItems.isNotEmpty) {
+          updateItems(updatedOrder.items);
+          hasNewItems = true;
+          widget.onFlagChanged(widget.order);
+          widget.updateStatus("pending");
+        }
+      }
+    });
+  }
+
+  void updateFlag(bool newValue) {
+    setState(() {
+      hasNewItems = newValue;
+    });
+  }
+
+  @override
+  void dispose() {
+    _orderSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final tableNumber = order.tableNumber;
-    final items = order.items;
-    final orderStatus = order.status;
-    final firstTwoItems = items.take(2).toList();
+    final tableNumber = widget.order.tableNumber;
+    final orderStatus = widget.order.status;
+    final firstTwoItems = widget.order.items.take(2).toList();
 
     String getOrderStatusText(String status) {
       switch (status) {
@@ -48,8 +129,21 @@ class OrderCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(top: 12.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                if (hasNewItems)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 20),
+                    child: CircleAvatar(
+                      radius: 12,
+                      backgroundColor: Colors.blue,
+                      child: Icon(
+                        Icons.new_releases,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 ...firstTwoItems.map((item) => ItemPreview(item: item)),
                 Row(
@@ -66,11 +160,12 @@ class OrderCard extends StatelessWidget {
                                     FadeTransition(
                               opacity: animation,
                               child: OrderDetailsPage(
-                                order: order,
-                                orderId: orderId,
-                                updateStatus: (newStatus) =>
-                                    updateStatus(newStatus),
-                              ),
+                                  order: widget.order,
+                                  orderId: widget.orderId,
+                                  updateStatus: (newStatus) =>
+                                      widget.updateStatus(newStatus),
+                                  hasNewItems: hasNewItems,
+                                  updateFlag: updateFlag),
                             ),
                           ));
                         },
@@ -97,7 +192,7 @@ class OrderCard extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          updateStatus(orderStatus == "pending"
+                          widget.updateStatus(orderStatus == "pending"
                               ? "in progress"
                               : orderStatus == "in progress"
                                   ? "served"

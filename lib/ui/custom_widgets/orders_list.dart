@@ -15,10 +15,26 @@ class OrdersList extends StatefulWidget {
 
 class _OrdersListState extends State<OrdersList> {
   final OrderService _orderService = OrderService();
+  List<Order> orders = [];
 
   @override
   void initState() {
     super.initState();
+  }
+
+  void updateOrderList(Order updatedOrder) {
+    setState(() {
+      // Find the index of the order and update it
+      int index =
+          orders.indexWhere((order) => order.orderId == updatedOrder.orderId);
+      if (index != -1) {
+        // Update the order at the found index
+        orders[index] = updatedOrder;
+
+        // Move the updated order to the top of the list
+        orders.insert(0, orders.removeAt(index));
+      }
+    });
   }
 
   @override
@@ -44,11 +60,11 @@ class _OrdersListState extends State<OrdersList> {
           itemBuilder: (context, index) {
             final order = orders[index];
             return OrderCard(
-              order: order,
-              orderId: order.orderId,
-              updateStatus: (newStatus) =>
-                  _orderService.updateOrderStatus(order.orderId, newStatus),
-            );
+                order: order,
+                orderId: order.orderId,
+                updateStatus: (newStatus) =>
+                    _orderService.updateOrderStatus(order.orderId, newStatus),
+                onFlagChanged: updateOrderList);
           },
         );
       },

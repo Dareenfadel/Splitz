@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/menu_category.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_category_Service.dart';
@@ -91,6 +92,15 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Orders History'),
+        centerTitle: true,
+        titleTextStyle: const TextStyle(
+          color: AppColors.textColor,
+          fontSize: 20,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Stack(
