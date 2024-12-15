@@ -30,48 +30,45 @@ class OrderDetailsScreen extends StatelessWidget {
                       .where((item) =>
                           item.userList.any((u) => u.userId == user!.uid))
                       .map((item) => _buildOrderItem(item)),
-                  _buildSectionTitle('All Orders'),
+                  _buildSectionTitle('Others\' Orders'),
                 ],
-                ...order.items.map((item) => _buildOrderItem(item)),
-                SizedBox(height: 16),
-                Card(
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.receipt, color: Colors.black),
-                            SizedBox(width: 8),
-                            Text('Order Summary',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        Divider(),
-                        if (user?.userType == 'manager')
-                          _buildOrderInfo('Order ID', order.orderId),
-                        if (user?.userType == 'manager')
-                          _buildOrderInfo('Restaurant ID', order.restaurantId),
-                        _buildOrderInfo('Table Number', order.tableNumber),
-                        _buildOrderInfo('Order Date', order.date),
-                        Divider(),
-                        _buildTotalInfo('Total Bill', order.totalBill),
-                        if (user?.userType == 'manager')
-                          _buildTotalInfo('Paid So Far', order.paidSoFar),
-                        if (user?.userType == 'client')
-                          _buildTotalInfo(
-                              'My Total', _calculateMyTotal(user!.uid)),
-                        if (user?.userType == 'manager')
-                          _buildOrderInfo('Status',
-                              order.status == 'paid' ? 'Paid' : 'Unpaid'),
-                      ],
-                    ),
-                  ),
-                ),
+                ...order.items
+                    .where((item) =>
+                        !item.userList.any((u) => u.userId == user!.uid))
+                    .map((item) => _buildOrderItem(item)),
               ],
+            ),
+          ),
+          SizedBox(height: 16),
+          Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.receipt, color: Colors.black),
+                      SizedBox(width: 8),
+                      Text('Order Summary',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  Divider(),
+                  _buildOrderInfo('Table Number', order.tableNumber),
+                  _buildOrderInfo('Order Date', order.date),
+                  Divider(),
+                  if (user?.userType == 'client')
+                    _buildTotalInfo('My Total', _calculateMyTotal(user!.uid)),
+                  if (user?.userType == 'manager' && order.status != 'paid')
+                    _buildTotalInfo('Paid So Far', order.paidSoFar),
+                  _buildTotalInfo('Total Bill', _calculateTotalBill()),
+                  if (user?.userType == 'manager' && order.status != 'paid')
+                    _buildOrderInfo('Status', 'Unpaid'),
+                ],
+              ),
             ),
           ),
         ],
@@ -134,7 +131,7 @@ class OrderDetailsScreen extends StatelessWidget {
                     children: [
                       Text('${item.quantity} x ${item.itemName}',
                           style: TextStyle(fontSize: 16)),
-                      Text('EGP ${item.paidAmount.toStringAsFixed(2)}',
+                      Text('EGP ${item.price.toStringAsFixed(2)}',
                           style: TextStyle(fontSize: 16)),
                     ],
                   ),
@@ -174,8 +171,16 @@ class OrderDetailsScreen extends StatelessWidget {
     double total = 0.0;
     for (var item in order.items) {
       if (item.userList.any((u) => u.userId == userId)) {
-        total += item.paidAmount;
+        total += item.price;
       }
+    }
+    return total;
+  }
+
+  double _calculateTotalBill() {
+    double total = 0.0;
+    for (var item in order.items) {
+      total += item.price;
     }
     return total;
   }

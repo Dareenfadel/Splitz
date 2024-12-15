@@ -18,15 +18,15 @@ class NavBarClient extends StatelessWidget {
       items: [
         BottomNavigationBarItem(
           icon: Icon(
-            currentIndex == 0
-                ? Icons.home_rounded
-                : Icons.home_outlined,
+            currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
           ),
           label: 'Home',
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            currentIndex == 1 ? Icons.list_alt_rounded : Icons.list_alt_outlined,
+            currentIndex == 1
+                ? Icons.list_alt_rounded
+                : Icons.list_alt_outlined,
           ),
           label: 'My Orders',
         ),
@@ -38,7 +38,12 @@ class NavBarClient extends StatelessWidget {
           ),
           label: 'Menu',
         ),
-       
+        BottomNavigationBarItem(
+          icon: Icon(
+            currentIndex == 3 ? Icons.person : Icons.person_outline,
+          ),
+          label: 'Account',
+        ),
       ],
     );
   }

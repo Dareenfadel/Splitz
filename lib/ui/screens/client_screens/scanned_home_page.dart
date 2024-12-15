@@ -14,6 +14,7 @@ import 'package:splitz/ui/screens/client_screens/current_order/widgets/current_o
 import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/scanned_home_body.dart';
 import 'package:splitz/ui/screens/client_screens/view_cart.dart';
+import 'package:splitz/ui/screens/shared_screens/account_screen.dart';
 
 class ScannedHome extends StatefulWidget {
   const ScannedHome({super.key});
@@ -88,6 +89,7 @@ class _ScannedHomeState extends State<ScannedHome>
             tabController: _currentOrderTabController,
           ),
           MenuScreen(restaurantId: orders.first.restaurantId),
+          AccountScreen(),
         ];
 
         return Scaffold(
@@ -108,7 +110,8 @@ class _ScannedHomeState extends State<ScannedHome>
                   child: FloatingActionButton.extended(
                     onPressed: () {
                       _onTabTapped(1);
-                      _currentOrderTabController.animateTo(CurrentOrderLayoutTab.cart);
+                      _currentOrderTabController
+                          .animateTo(CurrentOrderLayoutTab.cart);
                     },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
