@@ -6,6 +6,7 @@ import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/order_item_user.dart';
 import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_item_service.dart';
+import 'package:splitz/data/services/notifications_service.dart';
 import 'package:splitz/data/services/users_service.dart';
 
 class OrderService {
@@ -456,7 +457,7 @@ class OrderService {
     required String orderId,
     required String requestorUserId,
   }) async {
-    return _updateOrderWithTransaction(
+    await _updateOrderWithTransaction(
       orderId: orderId,
       updateFunction: (order) {
         order.splitEquallyPendingUserIds = order.nonPaidUserIds
@@ -464,13 +465,18 @@ class OrderService {
             .toList();
       },
     );
+
+    await NotificationsService.sendSplittingEquallyRequestNotification(
+      orderId: orderId,
+      requestedByUserId: requestorUserId,
+    );
   }
 
   Future<void> acceptSplitAllEquallyRequest({
     required String orderId,
     required String acceptingUserId,
   }) async {
-    return _updateOrderWithTransaction(
+    await _updateOrderWithTransaction(
         orderId: orderId,
         updateFunction: (order) {
           order.splitEquallyPendingUserIds.remove(acceptingUserId);
@@ -493,17 +499,27 @@ class OrderService {
             }
           }
         });
+
+    await NotificationsService.sendAcceptSplittingEquallyRequestNotification(
+      orderId: orderId,
+      acceptingUserId: acceptingUserId,
+    );
   }
 
   Future<void> rejectSplitAllEquallyRequest({
     required String orderId,
     required String rejectingUserId,
   }) async {
-    return _updateOrderWithTransaction(
+    await _updateOrderWithTransaction(
       orderId: orderId,
       updateFunction: (order) {
         order.splitEquallyPendingUserIds = [];
       },
+    );
+
+    await NotificationsService.sendRejectSplittingEquallyRequestNotification(
+      orderId: orderId,
+      rejectingUserId: rejectingUserId,
     );
   }
 

@@ -1,3 +1,6 @@
+import 'package:splitz/data/services/notifications_service.dart';
+import 'package:splitz/data/services/users_service.dart';
+
 import '../models/order_item.dart';
 import '../models/order_item_user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
@@ -12,6 +15,7 @@ class OrderItemService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final OrderService _orderService = OrderService();
+  final UsersService _usersService = UsersService();
 
   // get order items details by id
   Future<OrderItem?> getOrderItemById(String id) async {
@@ -96,6 +100,14 @@ class OrderItemService {
         item.userList[userIndex].requestStatus = 'accepted';
       },
     );
+
+    // Done after updating the order item to avoid
+    // sending notification if the update fails
+    await NotificationsService.sendAcceptSplittingRequestNotification(
+      orderId: orderId,
+      itemIndex: itemIndex,
+      requestedToUserId: userId,
+    );
   }
 
   Future<void> rejectOrderItemByUserId({
@@ -103,6 +115,11 @@ class OrderItemService {
     required int itemIndex,
     required String userId,
   }) async {
+    var (orderItemBeforeRejecting, usersMap) = await getOrderItemAndItsUsers(
+      orderId: orderId,
+      itemIndex: itemIndex,
+    );
+
     await updateOrderItem(
       orderId: orderId,
       itemIndex: itemIndex,
@@ -120,6 +137,14 @@ class OrderItemService {
 
         item.userList.removeAt(userIndex);
       },
+    );
+
+    // Done after updating the order item to avoid
+    // sending notification if the update fails
+    await NotificationsService.sendRejectSplittingRequestNotification(
+      orderItemBeforeRejecting: orderItemBeforeRejecting,
+      usersMap: usersMap,
+      requestedToUserId: userId,
     );
   }
 
@@ -146,6 +171,14 @@ class OrderItemService {
         );
       },
     );
+
+    // Done after updating the order item to avoid
+    // sending notification if the update fails
+    await NotificationsService.sendSplittingRequestNotification(
+      orderId: orderId,
+      itemIndex: itemIndex,
+      requestedToUserId: requestedToUserId,
+    );
   }
 
   Future<void> addUserToOrderItem({
@@ -170,6 +203,12 @@ class OrderItemService {
         );
       },
     );
+    
+    await NotificationsService.sendJoinOrderItemNotification(
+      orderId: orderId,
+      itemIndex: itemIndex,
+      joiningUserId: userId,
+    );
   }
 
   Future<void> removeUserFromOrderItem({
@@ -190,5 +229,42 @@ class OrderItemService {
         item.userList.removeAt(userIndex);
       },
     );
+
+    await NotificationsService.sendLeaveOrderItemNotification(
+      orderId: orderId,
+      itemIndex: itemIndex,
+      leavingUserId: userId,
+    );
+  }
+
+  Future<(OrderItem, Map<String, UserModel>)> getOrderItemAndItsUsers({
+    required String orderId,
+    required int itemIndex,
+  }) async {
+    var orderSnapshot =
+        await _firestore.collection('orders').doc(orderId).get();
+
+    print(
+        'orderSnapshot ${orderSnapshot.metadata.isFromCache}: ${orderSnapshot.data()}');
+    if (!orderSnapshot.exists) {
+      throw Exception('Order not found');
+    }
+
+    var order = Order.fromFirestore(
+      orderSnapshot.id,
+      orderSnapshot.data() as Map<String, dynamic>,
+    );
+
+    if (itemIndex >= order.items.length) {
+      throw Exception('Invalid item index');
+    }
+
+    var item = order.items[itemIndex];
+
+    var orderUsersMap = await _usersService.fetchUsersByIds(
+      item.userList.map((u) => u.userId).toSet(),
+    );
+
+    return (item, orderUsersMap);
   }
 }

@@ -13,6 +13,7 @@ class Order {
   final String date;
 
   List<String> splitEquallyPendingUserIds;
+  final List<String> paidUsers;
 
   Order({
     required this.orderId,
@@ -26,6 +27,7 @@ class Order {
     required this.userIds,
     required this.date,
     this.splitEquallyPendingUserIds = const [],
+    this.paidUsers = const [],
   });
 
   List<OrderItem> get nonOrderingItems =>
@@ -71,8 +73,7 @@ class Order {
   }
 
   bool userPaid(String userId) {
-    return userHasItems(userId) &&
-        acceptedItemsForUserId(userId).every((item) => item.userPaid(userId));
+    return paidUsers.contains(userId);
   }
 
   double get calculatedPaidSoFar =>
@@ -83,7 +84,7 @@ class Order {
   bool get isFullyPaid => calculatedTotalBill == calculatedPaidSoFar;
 
   List<String> get nonPaidUserIds =>
-      userIds.where((userId) => !userPaid(userId)).toList();
+      userIds.where((userId) => !paidUsers.contains(userId)).toList();
 
   get splitEquallyPrice => calculatedTotalBill / nonPaidUserIds.length;
 
@@ -103,9 +104,10 @@ class Order {
           .map((item) => OrderItem.fromFirestore(item))
           .toList(),
       userIds: List<String>.from(firestore['user_ids'] ?? []),
-      date: firestore['date'],
+      date: firestore['date'] ?? '',
       splitEquallyPendingUserIds:
           List<String>.from(firestore['split_equally_pending_user_ids'] ?? []),
+      paidUsers: List<String>.from(firestore['paid_users'] ?? []),
     );
   }
 
@@ -121,6 +123,7 @@ class Order {
       'user_ids': userIds,
       'date': date,
       'split_equally_pending_user_ids': splitEquallyPendingUserIds,
+      'paid_users': paidUsers,
     };
   }
 }
