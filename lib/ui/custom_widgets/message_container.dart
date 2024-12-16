@@ -35,7 +35,7 @@ class MessageContainer extends StatelessWidget {
                     ),
                     child: Icon(
                       icon,
-                      size: 80,
+                      size: 60,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
