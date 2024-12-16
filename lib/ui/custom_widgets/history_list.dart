@@ -29,13 +29,17 @@ class HistoryList extends StatelessWidget {
           return Center(child: Text('No orders found'));
         } else {
           final orders = snapshot.data!;
-          orders
-              .sort((a, b) => b.date.compareTo(a.date)); // Sort orders by date
+
+          final filteredOrders =
+              orders.where((order) => order.status != 'ordering').toList();
+
+          // Sort orders by date
+          filteredOrders.sort((a, b) => b.date.compareTo(a.date));
 
           return ListView.builder(
-            itemCount: orders.length,
+            itemCount: filteredOrders.length,
             itemBuilder: (context, index) {
-              final order = orders[index];
+              final order = filteredOrders[index];
               return HistoryCard(
                 order: order,
                 onTap: () {
