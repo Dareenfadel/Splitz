@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:splitz/constants/app_colors.dart';
 import 'package:splitz/data/models/order.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/user.dart';
@@ -15,8 +16,10 @@ class OrderDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Details', style: TextStyle(color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
+        centerTitle: true,
+        title:
+            const Text('Order Details', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
@@ -39,7 +42,7 @@ class OrderDetailsScreen extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Card(
             color: Colors.white,
             child: Padding(
@@ -47,7 +50,7 @@ class OrderDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
                       Icon(Icons.receipt, color: Colors.black),
                       SizedBox(width: 8),
@@ -56,10 +59,10 @@ class OrderDetailsScreen extends StatelessWidget {
                               fontSize: 18, fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  Divider(),
+                  const Divider(),
                   _buildOrderInfo('Table Number', order.tableNumber),
                   _buildOrderInfo('Order Date', order.date),
-                  Divider(),
+                  const Divider(),
                   if (user?.userType == 'client')
                     _buildTotalInfo('My Total', _calculateMyTotal(user!.uid)),
                   if (user?.userType == 'manager' && order.status != 'paid')
@@ -81,7 +84,7 @@ class OrderDetailsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Text(
         title,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -92,8 +95,8 @@ class OrderDetailsScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('$title:', style: TextStyle(fontSize: 18)),
-          Text(value, style: TextStyle(fontSize: 18)),
+          Text('$title:', style: const TextStyle(fontSize: 18)),
+          Text(value, style: const TextStyle(fontSize: 18)),
         ],
       ),
     );
@@ -106,17 +109,26 @@ class OrderDetailsScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('$title:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Text('EGP ${value.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
   Widget _buildOrderItem(OrderItem item) {
-    return Card(
-      color: Colors.white,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(
+          color: AppColors.secondary,
+          width: 1.5,
+        ),
+      ),
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -129,20 +141,21 @@ class OrderDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${item.quantity} x ${item.itemName}',
-                          style: TextStyle(fontSize: 16)),
+                      Text(' x${item.quantity} ${item.itemName}',
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500)),
                       Text('EGP ${item.price.toStringAsFixed(2)}',
-                          style: TextStyle(fontSize: 16)),
+                          style: const TextStyle(fontSize: 16)),
                     ],
                   ),
                 ),
                 if (item.imageUrl != null && item.imageUrl.isNotEmpty)
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(25.0),
+                    borderRadius: BorderRadius.circular(15.0),
                     child: Image.network(
                       item.imageUrl,
-                      width: 70,
-                      height: 70,
+                      width: 50,
+                      height: 50,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -150,16 +163,16 @@ class OrderDetailsScreen extends StatelessWidget {
             ),
             if (item.extras.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4.0),
+                padding: const EdgeInsets.only(top: 0.0),
                 child: Text(
                     'Extras: ${item.extras.entries.map((e) => '${e.key} (${e.value})').join(', ')}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey)),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey)),
               ),
             if (item.notes.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4.0),
+                padding: const EdgeInsets.only(top: 0.0),
                 child: Text('Notes: ${item.notes}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey)),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey)),
               ),
           ],
         ),

@@ -75,17 +75,18 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
       setState(() {});
     }
   }
+
   void onMenuItemTapClient(String? itemId) async {
-   print('Client Method');
-   Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => AddToCartScreen(
-        restaurantId: widget.restaurantId,
-        menuItemId: itemId!,
+    print('Client Method');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddToCartScreen(
+          restaurantId: widget.restaurantId,
+          menuItemId: itemId!,
+        ),
       ),
-    ),
-  );
+    );
   }
 
   void handleDeletion(String id) async {
@@ -94,7 +95,7 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
     setState(() {});
     toastification.show(
       context: context,
-      title: Text('Menu Item Removed From Category!'),
+      title: const Text('Menu Item Removed From Category!'),
       type: ToastificationType.success,
       style: ToastificationStyle.fillColored,
       autoCloseDuration: const Duration(seconds: 3),
@@ -115,7 +116,7 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
 
     toastification.show(
       context: context,
-      title: Text('Menu Item Removed From Category!'),
+      title: const Text('Menu Item Removed From Category!'),
       type: ToastificationType.success,
       style: ToastificationStyle.fillColored,
       autoCloseDuration: const Duration(seconds: 3),
@@ -133,28 +134,38 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          "Explore Our ${widget.categoryName} Delights",
-          style: TextStyle(color: AppColors.primary, fontSize: 20),
-        ),
+        centerTitle: true,
+        title: Provider.of<UserModel?>(context)?.userType == "manager"
+            ? Text(widget.categoryName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ))
+            : Text("Explore Our ${widget.categoryName} Delights",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                )),
         actions: <Widget>[
           if (Provider.of<UserModel?>(context)?.userType == "manager")
             IconButton(
                 onPressed: () {
                   deleteCatgory();
                 },
-                icon: Icon(
+                icon: const Icon(
                   Icons.delete,
-                  color: AppColors.primary,
+                  color: Colors.white,
                 ))
         ],
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.popUntil(
               context, (Route<dynamic> route) => route.isFirst),
         ),
         elevation: 0,
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         // Fetch items asynchronously
@@ -257,7 +268,7 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
                           }
                         },
                       )
-                    : SizedBox.shrink(),
+                    : const SizedBox.shrink(),
               ],
             );
           } else {
@@ -341,10 +352,14 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
                           final item = items[index];
                           return GestureDetector(
                             onTap: () => {
-                              if ( Provider.of<UserModel?>(context, listen: false)?.userType == "manager")
-                              onMenuItemTap(item['id'])
-                              else 
-                              onMenuItemTapClient( item['id'])},
+                              if (Provider.of<UserModel?>(context,
+                                          listen: false)
+                                      ?.userType ==
+                                  "manager")
+                                onMenuItemTap(item['id'])
+                              else
+                                onMenuItemTapClient(item['id'])
+                            },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8.0, vertical: 4.0),
@@ -423,7 +438,7 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
                                             ),
                                             const SizedBox(height: 8),
                                             Row(children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.av_timer,
                                                 size: 20,
                                                 color: Colors.grey,
@@ -445,7 +460,7 @@ class _CategoryItemsPageState extends State<CategoryItemsPage> {
                                             ?.userType ==
                                         "manager")
                                       IconButton(
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.remove,
                                             color: AppColors.primary,
                                           ),

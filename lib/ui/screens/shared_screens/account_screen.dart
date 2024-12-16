@@ -58,10 +58,22 @@ class AccountScreen extends StatelessWidget {
   }
 
   Widget _buildProfileSection(UserModel? user) {
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(
+          color: AppColors.secondary,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 4.0,
+            spreadRadius: 1.0,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -213,6 +225,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Change Password'),
       ),
       body: SingleChildScrollView(

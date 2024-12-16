@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:splitz/ui/custom_widgets/message_container.dart';
 import '../../data/models/order.dart';
 import '../../data/services/order_service.dart';
 import 'order_card.dart';
@@ -61,14 +62,26 @@ class _OrdersListState extends State<OrdersList> {
           _orderService.fetchOrders(widget.restaurantId, widget.orderStatus),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const Center(
+              child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+            ),
+          ));
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(
-            child: Text('No orders ${widget.orderStatus.toLowerCase()}',
-                style: const TextStyle(fontSize: 18)),
-          );
+          var status = widget.orderStatus.toLowerCase();
+          return MessageContainer(
+              icon: status == "pending"
+                  ? Icons.hourglass_empty_rounded
+                  : status == "in progress"
+                      ? Icons.hourglass_bottom_rounded
+                      : Icons.hourglass_full_rounded,
+              message: 'No orders ${widget.orderStatus.toLowerCase()}',
+              subMessage: "");
         }
 
         orders = snapshot.data!;
