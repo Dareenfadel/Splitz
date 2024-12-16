@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:splitz/data/models/menu_item.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/order_item_user.dart';
+import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_item_service.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/data/models/extra.dart';
@@ -37,14 +39,17 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
   String? restaurantId;
   String? menuItemId;
   final TextEditingController _controller = TextEditingController();
- late Future< bool> hasCurrentOrder;
+ late  bool hasCurrentOrder;
   
 
 
   @override
   void initState() {
     super.initState();
-    hasCurrentOrder = _usersService.haveCurrentOrder() ;
+    var currentUser = context.read<UserModel>();
+    print(currentUser.toMap());
+    hasCurrentOrder = currentUser.currentOrderId != null && currentUser.currentOrderId!.isNotEmpty;
+    
     if (widget.orderId != null) {
       // If orderId exists, fetch the order details first to get restaurantId and menuItemId
        _fetchOrderDetails();
@@ -592,10 +597,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
               ],
             ),
             child: 
-                 FutureBuilder<bool>(
-                  future: hasCurrentOrder,
-                  builder: (context, snapshot) {
-                    return snapshot.hasData && snapshot.data == true ?
+                 hasCurrentOrder ?
                     Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -655,10 +657,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                           ),
                     ),
                   ],
-                );
-                  },
-                ),
-                
+                )
              
           ),
         ],
