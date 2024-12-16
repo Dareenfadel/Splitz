@@ -164,7 +164,8 @@ class OrderService {
     }
   }
 
-  Future<void> updateItemStatus(String orderId, String itemID) async {
+  Future<void> updateItemStatus(
+      String orderId, String itemID, String newStatus, int index) async {
     try {
       DocumentReference orderRef = _firestore.collection('orders').doc(orderId);
       DocumentSnapshot orderSnapshot = await orderRef.get();
@@ -175,8 +176,9 @@ class OrderService {
 
         // Update item status
         for (var item in order.items) {
-          if (item.itemId == itemID) {
-            item.prepared = true;
+          int listIndex = order.items.indexOf(item);
+          if (item.itemId == itemID && listIndex == index) {
+            item.status = newStatus;
           }
         }
 
@@ -184,7 +186,7 @@ class OrderService {
         await orderRef.update({
           'items': order.items.map((item) => item.toMap()).toList(),
         });
-        print('Item status updated to prepared');
+        print('Item status updated to $newStatus');
       } else {
         print('Order not found');
       }
@@ -199,36 +201,34 @@ class OrderService {
       DocumentReference orderRef =
           FirebaseFirestore.instance.collection('orders').doc(orderId);
 
-      if (newStatus == "served") {
-        DocumentSnapshot orderSnapshot = await orderRef.get();
+      DocumentSnapshot orderSnapshot = await orderRef.get();
 
-        if (orderSnapshot.exists) {
-          // Convert the 'items' field to a List<OrderItem>
-          List<dynamic> itemsData = orderSnapshot['items'];
-          List<OrderItem> items = itemsData.map((item) {
-            return OrderItem.fromFirestore(item as Map<String, dynamic>);
-          }).toList();
+      if (orderSnapshot.exists) {
+        // Convert the 'items' field to a List<OrderItem>
+        List<dynamic> itemsData = orderSnapshot['items'];
+        List<OrderItem> items = itemsData.map((item) {
+          return OrderItem.fromFirestore(item as Map<String, dynamic>);
+        }).toList();
 
-          // Mark items as prepared
-          for (var item in items) {
-            item.prepared = true;
+        for (var item in items) {
+          if (item.status != 'ordering' &&
+              item.status != 'served' &&
+              newStatus != 'pending') {
+            item.status = newStatus;
           }
-          await orderRef.update({
-            'status': newStatus,
-            'items': items.map((item) => item.toMap()).toList(),
-          });
-
-          print(
-              'Order status updated to "served" and items marked as prepared');
-        } else {
-          print('Order not found');
         }
-      } else {
         await orderRef.update({
           'status': newStatus,
+          'items': items.map((item) => item.toMap()).toList(),
         });
-        print('Order status updated to $newStatus');
+
+        print(
+            'Order status updated to $newStatus and items marked as $newStatus ');
+      } else {
+        print('Order not found');
       }
+      print('Order status updated to $newStatus');
+      // }
     } catch (e) {
       print('Error updating order status in Firestore: $e');
     }
@@ -299,7 +299,7 @@ class OrderService {
             'date': DateTime.now().toIso8601String().split('T').first,
             'restaurant_id': restaurantId,
             'order_id': orderId,
-            'status': 'ordering',
+            'status': 'pending',
             'table_number': tableNumber,
             'total_bill': 0.0,
             'paid_so_far': 0.0,

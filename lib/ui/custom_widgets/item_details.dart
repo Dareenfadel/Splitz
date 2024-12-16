@@ -10,7 +10,11 @@ class ItemDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: item.prepared ? AppColors.secondary : Colors.white,
+      color: item.status == "in progress"
+          ? const Color(0xffFED9E1)
+          : item.status == "served"
+              ? AppColors.secondary
+              : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: const BorderSide(
@@ -43,7 +47,7 @@ class ItemDetails extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (item.notes.isNotEmpty) Text('Notes: ${item.notes}'),
+              Text(item.notes.isNotEmpty ? item.notes : 'No notes'),
               if (item.extras.isNotEmpty)
                 Wrap(
                   children: [
