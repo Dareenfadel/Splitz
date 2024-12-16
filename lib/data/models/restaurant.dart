@@ -8,6 +8,7 @@ class Restaurant {
   final String name;
   final double overallRating;
   final String image;
+  final String? address;
   final List<Review> reviews;
   final List<MenuCategory> menuCategories;
   final List<MenuItemModel> menuItems; // Directly inside the restaurant
@@ -18,6 +19,7 @@ class Restaurant {
     required this.name,
     required this.overallRating,
     required this.image,
+    this.address,
     required this.reviews,
     required this.menuCategories,
     required this.menuItems,
@@ -31,6 +33,7 @@ class Restaurant {
       name: firestore['name'],
       overallRating: firestore['overall_rating'],
       image: firestore['image'],
+      address: firestore['address'],
       reviews: (firestore['reviews'] as List)
           .map((e) => Review.fromFirestore(e))
           .toList(),
@@ -52,6 +55,7 @@ class Restaurant {
       'name': name,
       'overall_rating': overallRating,
       'image': image,
+      'address': address,
       'reviews': reviews.map((e) => e.toMap()).toList(),
       'menu_categories': menuCategories.map((e) => e.toMap()).toList(),
       'menu_items': menuItems.map((e) => e.toMap()).toList(),

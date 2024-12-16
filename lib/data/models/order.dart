@@ -92,6 +92,7 @@ class Order {
       !splitEquallyPendingUserIds.contains(userId);
 
   factory Order.fromFirestore(String id, Map<String, dynamic> firestore) {
+    print(firestore);
     return Order(
       orderId: id,
       restaurantId: firestore['restaurant_id'],

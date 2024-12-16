@@ -45,7 +45,7 @@ class _QrCodeScannerState extends State<QrCodeScanner> {
             onDetect: (barcodeCapture) {
               final String code =
                   barcodeCapture.barcodes.first.rawValue ?? '---';
-              debugPrint('Scanned QR Code: $code');
+              // debugPrint('Scanned QR Code: $code');
               controller.stop(); // Stop the camera after scanning
               List<String> params = code
                   .split('&'); // Split by '&' to separate each key-value pair

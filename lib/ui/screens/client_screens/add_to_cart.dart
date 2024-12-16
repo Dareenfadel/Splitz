@@ -1,14 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:splitz/data/models/menu_item.dart';
 import 'package:splitz/data/models/order_item.dart';
 import 'package:splitz/data/models/order_item_user.dart';
+import 'package:splitz/data/models/user.dart';
 import 'package:splitz/data/services/menu_item_service.dart';
 import 'package:splitz/data/services/order_service.dart';
 import 'package:splitz/data/models/extra.dart';
 import 'package:splitz/data/models/choice.dart';
-import 'package:splitz/data/services/order_item_service.dart';
+import 'package:splitz/data/services/users_service.dart';
 import 'package:splitz/constants/app_colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddToCartScreen extends StatefulWidget {
   final String restaurantId;
@@ -26,6 +29,7 @@ class AddToCartScreen extends StatefulWidget {
 
 class _AddToCartScreenState extends State<AddToCartScreen> {
   final MenuItemService _menuItemService = MenuItemService();
+  final UsersService _usersService = UsersService();
   MenuItemModel? menuItem;
   bool isLoading = true;
   Map<String, String> selectedOptions = {};
@@ -35,11 +39,17 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
   String? restaurantId;
   String? menuItemId;
   final TextEditingController _controller = TextEditingController();
+ late  bool hasCurrentOrder;
+  
 
 
   @override
   void initState() {
     super.initState();
+    var currentUser = context.read<UserModel>();
+    print(currentUser.toMap());
+    hasCurrentOrder = currentUser.currentOrderId != null && currentUser.currentOrderId!.isNotEmpty;
+    
     if (widget.orderId != null) {
       // If orderId exists, fetch the order details first to get restaurantId and menuItemId
        _fetchOrderDetails();
@@ -54,7 +64,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
 
   Future<void> _fetchOrderDetails() async {
     try {
-      print('Fetching order details');
+      // print('Fetching order details');
       final orderDetails = await OrderService().getOrderItemDetails(widget.orderId!,widget.orderItemInd!);
     
       setState(() {
@@ -65,7 +75,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
         selectedOptions = orderDetails.options;
         totalPrice = orderDetails.price;
         _controller.text = specialInstructions ?? '';
-        print('Total Price: $totalPrice');
+        // print('Total Price: $totalPrice');
       });
       await _fetchMenuItemDetails();
        
@@ -586,7 +596,9 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                 ),
               ],
             ),
-            child: Row(
+            child: 
+                 hasCurrentOrder ?
+                    Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
@@ -605,9 +617,8 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                           ),
                     ),
                   ],
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
+                ), ElevatedButton(
+                      style: ElevatedButton.styleFrom(
                   backgroundColor: areAllRequiredOptionsSelected() 
                     ? AppColors.primary 
                     : AppColors.primary.withOpacity(0.5),
@@ -620,17 +631,34 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                   ? (widget.orderId != null ? updateCartItem : addItemToOrder) 
                   : null,
                   child: Text(
+                    
                   widget.orderId != null ? 'Update Cart' : 'Add to Cart',
                   style: TextStyle(
                     color: areAllRequiredOptionsSelected()
                     ? AppColors.textColor
                     : Colors.black.withOpacity(0.3),
                     fontSize: 18,
-                  ),
-                  ),
-                ),
-                ],
-              ),
+                ) ))
+                   ],
+              ):  Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                
+               
+                    Text(
+                      'Total',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    Text(
+                      '${totalPrice.toStringAsFixed(2)} EGP',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                    ),
+                  ],
+                )
+             
           ),
         ],
       ),
