@@ -62,7 +62,14 @@ class _OrdersListState extends State<OrdersList> {
           _orderService.fetchOrders(widget.restaurantId, widget.orderStatus),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const Center(
+              child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+            ),
+          ));
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {

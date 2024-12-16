@@ -75,7 +75,7 @@ class _MenuScreenState extends State<MenuScreen> {
   void _showErrorSnackBar(String message) {
     toastification.show(
       context: context,
-      title: Text('Error'),
+      title: const Text('Error'),
       type: ToastificationType.error,
       style: ToastificationStyle.fillColored,
       autoCloseDuration: const Duration(seconds: 3),
@@ -93,7 +93,7 @@ class _MenuScreenState extends State<MenuScreen> {
     final user = Provider.of<UserModel?>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Orders History'),
+        title: const Text('Menu'),
         centerTitle: true,
         titleTextStyle: const TextStyle(
           color: AppColors.textColor,
@@ -108,13 +108,13 @@ class _MenuScreenState extends State<MenuScreen> {
             Column(
               children: [
                 isLoading
-                    ? Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator())
                     : categories.isEmpty
-                        ? Center(child: Text('No categories available'))
+                        ? const Center(child: Text('No categories available'))
                         : Expanded(
                             child: GridView.builder(
                               gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2, // Display 2 items per row
                                 crossAxisSpacing: 16.0, // Space between columns
                                 mainAxisSpacing: 16.0, // Space between rows

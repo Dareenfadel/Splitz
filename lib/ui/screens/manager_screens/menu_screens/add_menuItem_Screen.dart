@@ -206,14 +206,17 @@ class _MenuItemFormState extends State<MenuItemForm> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
-        title: Text(
+        title: const Text(
           'Craft Your Signature Menu Item',
-          style: TextStyle(color: AppColors.primary),
+          style: TextStyle(
+              color: AppColors.primary,
+              fontSize: 18,
+              fontWeight: FontWeight.w500),
         ),
       ),
       body: Padding(
@@ -222,7 +225,7 @@ class _MenuItemFormState extends State<MenuItemForm> {
           key: _formKey,
           child: ListView(
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               // Image Upload Section
@@ -232,12 +235,12 @@ class _MenuItemFormState extends State<MenuItemForm> {
                   decoration: BoxDecoration(
                     color: AppColors.background,
                     border: Border.all(color: AppColors.secondary, width: 4),
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
                   ),
                   height: 170,
                   child: imageUrl == null
                       ? _selectedImage == null
-                          ? Center(
+                          ? const Center(
                               child: Icon(
                                 Icons.camera_alt,
                                 size: 50,
@@ -245,7 +248,7 @@ class _MenuItemFormState extends State<MenuItemForm> {
                               ),
                             )
                           : ClipRRect(
-                              borderRadius: BorderRadius.all(
+                              borderRadius: const BorderRadius.all(
                                   Radius.circular(20)), // Adjust for border
                               child: Image.file(
                                 _selectedImage!,
@@ -255,7 +258,7 @@ class _MenuItemFormState extends State<MenuItemForm> {
                               ),
                             )
                       : ClipRRect(
-                          borderRadius: BorderRadius.all(
+                          borderRadius: const BorderRadius.all(
                               Radius.circular(20)), // Adjust for border
                           child: Image.network(
                             imageUrl!,
@@ -267,7 +270,7 @@ class _MenuItemFormState extends State<MenuItemForm> {
                 ),
               ),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               CustomTextField(
                 controller: _nameController,
                 labelText: 'Name',
@@ -307,18 +310,18 @@ class _MenuItemFormState extends State<MenuItemForm> {
               //   isNumber: true,
               // ),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Extras Section
               Row(children: [
-                Text('Extras',
+                const Text('Extras',
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary)),
                 IconButton(
                   onPressed: _addExtra,
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.add,
                     color: AppColors.primary, // Set the color of the icon here
                   ),
@@ -338,7 +341,7 @@ class _MenuItemFormState extends State<MenuItemForm> {
                           decoration: inputdecorate("Extra Name"),
                           onChanged: (value) => _extras[index]['name'] = value,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
                         TextFormField(
@@ -357,7 +360,8 @@ class _MenuItemFormState extends State<MenuItemForm> {
                                     _extras.removeAt(index);
                                   });
                                 },
-                                icon: Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                               ),
                             ])
                       ],
@@ -366,18 +370,18 @@ class _MenuItemFormState extends State<MenuItemForm> {
                 );
               }),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Required Options Section
               Row(children: [
-                Text('Required Options',
+                const Text('Required Options',
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary)),
                 IconButton(
                     onPressed: _addRequiredOption,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.add,
                       color:
                           AppColors.primary, // Set the color of the icon here
@@ -410,10 +414,11 @@ class _MenuItemFormState extends State<MenuItemForm> {
                                   });
                                   _requiredOptions.removeAt(optionIndex);
                                 },
-                                icon: Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                               ),
                             ]),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
                         ...option['choices'].map((choice) {
@@ -427,7 +432,7 @@ class _MenuItemFormState extends State<MenuItemForm> {
                                     _requiredOptions[optionIndex]['choices']
                                         [choiceIndex]['name'] = value,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
                               TextFormField(
@@ -465,11 +470,11 @@ class _MenuItemFormState extends State<MenuItemForm> {
                                               .removeAt(choiceIndex);
                                         });
                                       },
-                                      icon:
-                                          Icon(Icons.delete, color: Colors.red),
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
                                     ),
                                   ]),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
                             ],
@@ -477,14 +482,14 @@ class _MenuItemFormState extends State<MenuItemForm> {
                         }).toList(),
                         Row(
                           children: [
-                            Text('Choice',
+                            const Text('Choice',
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.primary)),
                             IconButton(
                                 onPressed: () => _addChoice(optionIndex),
-                                icon: Icon(
+                                icon: const Icon(
                                   Icons.add,
                                   color: AppColors
                                       .primary, // Set the color of the icon here
@@ -498,12 +503,12 @@ class _MenuItemFormState extends State<MenuItemForm> {
               }),
 
               // Submit Button
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               CustomElevatedButton(
                   text: widget.menuItem == null ? 'ADD' : 'EDIT',
                   height: 50,
                   onPressed: _submitForm),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
             ],
@@ -516,21 +521,21 @@ class _MenuItemFormState extends State<MenuItemForm> {
   InputDecoration inputdecorate(labeltext) {
     return InputDecoration(
       labelText: labeltext,
-      labelStyle: TextStyle(color: const Color.fromARGB(148, 0, 0, 0)),
+      labelStyle: const TextStyle(color: Color.fromARGB(148, 0, 0, 0)),
       enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: AppColors.secondary, width: 2.0),
+        borderSide: const BorderSide(color: AppColors.secondary, width: 2.0),
         borderRadius: BorderRadius.circular(10.0),
       ),
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: AppColors.primary, width: 2.0),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
         borderRadius: BorderRadius.circular(10.0),
       ),
       errorBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red, width: 2.0),
+        borderSide: const BorderSide(color: Colors.red, width: 2.0),
         borderRadius: BorderRadius.circular(10.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: AppColors.primary, width: 2.0),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
         borderRadius: BorderRadius.circular(10.0),
       ),
     );
