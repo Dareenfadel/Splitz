@@ -100,7 +100,10 @@ class _CurrentOrderScreenState extends State<CurrentOrderScreen> {
 
   _onCheckoutCartPressed(Order order) async {
     context.loaderOverlay.show();
-    await _orderService.checkoutCart(order.orderId);
+    await _orderService.checkoutCart(
+      orderId: order.orderId,
+      userId: _currentUser.uid,
+    );
     if (mounted) context.loaderOverlay.hide();
   }
 
