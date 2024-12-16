@@ -102,7 +102,8 @@ class _MenuScreenState extends State<MenuScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(
+            left: 16.0, right: 16.0, top: 5.0, bottom: 2.0),
         child: Stack(
           children: [
             Column(

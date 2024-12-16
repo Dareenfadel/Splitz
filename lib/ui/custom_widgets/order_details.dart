@@ -267,7 +267,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Text(
-                        'Total: ${widget.order.totalBill} EGP',
+                        'Total: EGP ${widget.order.totalBill}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -275,7 +275,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         ),
                       ),
                       Text(
-                        'Paid: ${widget.order.paidSoFar} EGP',
+                        'Paid: EGP ${widget.order.paidSoFar}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

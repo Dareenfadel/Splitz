@@ -18,21 +18,29 @@ class HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-      elevation: 5,
-      shadowColor: Colors.grey.withOpacity(0.5),
-      margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15.0),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withOpacity(0.5),
+            blurRadius: 3.0,
+            spreadRadius: 1.0,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Stack(
         children: [
           ListTile(
-            contentPadding: EdgeInsets.all(16.0),
+            contentPadding: const EdgeInsets.all(16.0),
             title: Align(
               alignment: Alignment.topLeft,
               child: Text(
                 _formatDate(order.date),
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                   fontSize: 20.0,
@@ -42,20 +50,26 @@ class HistoryCard extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 1.0),
+                const SizedBox(height: 1.0),
                 Text(
                   'Table ${order.tableNumber}',
-                  style: TextStyle(color: Colors.grey, fontSize: 16.0),
+                  style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w400),
                 ),
                 Text(
                   'EGP ${order.totalBill} - ${order.items.length} Items',
-                  style: TextStyle(color: Colors.grey, fontSize: 16.0),
+                  style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w400),
                 ),
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
               ],
             ),
-            trailing:
-                Icon(Icons.arrow_forward_ios, color: AppColors.background),
+            trailing: const Icon(Icons.arrow_forward_ios,
+                color: AppColors.background),
             onTap: onTap,
           ),
           Positioned(

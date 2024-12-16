@@ -41,20 +41,20 @@ class MenuCatrgoeyItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Column(children: [
-                SizedBox(height: 30),
+                SizedBox(height: 25),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(50),
                   child: imageUrl != ''
                       ? Image.network(
                           imageUrl,
-                          width: 50,
-                          height: 50,
+                          width: 70,
+                          height: 70,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               Image.network(
                             defaultImageUrl,
-                            width: 50,
-                            height: 50,
+                            width: 70,
+                            height: 70,
                             fit: BoxFit.cover,
                           ),
                         )
@@ -63,9 +63,7 @@ class MenuCatrgoeyItem extends StatelessWidget {
                 SizedBox(height: 5),
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   textAlign: TextAlign.center,
                 ),
               ]),
