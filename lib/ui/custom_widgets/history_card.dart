@@ -79,7 +79,7 @@ class HistoryCard extends StatelessWidget {
               order.status == 'paid'
                   ? Icons.check_circle
                   : Icons.hourglass_top_rounded,
-              color: order.status == 'paid' ? Colors.green : Colors.blue,
+              color: order.status == 'paid' ? Colors.green : AppColors.primary.withOpacity(0.5),
             ),
           ),
         ],

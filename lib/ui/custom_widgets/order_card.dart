@@ -59,6 +59,9 @@ class _OrderCardState extends State<OrderCard> {
           orElse: () => widget.order);
 
       updateItems(updatedOrder.items);
+      // setState(() {
+      //   items = updatedOrder.items.where((item) => item.status != "ordering").toList();
+      // });
     });
   }
 
@@ -78,7 +81,7 @@ class _OrderCardState extends State<OrderCard> {
   Widget build(BuildContext context) {
     final tableNumber = widget.order.tableNumber;
     final orderStatus = widget.order.status;
-    final firstTwoItems = widget.order.items.take(2).toList();
+    final firstTwoItems = widget.order.items.where((item) => item.status != "ordering").take(2).toList();
 
     String getOrderStatusText(String status) {
       switch (status) {
@@ -125,7 +128,44 @@ class _OrderCardState extends State<OrderCard> {
                     ),
                   ),
                 const SizedBox(height: 16),
-                ...firstTwoItems.map((item) => ItemPreview(item: item)),
+                if (firstTwoItems.isNotEmpty)
+                  ...firstTwoItems.map((item) => ItemPreview(item: item))
+                else
+                  Container(
+                    height: 120,
+                    width: double.infinity,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TweenAnimationBuilder(
+                          duration: const Duration(seconds: 2),
+                          tween: Tween(begin: 0.0, end: 1.0),
+                          builder: (context, value, child) => Opacity(
+                            opacity: value,
+                            child: Transform.scale(
+                              scale: 0.8 + (value * 0.2),
+                              child: Icon(
+                                Icons.restaurant_menu_rounded,
+                                size: 48,
+                                color: Colors.grey[300],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "No items in this order yet",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

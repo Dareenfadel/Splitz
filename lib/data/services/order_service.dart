@@ -306,7 +306,7 @@ class OrderService {
             'paid': false,
             'items': [],
             'user_ids': [userId],
-            'date': FieldValue.serverTimestamp().toString(),
+            // 'date': FieldValue.serverTimestamp().toString(),
           });
           await _updateUserOrderIds(userId, orderId);
           print('New order created and user added');
