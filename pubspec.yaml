@@ -61,7 +61,9 @@ dependencies:
   googleapis:
   googleapis_auth:
   flutter_ringtone_player: ^4.0.0+3
-  flutter_pannable_rating_bar: ^2.7.2+1
+  flutter_pannable_rating_bar: ^2.7.2+1  
+  url_launcher: ^6.1.11
+
 
 dev_dependencies:
   flutter_test:

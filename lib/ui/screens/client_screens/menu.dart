@@ -9,8 +9,9 @@ import 'package:splitz/ui/screens/manager_screens/menu_screens/menuItems_of_cate
 
 class MenuScreen extends StatefulWidget {
   final String restaurantId;
+  final String? restaurantName;
 
-  const MenuScreen({super.key, required this.restaurantId});
+  const MenuScreen({super.key, required this.restaurantId, this.restaurantName});
 
   @override
   _MenuScreenState createState() => _MenuScreenState();
@@ -27,22 +28,32 @@ class _MenuScreenState extends State<MenuScreen> {
     _fetchCategories();
   }
 
+
   Future<void> _fetchCategories() async {
-    restaurantId = widget.restaurantId;
-    try {
-      List<MenuCategory> fetchedCategories =
-          await CategoryService().fetchMenuCategories(restaurantId!);
-      setState(() {
-        categories = fetchedCategories;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      _showErrorSnackBar('Failed to load categories');
-    }
+  restaurantId = widget.restaurantId;
+  try {
+    List<MenuCategory> fetchedCategories =
+        await CategoryService().fetchMenuCategories(restaurantId!);
+    
+    // Sort categories to put "Offers" first
+    fetchedCategories.sort((a, b) {
+      if (a.name.toLowerCase() == 'offers') return -1;
+      if (b.name.toLowerCase() == 'offers') return 1;
+      return 0;
+    });
+  
+
+    setState(() {
+      categories = fetchedCategories;
+      isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+    _showErrorSnackBar('Failed to load categories');
   }
+}
 
   // Method to show error SnackBar
   void _showErrorSnackBar(String message) {
@@ -65,7 +76,7 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Menu'),
+        title: widget.restaurantName!=null?  Text(widget.restaurantName!): const Text('Menu'),
         centerTitle: true,
         titleTextStyle: const TextStyle(
           color: AppColors.textColor,

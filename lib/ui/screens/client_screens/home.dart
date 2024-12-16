@@ -10,6 +10,7 @@ import 'package:splitz/ui/screens/client_screens/menu.dart';
 import 'package:splitz/ui/screens/client_screens/qr_scan.dart';
 import 'package:splitz/ui/screens/shared_screens/account_screen.dart';
 
+import 'package:splitz/ui/screens/client_screens/all_restaurants.dart';
 class ClientHome extends StatefulWidget {
   // ignore: use_super_parameters
 
@@ -94,7 +95,7 @@ class _ClientHomeState extends State<ClientHome> {
                   shape: const CircleBorder(), // Make it a circle
                   hoverColor: AppColors.secondary,
                   onPressed: () {
-                    print('QR Code Scanner Floating Action Button Pressed');
+                    // print('QR Code Scanner Floating Action Button Pressed');
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => QrCodeScanner()),
@@ -287,133 +288,140 @@ class _ClientHomeState extends State<ClientHome> {
     );
   }
 
-  Widget _buildRestaurantsSection(
-      List<Restaurant> topRated, String sectionTitle) {
-    final top5 = topRated.take(5).toList(); // Get top 5 restaurants
+Widget _buildRestaurantsSection(List<Restaurant> topRated, String sectionTitle) {
+  final top5 = topRated.take(3).toList(); // Get top 5 restaurants
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section Title
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            sectionTitle,
-            style: const TextStyle(
-                fontSize: 20, fontWeight: FontWeight.bold), // Larger font
-          ),
+         Row(
+          children: [
+            Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  sectionTitle,
+                  style: const TextStyle(
+                
+                    fontSize: 20, fontWeight: FontWeight.bold), // Larger font
+                ),
+              ),
+            const Spacer(),
+            // View All Button
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextButton(
+                onPressed: () {
+                  // Navigate to the restaurants screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AllRestaurantsScreen()),
+                  );
+                },
+                child: const Text(
+                  'View All',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ),
+            ),
+          ],
         ),
         // Horizontal Scrolling List
         SizedBox(
-          height: 220, // Adjusted height to reduce white space
+          height:sectionTitle=='🔥Top Rated Restaurants'? 220:205, // Adjusted height to reduce white space
           child: ListView.builder(
             scrollDirection: Axis.horizontal, // Enable horizontal scrolling
             itemCount: top5.length,
             itemBuilder: (context, index) {
               final restaurant = top5[index];
 
-              // Card Design
-              return GestureDetector(
-                onTap: () {
-                  _goToRestaurantDetails(
-                      restaurant); // Call the function when the card is tapped
-                },
-                child: Container(
-                  width: 200, // Adjust width for each card
-                  margin: const EdgeInsets.only(
-                      left: 16.0,
-                      right: 8.0,
-                      bottom: 6.0), // Spacing between cards
-                  decoration: BoxDecoration(
-                    color: AppColors.textColor,
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(
-                            0.5), // Increased opacity for a darker shadow
-                        blurRadius:
-                            5.0, // Increased blur radius for a larger shadow
-                        offset:
-                            const Offset(0, 3), // Lowered the shadow position
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Restaurant Image with Circular Edges
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 8.0), // Added spacing above the image
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                              12.0), // Circular edges for the image
-                          child: Image.network(
-                            restaurant.image,
-                            height: 140, // Adjust image height
-                            width: 180, // Adjust image width
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      // Restaurant Details
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 4.0), // Adjusted padding
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              restaurant.name,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 16, // Larger font size for name
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1, // Prevent text overflow
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(
-                                height:
-                                    4.0), // Reduced space between name and rating
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.star,
-                                    color: Colors.amber, size: 18),
-                                const SizedBox(width: 4.0),
-                                Text(
-                                  restaurant.overallRating.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                      fontSize:
-                                          14), // Adjusted font size for rating
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+            // Card Design
+            return GestureDetector(
+              onTap: () {
+                _goToRestaurantDetails(restaurant); // Call the function when the card is tapped
+              },
+              child: Container(
+                width: 200, // Adjust width for each card
+                margin: const EdgeInsets.only(left: 16.0, right: 8.0, bottom: 6.0), // Spacing between cards
+                decoration: BoxDecoration(
+                  color: AppColors.textColor,
+                  borderRadius: BorderRadius.circular(10.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5), // Increased opacity for a darker shadow
+                      blurRadius: 5.0, // Increased blur radius for a larger shadow
+                      offset: const Offset(0, 3), // Lowered the shadow position
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Restaurant Image with Circular Edges
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0), // Added spacing above the image
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.0), // Circular edges for the image
+                        child: Image.network(
+                          restaurant.image,
+                          height: 140, // Adjust image height
+                          width: 180, // Adjust image width
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    // Restaurant Details
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0), // Adjusted padding
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            restaurant.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16, // Larger font size for name
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1, // Prevent text overflow
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4.0), 
+                          sectionTitle=='🔥Top Rated Restaurants'?
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.star, color: Colors.amber, size: 18),
+                              const SizedBox(width: 4.0),
+                              Text(
+                                restaurant.overallRating.toStringAsFixed(1),
+                                style: const TextStyle(fontSize: 14), // Adjusted font size for rating
+                              ),
+                            ],
+                          ):
+                          const SizedBox(height: 0.0),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
-  List<Restaurant> _getmoreRestaurants(
-      List<Restaurant> topRatedRestaurants, List<Restaurant> restaurants) {
-    final List<Restaurant> randomRestaurants = [];
-    final List<Restaurant> nonTopRatedRestaurants = restaurants
-        .where((restaurant) => !topRatedRestaurants.contains(restaurant))
-        .toList();
+List<Restaurant>_getmoreRestaurants(List<Restaurant> topRatedRestaurants, List<Restaurant> restaurants) {
+final List<Restaurant> randomRestaurants = [];
+topRatedRestaurants = topRatedRestaurants.take(3).toList();
+final List<Restaurant> nonTopRatedRestaurants = restaurants.where((restaurant) => !topRatedRestaurants.contains(restaurant)).toList();
 
-    if (nonTopRatedRestaurants.length >= 5) {
+    if (nonTopRatedRestaurants.length >= 3) {
       // If there are enough non-top-rated restaurants, pick 5 randomly
-      while (randomRestaurants.length < 5) {
+      while (randomRestaurants.length < 3) {
         final randomRestaurant = nonTopRatedRestaurants[
             DateTime.now().microsecondsSinceEpoch %
                 nonTopRatedRestaurants.length];
@@ -426,7 +434,7 @@ class _ClientHomeState extends State<ClientHome> {
       randomRestaurants.addAll(nonTopRatedRestaurants);
 
       // Get the remaining needed count from the top-rated list
-      final remainingCount = 5 - randomRestaurants.length;
+      final remainingCount = 3 - randomRestaurants.length;
       final topRatedRemaining =
           topRatedRestaurants.take(remainingCount).toList();
       randomRestaurants.addAll(topRatedRemaining);
@@ -439,7 +447,7 @@ class _ClientHomeState extends State<ClientHome> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MenuScreen(restaurantId: restaurant.id!),
+        builder: (context) => MenuScreen(restaurantId: restaurant.id!, restaurantName: restaurant.name),
       ),
     );
   }

@@ -19,6 +19,7 @@ class RestaurantService {
         'name': name,
         'overall_rating': 0.0, // Default rating
         'image': image,
+        'address': '',
       });
 
       print('Restaurant "$name" created successfully.');
@@ -85,13 +86,15 @@ class RestaurantService {
                 .map((rating) => rating as double)
                 .toList()
             : [];
+        String address = restaurantData['address'] ?? '';
         restaurants.add(
           Restaurant(
               id: doc.id,
               name: name,
               overallRating: overallRating,
               image: image,
-              reviews: reviews,
+              address: address,
+            reviews: reviews,
               menuCategories: menuCategories,
               menuItems: menuItems,
               ratings: ratings),
@@ -151,12 +154,14 @@ class RestaurantService {
               .map((rating) => rating as double)
               .toList()
           : [];
+      String address = restaurantData['address'] ?? '';
       return Restaurant(
           id: restaurantId,
           name: name,
           overallRating: overallRating,
           image: image,
-          reviews: reviews,
+          address: address,
+        reviews: reviews,
           menuCategories: menuCategories,
           menuItems: menuItems,
           ratings: ratings);
@@ -167,7 +172,8 @@ class RestaurantService {
           name: 'Unknown',
           overallRating: 0.0,
           image: '',
-          reviews: [],
+          address: '',
+        reviews: [],
           menuCategories: [],
           menuItems: [],
           ratings: []);
