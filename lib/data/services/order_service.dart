@@ -546,13 +546,16 @@ class OrderService {
     );
   }
 
-  checkoutCart(String orderId) {
+  checkoutCart({
+    required String orderId,
+    required String userId,
+  }) {
     return _updateOrderWithTransaction(
       orderId: orderId,
       updateFunction: (order) {
-        for (var item in order.items) {
+        order.cartItemsForUserId(userId).forEach((item) {
           item.status = 'pending';
-        }
+        });
 
         order.totalBill = order.calculatedTotalBill;
       },
