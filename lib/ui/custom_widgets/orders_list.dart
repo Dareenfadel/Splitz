@@ -87,8 +87,8 @@ class _OrdersListState extends State<OrdersList> {
         orders = snapshot.data!;
         sortOrders();
 
-        bool hasPendingOrders = orders.any(
-            (order) => !order.items.every((item) => item.status == 'ordering'));
+        bool hasDisplayedOrders = orders.any(
+            (order) => order.items.any((item) => item.status != 'ordering'));
 
         final ordersList = ListView.builder(
           itemCount: orders.length,
@@ -100,8 +100,8 @@ class _OrdersListState extends State<OrdersList> {
 
             print('$allItemsOrdering ');
             if (!allItemsOrdering) {
-              hasPendingOrders = true;
-              print('$hasPendingOrders shje');
+              hasDisplayedOrders = true;
+              print('$hasDisplayedOrders shje');
               return OrderCard(
                 order: order,
                 orderId: order.orderId,
@@ -110,12 +110,12 @@ class _OrdersListState extends State<OrdersList> {
                 hasNewItems: hasNewItems,
               );
             }
-            print(hasPendingOrders);
+            print(hasDisplayedOrders);
             return const SizedBox.shrink();
           },
         );
 
-        if (!hasPendingOrders) {
+        if (!hasDisplayedOrders) {
           return MessageContainer(
               icon: Icons.hourglass_empty_rounded,
               message: 'No orders ${widget.orderStatus.toLowerCase()}',

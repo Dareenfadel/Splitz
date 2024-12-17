@@ -34,6 +34,12 @@ class _OrderCardState extends State<OrderCard> {
     super.initState();
     items = widget.order.items;
 
+    if (widget.hasNewItems) {
+      setState(() {
+        widget.updateStatus("pending");
+      });
+    }
+
     void updateItems(List<OrderItem> updatedItems) {
       setState(() {
         for (var updatedItem in updatedItems) {
@@ -81,7 +87,10 @@ class _OrderCardState extends State<OrderCard> {
   Widget build(BuildContext context) {
     final tableNumber = widget.order.tableNumber;
     final orderStatus = widget.order.status;
-    final firstTwoItems = widget.order.items.where((item) => item.status != "ordering").take(2).toList();
+    final firstTwoItems = widget.order.items
+        .where((item) => item.status != "ordering")
+        .take(2)
+        .toList();
 
     String getOrderStatusText(String status) {
       switch (status) {
