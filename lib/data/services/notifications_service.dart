@@ -333,6 +333,9 @@ class NotificationsService {
     required int itemIndex,
     required String requestedToUserId,
   }) async {
+    // Wait for 2 seconds to let the request be saved in the database
+    await Future.delayed(Duration(seconds: 2));
+    
     return _sendSplittingRequestNotificationHelper(
       orderId: orderId,
       itemIndex: itemIndex,
