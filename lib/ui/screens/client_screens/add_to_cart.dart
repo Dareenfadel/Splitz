@@ -20,7 +20,11 @@ class AddToCartScreen extends StatefulWidget {
   final int? orderItemInd; //for update order item
 
   const AddToCartScreen(
-      {Key? key, required  this.restaurantId,  this.menuItemId, this.orderId,this.orderItemInd})
+      {Key? key,
+      required this.restaurantId,
+      this.menuItemId,
+      this.orderId,
+      this.orderItemInd})
       : super(key: key);
 
   @override
@@ -39,22 +43,19 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
   String? restaurantId;
   String? menuItemId;
   final TextEditingController _controller = TextEditingController();
- late  bool hasCurrentOrder;
-  
-
+  late bool hasCurrentOrder;
 
   @override
   void initState() {
     super.initState();
     var currentUser = context.read<UserModel>();
     print(currentUser.toMap());
-    hasCurrentOrder = currentUser.currentOrderId != null && currentUser.currentOrderId!.isNotEmpty;
-    
+    hasCurrentOrder = currentUser.currentOrderId != null &&
+        currentUser.currentOrderId!.isNotEmpty;
+
     if (widget.orderId != null) {
       // If orderId exists, fetch the order details first to get restaurantId and menuItemId
-       _fetchOrderDetails();
-       
-      
+      _fetchOrderDetails();
     } else {
       restaurantId = widget.restaurantId;
       menuItemId = widget.menuItemId;
@@ -65,10 +66,10 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
   Future<void> _fetchOrderDetails() async {
     try {
       // print('Fetching order details');
-      final orderDetails = await OrderService().getOrderItemDetails(widget.orderId!,widget.orderItemInd!);
-    
+      final orderDetails = await OrderService()
+          .getOrderItemDetails(widget.orderId!, widget.orderItemInd!);
+
       setState(() {
-      
         menuItemId = orderDetails?.itemId;
         specialInstructions = orderDetails.notes;
         selectedExtras = orderDetails.extras;
@@ -78,7 +79,6 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
         // print('Total Price: $totalPrice');
       });
       await _fetchMenuItemDetails();
-       
     } catch (e) {
       print('Error fetching order details: $e');
       setState(() {
@@ -86,18 +86,19 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
       });
     }
   }
-  bool areAllRequiredOptionsSelected() {
-  if (menuItem == null) return false;
-  
-  // Check if we have a selection for each required option
-  for (var option in menuItem!.requiredOptions) {
-    if (!selectedOptions.containsKey(option.name) || selectedOptions[option.name]!.isEmpty) {
-      return false;
-    }
-  }
-  return true;
-}
 
+  bool areAllRequiredOptionsSelected() {
+    if (menuItem == null) return false;
+
+    // Check if we have a selection for each required option
+    for (var option in menuItem!.requiredOptions) {
+      if (!selectedOptions.containsKey(option.name) ||
+          selectedOptions[option.name]!.isEmpty) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   Future<void> _fetchMenuItemDetails() async {
     try {
@@ -106,8 +107,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
       setState(() {
         menuItem = item;
         isLoading = false;
-        if(totalPrice == 0.0)
-        totalPrice = item!.price ?? 0.0;
+        if (totalPrice == 0.0) totalPrice = item!.price ?? 0.0;
       });
     } catch (e) {
       setState(() {
@@ -151,6 +151,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
       totalPrice = calculateTotalPrice();
     });
   }
+
   void updateCartItem() async {
     try {
       final OrderItem updatedItem = OrderItem(
@@ -166,61 +167,57 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
         price: totalPrice,
         userList: [
           OrderItemUser(
-            userId: FirebaseAuth.instance.currentUser!.uid,
-            requestStatus: 'accepted'
-          )
+              userId: FirebaseAuth.instance.currentUser!.uid,
+              requestStatus: 'accepted')
         ],
         status: 'ordering',
         options: selectedOptions,
       );
 
-      await OrderService().updateItemInOrder(widget.orderId!, updatedItem,widget.orderItemInd!);
+      await OrderService().updateItemInOrder(
+          widget.orderId!, updatedItem, widget.orderItemInd!);
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating item: $e'))
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error updating item: $e')));
     }
   }
 
   void addItemToOrder() async {
     final OrderItem newItem = OrderItem(
-                        itemId: menuItem!.id,
-                        itemName: menuItem!.name,
-                        imageUrl: menuItem!.image,
-                        quantity: 1,
-                        extras: selectedExtras,
-                        notes: specialInstructions,
-                        paidAmount: 0,
-                        paidUsers: {},
-                        prepared: false,
-                        price: totalPrice,
-                        userList: [
-                          OrderItemUser(
-                            userId: FirebaseAuth.instance.currentUser!.uid,
-                            requestStatus: 'accepted'
-                          )
-                        ],
-                        status: 'ordering',
-                        options: selectedOptions,
-                      );
+      itemId: menuItem!.id,
+      itemName: menuItem!.name,
+      imageUrl: menuItem!.image,
+      quantity: 1,
+      extras: selectedExtras,
+      notes: specialInstructions,
+      paidAmount: 0,
+      paidUsers: {},
+      prepared: false,
+      price: totalPrice,
+      userList: [
+        OrderItemUser(
+            userId: FirebaseAuth.instance.currentUser!.uid,
+            requestStatus: 'accepted')
+      ],
+      status: 'ordering',
+      options: selectedOptions,
+    );
 
-                      try {
-                        await OrderService().addItemToOrder(
-                          FirebaseAuth.instance.currentUser!.uid,
-                          newItem
-                        );
-                        await MenuItemService().incrementCount(
-                          widget.restaurantId!,
-                          menuItemId!,
-                        );
-                        Navigator.pop(context);
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error adding item to order: $e'))
-                        );
-                      }
-                    }
+    try {
+      await OrderService()
+          .addItemToOrder(FirebaseAuth.instance.currentUser!.uid, newItem);
+      await MenuItemService().incrementCount(
+        widget.restaurantId!,
+        menuItemId!,
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding item to order: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -238,9 +235,28 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(menuItem!.name, style: TextStyle(color: AppColors.primary)),
+        actions: [
+          // Button to add comment and rating
+          IconButton(
+            icon: const Icon(Icons.star_border),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddReviewScreen(
+                    restaurantId: restaurantId,
+                    menuItemId: menuItemId,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
         elevation: 0,
         backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: AppColors.primary), // Added this line to change back button color
+        iconTheme: IconThemeData(
+            color: AppColors
+                .primary), // Added this line to change back button color
       ),
       body: Column(
         children: [
@@ -270,25 +286,24 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                          Text(
-                            menuItem!.name,
-                            style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              ),
-                          ),
                             Text(
-                            '${menuItem!.price.toStringAsFixed(2)} EGP',
-                            style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              
-                              ),
-                          ),
+                              menuItem!.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            Text(
+                              '${menuItem!.price.toStringAsFixed(2)} EGP',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -300,18 +315,20 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                          Icon(
-                                                Icons.av_timer,
-                                                size: 20,
-                                                color: AppColors.primary,
-                                              ),
-                          const SizedBox(width: 8),
-                          Text('${menuItem!.preparationTime} mins'),
-                          const SizedBox(width: 24),
-                          Icon(Icons.local_fire_department,
-                           color:   AppColors.primary,),
-                          const SizedBox(width: 8),
-                          Text('${menuItem!.calories} cal'),
+                            Icon(
+                              Icons.av_timer,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text('${menuItem!.preparationTime} mins'),
+                            const SizedBox(width: 24),
+                            Icon(
+                              Icons.local_fire_department,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text('${menuItem!.calories} cal'),
                           ],
                         ),
                         const Divider(height: 32),
@@ -474,27 +491,33 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                                         Row(
                                           children: [
                                             IconButton(
-                                                icon: Container(
-                                                padding: const EdgeInsets.all(4),
+                                              icon: Container(
+                                                padding:
+                                                    const EdgeInsets.all(4),
                                                 decoration: BoxDecoration(
                                                   // border: Border.all(color: AppColors.primary),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  color:const Color.fromARGB(0, 0, 0, 0)
-                                      .withOpacity(0.05),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  color: const Color.fromARGB(
+                                                          0, 0, 0, 0)
+                                                      .withOpacity(0.05),
                                                 ),
                                                 child: Icon(Icons.remove,
-                                                  color: AppColors.primary,
-                                                  size: 20),
-                                                ),
+                                                    color: AppColors.primary,
+                                                    size: 20),
+                                              ),
                                               onPressed: () {
                                                 setState(() {
                                                   selectedExtras[extra.name] =
-                                                      (selectedExtras[extra.name] ??
+                                                      (selectedExtras[
+                                                                  extra.name] ??
                                                               0) -
                                                           1;
-                                                  if (selectedExtras[extra.name]! <
+                                                  if (selectedExtras[
+                                                          extra.name]! <
                                                       0) {
-                                                    selectedExtras[extra.name] = 0;
+                                                    selectedExtras[extra.name] =
+                                                        0;
                                                   }
                                                   updateTotalPrice();
                                                 });
@@ -507,22 +530,26 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                                                   .titleMedium,
                                             ),
                                             IconButton(
-                                                icon: Container(
-                                                padding: const EdgeInsets.all(4),
+                                              icon: Container(
+                                                padding:
+                                                    const EdgeInsets.all(4),
                                                 decoration: BoxDecoration(
                                                   // border: Border.all(color: AppColors.primary),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  color:const Color.fromARGB(0, 0, 0, 0)
-                                      .withOpacity(0.05),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  color: const Color.fromARGB(
+                                                          0, 0, 0, 0)
+                                                      .withOpacity(0.05),
                                                 ),
                                                 child: Icon(Icons.add,
-                                                  color: AppColors.primary,
-                                                  size: 20),
-                                                ),
+                                                    color: AppColors.primary,
+                                                    size: 20),
+                                              ),
                                               onPressed: () {
                                                 setState(() {
                                                   selectedExtras[extra.name] =
-                                                      (selectedExtras[extra.name] ??
+                                                      (selectedExtras[
+                                                                  extra.name] ??
                                                               0) +
                                                           1;
                                                   updateTotalPrice();
@@ -543,124 +570,236 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                       ],
                     ),
                   ),
-                     Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Special Instructions',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 5),
-                TextField(
-                  maxLines: 3,
-                 controller: _controller,
-                  decoration: InputDecoration(
-                  hintText: 'Add any special instructions or notes here...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Special Instructions',
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: 5),
+                        TextField(
+                          maxLines: 3,
+                          controller: _controller,
+                          decoration: InputDecoration(
+                            hintText:
+                                'Add any special instructions or notes here...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
+                            ),
+                            fillColor: const Color.fromARGB(0, 0, 0, 0)
+                                .withOpacity(0.05),
+                            filled: true,
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              specialInstructions = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
-                  fillColor: const Color.fromARGB(0, 0, 0, 0).withOpacity(0.05),
-                  filled: true,
-                  ),
-                  onChanged: (value) {
-                  setState(() {
-                    specialInstructions = value;
-                  });
-                  },
-                ),
-                const SizedBox(height: 16),
-                ],
-              ),
-          ),
                 ],
               ),
             ),
           ),
           // Bottom Bar
           // Notes Section
-       
+
           Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: 
-                 hasCurrentOrder ?
-                    Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Total',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '${totalPrice.toStringAsFixed(2)} EGP',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                    ),
-                  ],
-                ), ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                  backgroundColor: areAllRequiredOptionsSelected() 
-                    ? AppColors.primary 
-                    : AppColors.primary.withOpacity(0.5),
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, -2),
                   ),
-                  ),
-                  onPressed: areAllRequiredOptionsSelected() 
-                  ? (widget.orderId != null ? updateCartItem : addItemToOrder) 
-                  : null,
-                  child: Text(
-                    
-                  widget.orderId != null ? 'Update Cart' : 'Add to Cart',
-                  style: TextStyle(
-                    color: areAllRequiredOptionsSelected()
-                    ? AppColors.textColor
-                    : Colors.black.withOpacity(0.3),
-                    fontSize: 18,
-                ) ))
-                   ],
-              ):  Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                
-               
-                    Text(
-                      'Total',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '${totalPrice.toStringAsFixed(2)} EGP',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                    ),
-                  ],
-                )
-             
-          ),
+                ],
+              ),
+              child: hasCurrentOrder
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Total',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Text(
+                              '${totalPrice.toStringAsFixed(2)} EGP',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: areAllRequiredOptionsSelected()
+                                  ? AppColors.primary
+                                  : AppColors.primary.withOpacity(0.5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 32, vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: areAllRequiredOptionsSelected()
+                                ? (widget.orderId != null
+                                    ? updateCartItem
+                                    : addItemToOrder)
+                                : null,
+                            child: Text(
+                                widget.orderId != null
+                                    ? 'Update Cart'
+                                    : 'Add to Cart',
+                                style: TextStyle(
+                                  color: areAllRequiredOptionsSelected()
+                                      ? AppColors.textColor
+                                      : Colors.black.withOpacity(0.3),
+                                  fontSize: 18,
+                                )))
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        Text(
+                          '${totalPrice.toStringAsFixed(2)} EGP',
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                        ),
+                      ],
+                    )),
         ],
+      ),
+    );
+  }
+}
+
+class AddReviewScreen extends StatefulWidget {
+  final String? restaurantId;
+  final String? menuItemId;
+
+  const AddReviewScreen({Key? key, this.restaurantId, this.menuItemId})
+      : super(key: key);
+
+  @override
+  State<AddReviewScreen> createState() => _AddReviewScreenState();
+}
+
+class _AddReviewScreenState extends State<AddReviewScreen> {
+  String comment = "";
+
+  String rating = "0";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add Review'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: AppColors.primary),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Rating',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: 'Enter rating (1-5)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onChanged: (rating) {
+                setState(() {
+                  this.rating = rating;
+                });
+              },
+            ),
+            // const SizedBox(height: 16),
+            // Text(
+            //   'Comments',
+            //   style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            // ),
+            // const SizedBox(height: 8),
+            // TextField(
+            //   maxLines: 4,
+            //   decoration: InputDecoration(
+            //     hintText: 'Enter your review...',
+            //     border: OutlineInputBorder(
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //   ),
+            //   onChanged: (comment) {
+            //     setState(() {
+            //       this.comment = comment;
+            //     });
+            //   },
+            // ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () async {
+                await MenuItemService().addCommentAndRating(
+                  restaurantId: widget.restaurantId!,
+                  menuItemId: widget.menuItemId!,
+                  // comment: comment,
+                  rating: double.parse(rating),
+                );
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Submit Review',
+                
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

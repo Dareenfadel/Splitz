@@ -13,6 +13,7 @@ class MenuItemModel {
   final double price;
   final double? discount;
   final double overallRating;
+  List<double> ratings;
   final List<Review> reviews;
   final List<Extra> extras;
   final List<RequiredOption> requiredOptions;
@@ -31,8 +32,14 @@ class MenuItemModel {
     required this.reviews,
     required this.extras,
     required this.requiredOptions,
-    this.count
+    this.count,
+    this.ratings = const [],
   });
+  
+  double get averageRating {
+    if (ratings.isEmpty) return 0.0;
+    return ratings.reduce((value, element) => value + element) / ratings.length;
+  }
 
   factory MenuItemModel.fromFirestore(DocumentSnapshot doc) {
     final firestore = doc.data() as Map<String, dynamic>;
@@ -45,7 +52,7 @@ class MenuItemModel {
       calories: firestore['calories'],
       preparationTime: firestore['preparation_time'],
       price: (firestore['price'] ?? 0.0).toDouble(),
-      overallRating: (firestore['overall_rating']??0.0).toDouble(),
+      overallRating: (firestore['overall_rating'] ?? 0.0).toDouble(),
       reviews: (firestore['reviews'] as List? ?? [])
           .map((e) => Review.fromFirestore(e))
           .toList(),
@@ -55,8 +62,10 @@ class MenuItemModel {
       requiredOptions: (firestore['required_options'] as List? ?? [])
           .map((e) => RequiredOption.fromFirestore(e))
           .toList(),
-      count: firestore['count']??0,
-
+      count: firestore['count'] ?? 0,
+      ratings: (firestore['ratings'] as List? ?? [])
+          .map((e) => e is double ? e : 0.0)
+          .toList(),
     );
   }
 
@@ -104,6 +113,7 @@ class MenuItemModel {
       'reviews': reviews.map((e) => e.toMap()).toList(),
       'extras': extras.map((e) => e.toMap()).toList(),
       'required_options': requiredOptions.map((e) => e.toMap()).toList(),
+      'ratings': ratings,
     };
   }
 }

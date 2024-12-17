@@ -541,4 +541,38 @@ class MenuItemService {
       print('Error incrementing count ${e}');
     }
   }
+
+  Future<void> addCommentAndRating({
+    required String restaurantId,
+    required String menuItemId,
+    // required String comment,
+    required double rating,
+  }) async {
+    // Get ratings array from the menu item document
+    var firestoreMenuItem = await _db
+        .collection('restaurants')
+        .doc(restaurantId)
+        .collection('menu_items')
+        .doc(menuItemId)
+        .get();
+
+    var menuItem = MenuItemModel.fromFirestore(firestoreMenuItem);
+    menuItem.ratings.add(rating);
+    double overallRating = 0.0;
+    for (var rating in menuItem.ratings) {
+      overallRating += rating;
+    }
+    overallRating = overallRating / menuItem.ratings.length;
+    
+    print(menuItem.toMap());
+    return _db
+        .collection('restaurants')
+        .doc(restaurantId)
+        .collection('menu_items')
+        .doc(menuItemId)
+        .update({
+      'ratings': FieldValue.arrayUnion([rating]),
+      'overall_rating': overallRating,
+    });
+  }
 }

@@ -75,15 +75,15 @@ class _ClientHomeState extends State<ClientHome> {
                   tooltip: 'Settings',
                   color: AppColors.textColor,
                 ),
-                IconButton(
-                  onPressed: () async {
-                    await _auth.signOut();
-                    //TODO: Navigate to ACCOUNT page
-                  },
-                  icon: const Icon(Icons.logout),
-                  tooltip: 'Account',
-                  color: AppColors.textColor,
-                ),
+                // IconButton(
+                //   onPressed: () async {
+                //     await _auth.signOut();
+                //     //TODO: Navigate to ACCOUNT page
+                //   },
+                //   icon: const Icon(Icons.logout),
+                //   tooltip: 'Account',
+                //   color: AppColors.textColor,
+                // ),
               ],
             ),
             body: _getBody(),
