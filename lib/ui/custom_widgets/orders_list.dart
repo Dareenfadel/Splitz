@@ -87,20 +87,42 @@ class _OrdersListState extends State<OrdersList> {
         orders = snapshot.data!;
         sortOrders();
 
-        return ListView.builder(
+        bool hasPendingOrders = orders.any(
+            (order) => !order.items.every((item) => item.status == 'ordering'));
+
+        final ordersList = ListView.builder(
           itemCount: orders.length,
           itemBuilder: (context, index) {
             final order = orders[index];
             bool hasNewItems = checkNewItems(order);
-            return OrderCard(
-              order: order,
-              orderId: order.orderId,
-              updateStatus: (newStatus) =>
-                  _orderService.updateOrderStatus(order.orderId, newStatus),
-              hasNewItems: hasNewItems,
-            );
+            bool allItemsOrdering =
+                order.items.every((item) => item.status == 'ordering');
+
+            print('$allItemsOrdering ');
+            if (!allItemsOrdering) {
+              hasPendingOrders = true;
+              print('$hasPendingOrders shje');
+              return OrderCard(
+                order: order,
+                orderId: order.orderId,
+                updateStatus: (newStatus) =>
+                    _orderService.updateOrderStatus(order.orderId, newStatus),
+                hasNewItems: hasNewItems,
+              );
+            }
+            print(hasPendingOrders);
+            return const SizedBox.shrink();
           },
         );
+
+        if (!hasPendingOrders) {
+          return MessageContainer(
+              icon: Icons.hourglass_empty_rounded,
+              message: 'No orders ${widget.orderStatus.toLowerCase()}',
+              subMessage: "");
+        } else {
+          return ordersList;
+        }
       },
     );
   }
